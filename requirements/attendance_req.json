@@ -1,0 +1,180 @@
+{
+  "module": "Attendance Management",
+  "epic": {
+    "id": "EPIC_ATTENDANCE",
+    "type": "epic",
+    "title": "Attendance Management",
+    "body": "Provides fast, reliable, and auditable attendance tracking for students and staff with transparency for parents and scalability for large institutions.",
+    "labels": ["epic", "attendance", "core-platform"],
+    "features": [
+      {
+        "id": "FEATURE_STUDENT_ATTENDANCE",
+        "type": "feature",
+        "title": "Student Attendance Management",
+        "body": "Capture and manage student attendance with minimal effort and high accuracy.",
+        "labels": ["feature", "attendance", "student"],
+        "stories": [
+          {
+            "id": "STORY_STUDENT_DAILY_ATTENDANCE",
+            "type": "story",
+            "title": "Daily student attendance",
+            "body": "Allow teachers to mark daily attendance for students.",
+            "labels": ["story", "attendance", "backend"],
+            "acceptanceCriteria": [
+              "Attendance defaults to Present for all students",
+              "Teachers can mark students Absent or Leave",
+              "Attendance is recorded per class and date",
+              "Duplicate attendance entries are prevented"
+            ]
+          },
+          {
+            "id": "STORY_STUDENT_PERIOD_ATTENDANCE",
+            "type": "story",
+            "title": "Period-wise student attendance",
+            "body": "Allow marking attendance for each academic period.",
+            "labels": ["story", "attendance", "backend"],
+            "acceptanceCriteria": [
+              "Attendance can be marked per subject and period",
+              "Teachers see only their assigned classes",
+              "Period attendance aggregates into daily summary",
+              "Edits are audit logged"
+            ]
+          },
+          {
+            "id": "STORY_STUDENT_BULK_ATTENDANCE",
+            "type": "story",
+            "title": "Bulk attendance entry",
+            "body": "Support bulk attendance entry and correction.",
+            "labels": ["story", "attendance", "backend"],
+            "acceptanceCriteria": [
+              "Bulk attendance upload supported via CSV",
+              "Validation errors reported per row",
+              "Bulk edits maintain audit trail"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_STAFF_ATTENDANCE",
+        "type": "feature",
+        "title": "Staff Attendance Management",
+        "body": "Track attendance for teachers and staff with optional IN/OUT times.",
+        "labels": ["feature", "attendance", "staff"],
+        "stories": [
+          {
+            "id": "STORY_STAFF_DAILY_ATTENDANCE",
+            "type": "story",
+            "title": "Daily staff attendance",
+            "body": "Allow marking daily attendance for staff members.",
+            "labels": ["story", "attendance", "backend"],
+            "acceptanceCriteria": [
+              "Staff attendance can be marked Present or Absent",
+              "Attendance is recorded per date",
+              "Only authorized admins can edit staff attendance"
+            ]
+          },
+          {
+            "id": "STORY_STAFF_IN_OUT",
+            "type": "story",
+            "title": "Staff IN/OUT time tracking",
+            "body": "Capture optional IN and OUT times for staff attendance.",
+            "labels": ["story", "attendance", "backend"],
+            "acceptanceCriteria": [
+              "IN and OUT times are optional",
+              "Multiple punches per day are supported",
+              "Attendance duration is calculated automatically"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_ATTENDANCE_REPORTS",
+        "type": "feature",
+        "title": "Attendance Reports & Visibility",
+        "body": "Provide clear attendance visibility for admins, teachers, parents, and students.",
+        "labels": ["feature", "attendance", "reporting"],
+        "stories": [
+          {
+            "id": "STORY_ATTENDANCE_REPORTS",
+            "type": "story",
+            "title": "Attendance reports",
+            "body": "Generate attendance reports across different dimensions.",
+            "labels": ["story", "attendance", "reporting"],
+            "acceptanceCriteria": [
+              "Daily and monthly attendance reports available",
+              "Reports filterable by class, student, staff, and date range",
+              "Reports accessible based on user role"
+            ]
+          },
+          {
+            "id": "STORY_PARENT_VISIBILITY",
+            "type": "story",
+            "title": "Parent and student attendance visibility",
+            "body": "Allow parents and students to view attendance records.",
+            "labels": ["story", "attendance", "frontend"],
+            "acceptanceCriteria": [
+              "Parents can view attendance of linked students",
+              "Students can view their own attendance",
+              "Attendance percentage is clearly displayed"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_LEAVE_MANAGEMENT",
+        "type": "feature",
+        "title": "Leave Management",
+        "body": "Manage student and staff leave requests with approval workflows.",
+        "labels": ["feature", "attendance", "leave"],
+        "stories": [
+          {
+            "id": "STORY_LEAVE_REQUEST",
+            "type": "story",
+            "title": "Leave request submission",
+            "body": "Allow students and staff to submit leave requests.",
+            "labels": ["story", "attendance", "backend"],
+            "acceptanceCriteria": [
+              "Leave requests can be submitted with reason and date range",
+              "Requests are linked to attendance records",
+              "Duplicate leave requests are prevented"
+            ]
+          },
+          {
+            "id": "STORY_LEAVE_APPROVAL",
+            "type": "story",
+            "title": "Leave approval workflow",
+            "body": "Allow admins and teachers to approve or reject leave requests.",
+            "labels": ["story", "attendance", "backend"],
+            "acceptanceCriteria": [
+              "Approvers can approve or reject leave",
+              "Approved leave updates attendance automatically",
+              "Approval actions are audit logged"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_ATTENDANCE_NFR",
+        "type": "feature",
+        "title": "Attendance Non-Functional Requirements",
+        "body": "Ensure performance, reliability, and auditability of attendance operations.",
+        "labels": ["feature", "attendance", "non-functional"],
+        "stories": [
+          {
+            "id": "STORY_ATTENDANCE_NFR",
+            "type": "story",
+            "title": "Attendance system NFRs",
+            "body": "Define non-functional requirements for attendance management.",
+            "labels": ["story", "attendance", "non-functional"],
+            "acceptanceCriteria": [
+              "Handle up to 5,000 attendance records per day per class",
+              "Offline attendance capture with sync support",
+              "Full audit trail for attendance edits",
+              "Sub-300ms response time for attendance APIs"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

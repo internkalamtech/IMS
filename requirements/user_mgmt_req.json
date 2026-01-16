@@ -1,0 +1,224 @@
+{
+  "module": "User Management & Access Control",
+  "epic": {
+    "id": "EPIC_USER_MGMT",
+    "type": "epic",
+    "title": "User Management & Access Control",
+    "body": "Provides centralized, secure, and scalable management of users, roles, permissions, organizations, and branches in a multi-tenant Institute Management System with strict data isolation and auditability.",
+    "labels": ["epic", "core-platform", "security"],
+    "features": [
+      {
+        "id": "FEATURE_ORG_BRANCH_MGMT",
+        "type": "feature",
+        "title": "Organization & Branch Management",
+        "body": "Manage lifecycle of organizations and their branches with tenant isolation and controlled visibility.",
+        "labels": ["feature", "organization", "tenant"],
+        "stories": [
+          {
+            "id": "STORY_ORG_CRUD_BACKEND",
+            "type": "story",
+            "title": "Create and manage organizations (backend)",
+            "body": "Persist and manage organization entities with lifecycle controls and tenant isolation.",
+            "labels": ["story", "backend", "tenant"],
+            "acceptanceCriteria": [
+              "Organizations can be created, viewed, edited, and deactivated",
+              "Each organization is uniquely identified",
+              "Deactivated organizations cannot log in or access APIs",
+              "Super Admin can view only organization metadata",
+              "Organization deletion follows soft-delete for compliance"
+            ]
+          },
+          {
+            "id": "STORY_BRANCH_MGMT",
+            "type": "story",
+            "title": "Manage branches within organization",
+            "body": "Allow organizations to create and manage multiple branches with branch-level configuration.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "Branches are always scoped to a parent organization",
+              "Branch-level settings are supported",
+              "Users are mapped to one or more branches",
+              "Deactivated branches prevent new transactions but retain history"
+            ]
+          },
+          {
+            "id": "STORY_ORG_BRANDING",
+            "type": "story",
+            "title": "Organization branding and configuration",
+            "body": "Support organization-level branding across the platform.",
+            "labels": ["story", "frontend"],
+            "acceptanceCriteria": [
+              "Admins can configure logo, name, and theme",
+              "Branding applies across all modules",
+              "Branch users see organization branding"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_RBAC",
+        "type": "feature",
+        "title": "Role-Based Access Control (RBAC)",
+        "body": "Define and enforce role-based permissions across all modules and actions.",
+        "labels": ["feature", "security", "rbac"],
+        "stories": [
+          {
+            "id": "STORY_PREDEFINED_ROLES",
+            "type": "story",
+            "title": "Predefined system roles",
+            "body": "Provide system-defined roles aligned with institutional workflows.",
+            "labels": ["story", "backend", "security"],
+            "acceptanceCriteria": [
+              "System supports predefined roles: Super Admin, Org Admin, Branch Admin, Teacher, Student, Parent, Accountant, Transport Manager, Driver, Support Staff",
+              "Each role has default permissions",
+              "Roles are mapped to modules and actions",
+              "Students and parents have restricted access"
+            ]
+          },
+          {
+            "id": "STORY_PERMISSION_ENFORCEMENT",
+            "type": "story",
+            "title": "Permission enforcement",
+            "body": "Ensure every API and UI action is validated against assigned permissions.",
+            "labels": ["story", "backend", "security"],
+            "acceptanceCriteria": [
+              "Unauthorized actions are blocked at API level",
+              "Permission checks are centralized",
+              "Role changes take effect immediately",
+              "Access violations are audit logged"
+            ]
+          },
+          {
+            "id": "STORY_CUSTOM_ROLES",
+            "type": "story",
+            "title": "Custom roles per organization",
+            "body": "Allow organizations to define custom roles with granular permissions.",
+            "labels": ["story", "backend", "future"],
+            "acceptanceCriteria": [
+              "Custom roles are scoped to an organization",
+              "Admins can map permissions to modules",
+              "Custom roles cannot exceed system security boundaries"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_USER_ONBOARDING",
+        "type": "feature",
+        "title": "User Onboarding & Identity Management",
+        "body": "Support flexible onboarding flows for all user types with accurate identity mapping.",
+        "labels": ["feature", "identity"],
+        "stories": [
+          {
+            "id": "STORY_MANUAL_USER_CREATE",
+            "type": "story",
+            "title": "Manual user creation",
+            "body": "Allow admins to manually create users and assign roles.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "Users can be created with role and branch mapping",
+              "Email is mandatory and unique per organization",
+              "Inactive users cannot log in"
+            ]
+          },
+          {
+            "id": "STORY_BULK_USER_ONBOARD",
+            "type": "story",
+            "title": "Bulk user onboarding via CSV",
+            "body": "Enable bulk creation of users using CSV uploads.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "CSV templates available per user type",
+              "Invalid rows are reported with error details",
+              "Bulk uploads are idempotent",
+              "Partial failures do not corrupt valid records"
+            ]
+          },
+          {
+            "id": "STORY_PARENT_STUDENT_LINK",
+            "type": "story",
+            "title": "Parent-student linking",
+            "body": "Link parents to one or more students.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "A parent can be linked to multiple students",
+              "Parents can view only linked students",
+              "Linking changes are audit logged"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_AUTH_SECURITY",
+        "type": "feature",
+        "title": "Authentication, Security & Auditing",
+        "body": "Ensure secure authentication, access control, and full auditability.",
+        "labels": ["feature", "security", "audit"],
+        "stories": [
+          {
+            "id": "STORY_AUTH_EMAIL",
+            "type": "story",
+            "title": "Email-based authentication",
+            "body": "Authenticate users using email and password.",
+            "labels": ["story", "backend", "security"],
+            "acceptanceCriteria": [
+              "Users authenticate using email and password",
+              "Password reset supported via email",
+              "Passwords are securely hashed",
+              "JWT tokens issued on successful login"
+            ]
+          },
+          {
+            "id": "STORY_ADMIN_SECURITY",
+            "type": "story",
+            "title": "Admin security controls",
+            "body": "Provide enhanced security for administrative users.",
+            "labels": ["story", "security"],
+            "acceptanceCriteria": [
+              "Optional 2FA available for admins",
+              "Admins can disable student logins at organization level",
+              "Concurrent session policies enforced"
+            ]
+          },
+          {
+            "id": "STORY_USER_AUDIT_LOG",
+            "type": "story",
+            "title": "User activity audit logs",
+            "body": "Maintain immutable logs of critical user actions.",
+            "labels": ["story", "backend", "audit"],
+            "acceptanceCriteria": [
+              "Login history recorded with timestamp and device details",
+              "Role and permission changes are logged",
+              "Critical CRUD actions are audit logged",
+              "Audit logs are immutable"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_USER_MGMT_NFR",
+        "type": "feature",
+        "title": "User Management Non-Functional Requirements",
+        "body": "Ensure scalability, performance, and security for user management.",
+        "labels": ["feature", "non-functional"],
+        "stories": [
+          {
+            "id": "STORY_USER_MGMT_NFR",
+            "type": "story",
+            "title": "User management NFRs",
+            "body": "Define non-functional requirements for user management.",
+            "labels": ["story", "non-functional"],
+            "acceptanceCriteria": [
+              "Support 100,000+ users per organization",
+              "Strict tenant-level data isolation",
+              "All APIs secured via HTTPS",
+              "JWT-based authentication with expiry",
+              "Sub-200ms response time for core user queries",
+              "Offline token persistence supported for mobile apps"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

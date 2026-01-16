@@ -1,0 +1,6 @@
+1. cd .\Code\IMS\scripts\
+2. gh auth login
+3. gh auth status
+4. gh auth refresh -s read:project,project
+6. Update the req file location in github.ps1
+5. D:\Code\IMS> .\scripts\github.ps1

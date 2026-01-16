@@ -17,7 +17,7 @@
 
 # ------------- CONFIG ----------------
 $DRY_RUN = $false             # 🔁 SET TO $false TO EXECUTE FOR REAL
-$ISSUES_FILE = "./requirements/transport_req.json"
+$ISSUES_FILE = "./requirements/timetable_req.json"
 $PROJECT_NUMBER = 4          # GitHub Project v2 number
 $OWNER = "internkalamtech"   # user or org
 $REPO = "IMS"                # ⚠️ ADD YOUR REPO NAME HERE

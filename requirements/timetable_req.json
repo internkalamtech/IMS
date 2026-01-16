@@ -1,0 +1,202 @@
+{
+  "module": "Timetable Management",
+  "epic": {
+    "id": "EPIC_TIMETABLE",
+    "type": "epic",
+    "title": "Timetable Management",
+    "body": "Provides conflict-free, flexible academic scheduling with visibility for teachers, students, and parents, and controlled override mechanisms for administrators.",
+    "labels": ["epic", "timetable", "academic"],
+    "features": [
+      {
+        "id": "FEATURE_TIMETABLE_CONFIG",
+        "type": "feature",
+        "title": "Timetable Configuration",
+        "body": "Configure core entities required for timetable creation.",
+        "labels": ["feature", "timetable", "configuration"],
+        "stories": [
+          {
+            "id": "STORY_SUBJECT_CONFIG",
+            "type": "story",
+            "title": "Subject configuration",
+            "body": "Create and manage subjects used in timetables.",
+            "labels": ["story", "timetable", "backend"],
+            "acceptanceCriteria": [
+              "Subjects can be created, edited, and deactivated",
+              "Subjects are scoped to organization and branch",
+              "Subjects can be mapped to classes and teachers"
+            ]
+          },
+          {
+            "id": "STORY_TEACHER_MAPPING",
+            "type": "story",
+            "title": "Teacher-subject mapping",
+            "body": "Map teachers to subjects and classes.",
+            "labels": ["story", "timetable", "backend"],
+            "acceptanceCriteria": [
+              "Teachers can be mapped to multiple subjects",
+              "Teacher-class assignments are validated",
+              "Inactive teachers cannot be assigned"
+            ]
+          },
+          {
+            "id": "STORY_ROOM_CONFIG",
+            "type": "story",
+            "title": "Room and resource configuration",
+            "body": "Manage classrooms and other teaching resources.",
+            "labels": ["story", "timetable", "backend"],
+            "acceptanceCriteria": [
+              "Rooms can be created and managed",
+              "Room capacity can be defined",
+              "Rooms can be enabled or disabled"
+            ]
+          },
+          {
+            "id": "STORY_PERIOD_CONFIG",
+            "type": "story",
+            "title": "Period and time-slot configuration",
+            "body": "Configure periods and time slots for the academic day.",
+            "labels": ["story", "timetable", "backend"],
+            "acceptanceCriteria": [
+              "Periods can be defined per day",
+              "Time overlaps are prevented",
+              "Different schedules supported per branch"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_TIMETABLE_CREATION",
+        "type": "feature",
+        "title": "Timetable Creation & Editing",
+        "body": "Create and modify timetables with conflict detection.",
+        "labels": ["feature", "timetable", "scheduling"],
+        "stories": [
+          {
+            "id": "STORY_MANUAL_TIMETABLE",
+            "type": "story",
+            "title": "Manual timetable creation",
+            "body": "Allow admins to manually create class timetables.",
+            "labels": ["story", "timetable", "backend"],
+            "acceptanceCriteria": [
+              "Admins can assign subject, teacher, room, and period",
+              "Conflicts are detected in real time",
+              "Timetables can be saved as draft or published"
+            ]
+          },
+          {
+            "id": "STORY_AUTO_TIMETABLE",
+            "type": "story",
+            "title": "Auto-generate timetable",
+            "body": "Generate timetables automatically with basic conflict avoidance.",
+            "labels": ["story", "timetable", "backend"],
+            "acceptanceCriteria": [
+              "Auto-generation completes within 10–20 seconds",
+              "Teacher, room, and period conflicts are avoided",
+              "Generated timetable can be manually edited"
+            ]
+          },
+          {
+            "id": "STORY_TIMETABLE_EDIT",
+            "type": "story",
+            "title": "Drag-and-drop timetable editing",
+            "body": "Edit timetables using drag-and-drop interactions.",
+            "labels": ["story", "timetable", "frontend"],
+            "acceptanceCriteria": [
+              "Subjects can be moved between periods",
+              "Conflicts are highlighted visually",
+              "Changes require confirmation before save"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_TIMETABLE_VISIBILITY",
+        "type": "feature",
+        "title": "Timetable Views & Visibility",
+        "body": "Provide role-based timetable access.",
+        "labels": ["feature", "timetable", "visibility"],
+        "stories": [
+          {
+            "id": "STORY_TEACHER_TIMETABLE",
+            "type": "story",
+            "title": "Teacher timetable view",
+            "body": "Allow teachers to view their assigned timetable.",
+            "labels": ["story", "timetable", "frontend"],
+            "acceptanceCriteria": [
+              "Teachers see only their assigned periods",
+              "Daily and weekly views supported",
+              "Timetable reflects latest updates"
+            ]
+          },
+          {
+            "id": "STORY_STUDENT_PARENT_TIMETABLE",
+            "type": "story",
+            "title": "Student and parent timetable view",
+            "body": "Allow students and parents to view class timetables.",
+            "labels": ["story", "timetable", "frontend"],
+            "acceptanceCriteria": [
+              "Students see their class timetable",
+              "Parents see timetables of linked students",
+              "Read-only access enforced"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_TEACHER_SWAP",
+        "type": "feature",
+        "title": "Teacher Swap & Overrides",
+        "body": "Support teacher swap requests with approvals and audit history.",
+        "labels": ["feature", "timetable", "workflow"],
+        "stories": [
+          {
+            "id": "STORY_SWAP_REQUEST",
+            "type": "story",
+            "title": "Teacher swap request",
+            "body": "Allow teachers to request swaps for assigned periods.",
+            "labels": ["story", "timetable", "backend"],
+            "acceptanceCriteria": [
+              "Teachers can request swaps for future periods",
+              "Swap request includes reason",
+              "Requested teacher must be eligible"
+            ]
+          },
+          {
+            "id": "STORY_SWAP_APPROVAL",
+            "type": "story",
+            "title": "Swap approval workflow",
+            "body": "Allow admins to approve or reject swap requests.",
+            "labels": ["story", "timetable", "backend"],
+            "acceptanceCriteria": [
+              "Approvers can approve or reject swaps",
+              "Approved swaps update timetable automatically",
+              "All swap actions are audit logged"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_TIMETABLE_NFR",
+        "type": "feature",
+        "title": "Timetable Non-Functional Requirements",
+        "body": "Ensure performance, accuracy, and reliability of timetable operations.",
+        "labels": ["feature", "timetable", "non-functional"],
+        "stories": [
+          {
+            "id": "STORY_TIMETABLE_NFR",
+            "type": "story",
+            "title": "Timetable system NFRs",
+            "body": "Define non-functional requirements for timetable management.",
+            "labels": ["story", "timetable", "non-functional"],
+            "acceptanceCriteria": [
+              "Auto-generation completes within 10–20 seconds",
+              "99% conflict detection accuracy",
+              "Optimized read-heavy timetable storage",
+              "Timetable reads respond within 200ms"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
