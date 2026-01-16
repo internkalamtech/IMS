@@ -1,0 +1,504 @@
+{
+    "module": "Assessments & Examinations",
+    "epic": {
+        "id": "EPIC_ASSESSMENTS",
+        "type": "epic",
+        "title": "Assessments & Examinations Module",
+        "body": "Provides a unified system for managing offline and online assessments, exam scheduling, grading, result publication, analytics, and report cards across multi-organization and multi-branch institutions.",
+        "labels": [
+            "epic",
+            "assessments",
+            "academics"
+        ],
+        "features": [
+            {
+                "id": "FEATURE_EXAM_CONFIGURATION",
+                "type": "feature",
+                "title": "Assessment & Exam Configuration",
+                "body": "Configure different types of assessments such as term exams, unit tests, assignments, and online tests with flexible rules per organization.",
+                "labels": [
+                    "feature",
+                    "exam-config"
+                ],
+                "stories": [
+                    {
+                        "id": "STORY_EXAM_TYPE_BACKEND",
+                        "type": "story",
+                        "title": "Create and manage assessment types (backend)",
+                        "body": "Persist assessment types and rules scoped to organization and academic year.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Assessment types are scoped to organization and academic year",
+                            "Supports exam categories: term, unit, assignment, online",
+                            "Each type supports max marks, passing marks, and weightage",
+                            "Deactivating a type does not affect historical results"
+                        ]
+                    },
+                    {
+                        "id": "STORY_EXAM_TYPE_FRONTEND",
+                        "type": "story",
+                        "title": "Configure assessment types (frontend)",
+                        "body": "Allow admins to define and manage assessment types via UI.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Admin can create, edit, and deactivate assessment types",
+                            "Form validation prevents invalid marks or weightage",
+                            "Only authorized roles can access configuration screens"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "FEATURE_EXAM_SCHEDULING",
+                "type": "feature",
+                "title": "Exam Scheduling & Calendar",
+                "body": "Schedule exams and assessments with subject-wise timelines and visibility via academic calendars.",
+                "labels": [
+                    "feature",
+                    "scheduling"
+                ],
+                "stories": [
+                    {
+                        "id": "STORY_EXAM_SCHEDULE_BACKEND",
+                        "type": "story",
+                        "title": "Schedule exams (backend)",
+                        "body": "Store and validate exam schedules mapped to class, subject, and assessment type.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Exams are linked to class, section, subject, and assessment type",
+                            "Prevents overlapping exams for the same class and time",
+                            "Supports offline and online exam modes"
+                        ]
+                    },
+                    {
+                        "id": "STORY_EXAM_SCHEDULE_FRONTEND",
+                        "type": "story",
+                        "title": "Manage exam calendar (frontend)",
+                        "body": "Display exams in calendar and list views for admins, teachers, students, and parents.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Calendar shows exams by date and class",
+                            "Students and parents have read-only access",
+                            "Teachers see exams only for assigned subjects"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "FEATURE_MARKS_ENTRY",
+                "type": "feature",
+                "title": "Marks Entry & Evaluation",
+                "body": "Enable teachers to enter and manage marks through bulk upload and manual entry with validation.",
+                "labels": [
+                    "feature",
+                    "marks"
+                ],
+                "stories": [
+                    {
+                        "id": "STORY_MARKS_ENTRY_BACKEND",
+                        "type": "story",
+                        "title": "Store and validate marks (backend)",
+                        "body": "Persist student marks with validation and auditability.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Marks cannot exceed maximum configured marks",
+                            "Supports bulk upload via API",
+                            "Tracks who entered or modified marks and when"
+                        ]
+                    },
+                    {
+                        "id": "STORY_MARKS_ENTRY_FRONTEND",
+                        "type": "story",
+                        "title": "Enter marks manually and in bulk (frontend)",
+                        "body": "Provide UI for manual and bulk marks entry by teachers.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Teachers can enter marks per subject and exam",
+                            "Bulk upload errors are clearly highlighted",
+                            "Draft marks can be saved before final submission"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "FEATURE_GRADING_SYSTEM",
+                "type": "feature",
+                "title": "Custom Grading System",
+                "body": "Support organization-specific grading systems such as marks-based, grade-based, or hybrid models.",
+                "labels": [
+                    "feature",
+                    "grading"
+                ],
+                "stories": [
+                    {
+                        "id": "STORY_GRADING_BACKEND",
+                        "type": "story",
+                        "title": "Configure grading schemes (backend)",
+                        "body": "Persist grading rules and grade mappings per organization.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Supports grade ranges (e.g., A+, A, B)",
+                            "Grading schemes are versioned per academic year",
+                            "Changing scheme does not alter past results"
+                        ]
+                    },
+                    {
+                        "id": "STORY_GRADING_FRONTEND",
+                        "type": "story",
+                        "title": "Manage grading schemes (frontend)",
+                        "body": "Allow admins to define grading systems via UI.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Admin can preview grade mappings",
+                            "Validation prevents overlapping grade ranges",
+                            "Only one active grading scheme per academic year"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "FEATURE_ONLINE_EXAMS",
+                "type": "feature",
+                "title": "Online MCQ-Based Examinations",
+                "body": "Conduct online MCQ exams with automatic evaluation and result calculation.",
+                "labels": [
+                    "feature",
+                    "online-exam"
+                ],
+                "stories": [
+                    {
+                        "id": "STORY_ONLINE_EXAM_ENGINE",
+                        "type": "story",
+                        "title": "Online exam execution and auto-evaluation (backend)",
+                        "body": "Deliver MCQ exams, capture responses, and auto-evaluate results.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Supports timed exams with auto-submit",
+                            "Auto-evaluates MCQs immediately after submission",
+                            "Soft-limits concurrent users if infra threshold is reached"
+                        ]
+                    },
+                    {
+                        "id": "STORY_ONLINE_EXAM_UI",
+                        "type": "story",
+                        "title": "Attempt online exams (frontend)",
+                        "body": "Allow students to take MCQ exams with stable UX.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Shows remaining time clearly",
+                            "Prevents navigating away without warning",
+                            "Auto-submits on timeout or network failure"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "FEATURE_RESULTS_ACCESS",
+                "type": "feature",
+                "title": "Results Publishing & Access",
+                "body": "Publish results and allow controlled access for students and parents.",
+                "labels": [
+                    "feature",
+                    "results"
+                ],
+                "stories": [
+                    {
+                        "id": "STORY_RESULT_PUBLISH_BACKEND",
+                        "type": "story",
+                        "title": "Publish and lock results (backend)",
+                        "body": "Control result visibility and immutability after publication.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Results are invisible until explicitly published",
+                            "Published results cannot be edited without admin override",
+                            "Access is role-based (student, parent, teacher)"
+                        ]
+                    },
+                    {
+                        "id": "STORY_RESULT_VIEW_FRONTEND",
+                        "type": "story",
+                        "title": "View results (frontend)",
+                        "body": "Display exam results to students and parents.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Students see only their own results",
+                            "Parents see results of linked children",
+                            "Grades and marks are clearly explained"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "FEATURE_REPORT_CARDS",
+                "type": "feature",
+                "title": "Automated Report Card Generation",
+                "body": "Generate downloadable report cards based on configured grading and assessments.",
+                "labels": [
+                    "feature",
+                    "report-card"
+                ],
+                "stories": [
+                    {
+                        "id": "STORY_REPORT_CARD_BACKEND",
+                        "type": "story",
+                        "title": "Generate report cards (backend)",
+                        "body": "Generate PDF report cards per student.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "PDF is generated within 3 seconds per student",
+                            "Includes grades, marks, and overall performance",
+                            "Supports regeneration without data duplication"
+                        ]
+                    },
+                    {
+                        "id": "STORY_REPORT_CARD_FRONTEND",
+                        "type": "story",
+                        "title": "Download report cards (frontend)",
+                        "body": "Allow authorized users to download report cards.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Admins can bulk download report cards",
+                            "Students and parents can download individual PDFs",
+                            "UI shows generation progress clearly"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "FEATURE_ANALYTICS",
+                "type": "feature",
+                "title": "Performance Analytics & Comparisons",
+                "body": "Provide insights into student, class, and subject performance.",
+                "labels": [
+                    "feature",
+                    "analytics"
+                ],
+                "stories": [
+                    {
+                        "id": "STORY_ANALYTICS_BACKEND",
+                        "type": "story",
+                        "title": "Compute performance analytics (backend)",
+                        "body": "Aggregate and compute performance metrics.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Supports student-wise and class-wise comparisons",
+                            "Analytics queries are optimized for large datasets",
+                            "Historical data remains immutable"
+                        ]
+                    },
+                    {
+                        "id": "STORY_ANALYTICS_FRONTEND",
+                        "type": "story",
+                        "title": "View analytics dashboards (frontend)",
+                        "body": "Display charts and summaries for authorized users.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Teachers see subject-level analytics",
+                            "Admins see institution-level comparisons",
+                            "Charts load within acceptable response times"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "FEATURE_ASSESSMENT_NFR",
+                "type": "feature",
+                "title": "Non-Functional Requirements",
+                "body": "Ensure performance, scalability, and reliability of the assessments module.",
+                "labels": [
+                    "feature",
+                    "nfr"
+                ],
+                "stories": [
+                    {
+                        "id": "STORY_ASSESSMENT_NFR",
+                        "type": "story",
+                        "title": "Assessments performance and scalability",
+                        "body": "Meet non-functional market requirements for assessments.",
+                        "labels": [
+                            "story",
+                            "nfr"
+                        ],
+                        "acceptanceCriteria": [
+                            "Supports up to 5,000 concurrent online test takers",
+                            "Bulk marks entry APIs are optimized for large uploads",
+                            "System degrades gracefully under peak load"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "FEATURE_ONLINE_EXAM_DEFINITION",
+                "type": "feature",
+                "title": "Online Exam Definition & Question Bank",
+                "body": "Define question banks, questions, and online exam configurations used to deliver MCQ-based online assessments.",
+                "labels": [
+                    "feature",
+                    "online-exam",
+                    "question-bank"
+                ],
+                "stories": [
+                    {
+                        "id": "STORY_QUESTION_BANK_BACKEND",
+                        "type": "story",
+                        "title": "Manage question banks (backend)",
+                        "body": "Persist and manage question banks scoped to organization, subject, and academic year.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Question banks are scoped to organization and academic year",
+                            "Each question bank is linked to a subject",
+                            "Inactive question banks cannot be used in new exams",
+                            "Existing exams remain unaffected if a question bank is modified"
+                        ]
+                    },
+                    {
+                        "id": "STORY_QUESTION_BANK_FRONTEND",
+                        "type": "story",
+                        "title": "Create and manage question banks (frontend)",
+                        "body": "Allow teachers and admins to create and organize question banks.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Teachers can create and edit question banks for assigned subjects",
+                            "Admins can view and manage all question banks",
+                            "UI clearly shows active vs inactive question banks"
+                        ]
+                    },
+                    {
+                        "id": "STORY_QUESTION_MANAGEMENT_BACKEND",
+                        "type": "story",
+                        "title": "Create and manage questions (backend)",
+                        "body": "Persist questions and answers with validation and versioning.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Supports MCQ questions with 2–5 options",
+                            "Each question has one correct answer",
+                            "Questions support difficulty level (easy, medium, hard)",
+                            "Editing a question does not affect published exams"
+                        ]
+                    },
+                    {
+                        "id": "STORY_QUESTION_MANAGEMENT_FRONTEND",
+                        "type": "story",
+                        "title": "Author questions and answers (frontend)",
+                        "body": "Provide UI for teachers to author MCQ questions.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Teachers can add, edit, and delete questions",
+                            "Correct answer must be explicitly selected",
+                            "Form validation prevents incomplete questions",
+                            "Questions can be previewed before saving"
+                        ]
+                    },
+                    {
+                        "id": "STORY_ONLINE_EXAM_DEFINITION_BACKEND",
+                        "type": "story",
+                        "title": "Define online exams (backend)",
+                        "body": "Persist online exam configurations using selected question banks.",
+                        "labels": [
+                            "story",
+                            "backend"
+                        ],
+                        "acceptanceCriteria": [
+                            "Online exams are linked to assessment type and subject",
+                            "Supports fixed or random question selection",
+                            "Exam configuration includes duration and total marks",
+                            "Once published, exam definition becomes immutable"
+                        ]
+                    },
+                    {
+                        "id": "STORY_ONLINE_EXAM_DEFINITION_FRONTEND",
+                        "type": "story",
+                        "title": "Configure online exams (frontend)",
+                        "body": "Allow admins or teachers to configure online exams via UI.",
+                        "labels": [
+                            "story",
+                            "frontend"
+                        ],
+                        "acceptanceCriteria": [
+                            "User can select question banks and number of questions",
+                            "UI shows computed total marks before publishing",
+                            "Exam can be saved as draft before publishing",
+                            "Only authorized roles can publish exams"
+                        ]
+                    },
+                    {
+                        "id": "STORY_ONLINE_EXAM_SECURITY_NFR",
+                        "type": "story",
+                        "title": "Online exam integrity and safety",
+                        "body": "Ensure integrity and basic security for online exams.",
+                        "labels": [
+                            "story",
+                            "nfr"
+                        ],
+                        "acceptanceCriteria": [
+                            "Each student receives a unique question order",
+                            "Exam access is restricted to scheduled time window",
+                            "Students cannot reattempt once submitted",
+                            "Basic anti-refresh and session validation is enforced"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

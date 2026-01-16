@@ -1,0 +1,286 @@
+{
+  "module": "Finance & Fee Management",
+  "epic": {
+    "id": "EPIC_FINANCE",
+    "type": "epic",
+    "title": "Finance & Fee Management Module",
+    "body": "Handles all fee configuration, invoicing, collection, tracking, reconciliation, and reporting across multi-organization and multi-branch institutes with accuracy, auditability, and scalability.",
+    "labels": ["epic", "finance"],
+    "features": [
+
+      {
+        "id": "FEATURE_FEE_CONFIG",
+        "type": "feature",
+        "title": "Fee Configuration",
+        "body": "Define and manage fee structures, fee heads, discounts, and concessions across organizations, branches, classes, and academic periods.",
+        "labels": ["feature", "finance"],
+        "stories": [
+          {
+            "id": "STORY_FEE_STRUCTURE_BACKEND",
+            "type": "story",
+            "title": "Define fee structures (backend)",
+            "body": "Persist and validate fee structures mapped to org, branch, class, and academic period.",
+            "labels": ["story", "finance", "backend"],
+            "acceptanceCriteria": [
+              "Fee structures are scoped to org and branch",
+              "Supports one-time and recurring fee heads",
+              "Editing structure does not affect generated invoices"
+            ]
+          },
+          {
+            "id": "STORY_FEE_STRUCTURE_UI",
+            "type": "story",
+            "title": "Manage fee structures (frontend)",
+            "body": "Provide UI for admins to create, edit, and view fee structures.",
+            "labels": ["story", "finance", "frontend"],
+            "acceptanceCriteria": [
+              "Admins can create and edit fee structures via UI",
+              "Validation errors are shown inline",
+              "Only authorized roles can access configuration screens"
+            ]
+          },
+          {
+            "id": "STORY_DISCOUNTS",
+            "type": "story",
+            "title": "Configure discounts and concessions",
+            "body": "Support configurable discounts applied at student or category level.",
+            "labels": ["story", "finance", "backend"],
+            "acceptanceCriteria": [
+              "Supports flat and percentage discounts",
+              "Discounts can be student-specific or category-based",
+              "All discount changes are audit logged"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_INVOICING",
+        "type": "feature",
+        "title": "Invoice Generation & Management",
+        "body": "Generate, manage, and track fee invoices derived from configured fee structures.",
+        "labels": ["feature", "finance"],
+        "stories": [
+          {
+            "id": "STORY_INVOICE_GENERATION",
+            "type": "story",
+            "title": "Generate invoices from fee structures",
+            "body": "Automatically generate invoices per student and academic period.",
+            "labels": ["story", "finance", "backend"],
+            "acceptanceCriteria": [
+              "Invoices generated per student and fee period",
+              "Invoice amount reflects discounts and concessions",
+              "Duplicate invoice generation is prevented"
+            ]
+          },
+          {
+            "id": "STORY_INVOICE_VIEW_UI",
+            "type": "story",
+            "title": "View invoices (frontend)",
+            "body": "Allow admins, parents, and students to view invoices.",
+            "labels": ["story", "finance", "frontend"],
+            "acceptanceCriteria": [
+              "Invoice list visible based on role",
+              "Invoice status clearly displayed",
+              "Invoice totals match backend calculations"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_FEE_COLLECTION",
+        "type": "feature",
+        "title": "Fee Collection & Payments",
+        "body": "Record and manage fee payments with strong validation and future online gateway support.",
+        "labels": ["feature", "finance"],
+        "stories": [
+          {
+            "id": "STORY_MANUAL_PAYMENT_BACKEND",
+            "type": "story",
+            "title": "Record manual fee payments (backend)",
+            "body": "Persist and validate manual payment entries.",
+            "labels": ["story", "finance", "backend"],
+            "acceptanceCriteria": [
+              "Supports cash, bank transfer, and cheque",
+              "Payments are idempotent",
+              "Balance updates atomically"
+            ]
+          },
+          {
+            "id": "STORY_MANUAL_PAYMENT_UI",
+            "type": "story",
+            "title": "Record manual fee payments (frontend)",
+            "body": "Provide UI for accountants to record payments.",
+            "labels": ["story", "finance", "frontend"],
+            "acceptanceCriteria": [
+              "Payment entry form validates inputs",
+              "Outstanding balance shown before submission",
+              "Confirmation shown after successful save"
+            ]
+          },
+          {
+            "id": "STORY_GATEWAY_PLACEHOLDER",
+            "type": "story",
+            "title": "Online payment gateway placeholder",
+            "body": "Introduce a placeholder for future online gateway integration.",
+            "labels": ["story", "finance", "architecture"],
+            "acceptanceCriteria": [
+              "Payments can be marked as online (future)",
+              "No real external calls made",
+              "Gateway can be integrated without refactor"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_LEDGER_RECEIPT",
+        "type": "feature",
+        "title": "Student Ledger & Receipts",
+        "body": "Maintain immutable financial history and proof of payment.",
+        "labels": ["feature", "finance"],
+        "stories": [
+          {
+            "id": "STORY_LEDGER",
+            "type": "story",
+            "title": "Maintain student-wise ledger",
+            "body": "Maintain a chronological, immutable ledger per student.",
+            "labels": ["story", "finance", "backend"],
+            "acceptanceCriteria": [
+              "Ledger includes invoices, payments, discounts",
+              "Running balance always correct",
+              "Ledger entries are immutable"
+            ]
+          },
+          {
+            "id": "STORY_LEDGER_UI",
+            "type": "story",
+            "title": "View student ledger (frontend)",
+            "body": "Provide UI to view student ledger.",
+            "labels": ["story", "finance", "frontend"],
+            "acceptanceCriteria": [
+              "Ledger sorted chronologically",
+              "Totals visible at bottom",
+              "Access restricted by role"
+            ]
+          },
+          {
+            "id": "STORY_RECEIPTS",
+            "type": "story",
+            "title": "Generate and manage receipts",
+            "body": "Generate PDF receipts and support uploads.",
+            "labels": ["story", "finance", "backend"],
+            "acceptanceCriteria": [
+              "PDF receipt generated per payment",
+              "Uploaded receipts linked to payment",
+              "Receipts immutable once finalized"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_REMINDERS",
+        "type": "feature",
+        "title": "Fee Reminders & Communication",
+        "body": "Notify parents and students about fee dues and payments.",
+        "labels": ["feature", "finance", "notification"],
+        "stories": [
+          {
+            "id": "STORY_AUTO_REMINDERS",
+            "type": "story",
+            "title": "Automated fee reminders",
+            "body": "Automatically send reminders based on due dates.",
+            "labels": ["story", "finance", "backend", "notification"],
+            "acceptanceCriteria": [
+              "Triggers based on due dates",
+              "Schedules configurable per org",
+              "Reminder logs stored"
+            ]
+          },
+          {
+            "id": "STORY_MANUAL_REMINDERS",
+            "type": "story",
+            "title": "Manual fee reminders",
+            "body": "Allow admins to manually trigger reminders.",
+            "labels": ["story", "finance", "backend", "notification"],
+            "acceptanceCriteria": [
+              "Admins select recipients",
+              "Message content editable",
+              "Manual sends audit logged"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_REPORTING",
+        "type": "feature",
+        "title": "Financial Reporting",
+        "body": "Provide financial visibility for management and audits.",
+        "labels": ["feature", "finance", "reporting"],
+        "stories": [
+          {
+            "id": "STORY_REPORTS",
+            "type": "story",
+            "title": "Generate financial reports",
+            "body": "Generate collections, dues, and discount reports.",
+            "labels": ["story", "finance", "backend", "reporting"],
+            "acceptanceCriteria": [
+              "Reports filterable by org, branch, class, date",
+              "CSV and PDF export supported",
+              "Report totals match ledgers"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_FINANCIAL_NFR",
+        "type": "feature",
+        "title": "Financial Integrity & Non-Functional Requirements",
+        "body": "Ensure correctness, performance, scalability, and auditability.",
+        "labels": ["feature", "finance", "non-functional"],
+        "stories": [
+          {
+            "id": "STORY_ATOMICITY",
+            "type": "story",
+            "title": "Ensure atomic financial operations",
+            "body": "Guarantee atomic execution of all financial transactions.",
+            "labels": ["story", "finance", "backend", "non-functional"],
+            "acceptanceCriteria": [
+              "All writes are transactional",
+              "No partial updates allowed",
+              "Concurrent updates handled safely"
+            ]
+          },
+          {
+            "id": "STORY_AUDIT_LOG",
+            "type": "story",
+            "title": "Audit logging for finance operations",
+            "body": "Capture audit logs for all finance changes.",
+            "labels": ["story", "finance", "backend", "non-functional"],
+            "acceptanceCriteria": [
+              "All financial mutations logged",
+              "Logs include actor, timestamp, old and new values",
+              "Logs are immutable"
+            ]
+          },
+          {
+            "id": "STORY_ACCURACY",
+            "type": "story",
+            "title": "Ensure calculation accuracy",
+            "body": "Ensure 100% accuracy in all financial calculations.",
+            "labels": ["story", "finance", "backend", "non-functional"],
+            "acceptanceCriteria": [
+              "No floating-point rounding errors",
+              "All totals derived from ledger",
+              "Automated validation checks exist"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
