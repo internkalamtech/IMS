@@ -1,0 +1,255 @@
+{
+  "module": "Transportation Management",
+  "epic": {
+    "id": "EPIC_TRANSPORT",
+    "type": "epic",
+    "title": "Transportation Management Module",
+    "body": "Manage institutional transportation operations including vehicles, drivers, routes, student mapping, trip-based attendance, notifications, and compliance with offline-first and scalability requirements.",
+    "labels": ["epic", "transport"],
+    "features": [
+
+      {
+        "id": "FEATURE_VEHICLE_DRIVER_MGMT",
+        "type": "feature",
+        "title": "Vehicle and Driver Management",
+        "body": "Register, manage, and monitor vehicles, drivers, and attenders with compliance tracking and assignment controls.",
+        "labels": ["feature", "transport"],
+        "stories": [
+
+          {
+            "id": "STORY_VEHICLE_BACKEND",
+            "type": "story",
+            "title": "Manage vehicles (backend)",
+            "body": "Persist vehicle details and availability across organizations and branches.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "Vehicles are scoped to organization and branch",
+              "Vehicle record includes registration number, capacity, type, status",
+              "Inactive vehicles cannot be assigned to routes",
+              "System supports at least 300 vehicles per organization"
+            ]
+          },
+
+          {
+            "id": "STORY_VEHICLE_FRONTEND",
+            "type": "story",
+            "title": "Manage vehicles (admin UI)",
+            "body": "Provide UI for admins to add, edit, deactivate, and view vehicles.",
+            "labels": ["story", "frontend"],
+            "acceptanceCriteria": [
+              "Admin can create and edit vehicle records",
+              "Vehicle list supports search and filtering by status",
+              "Capacity and assignment status are visible",
+              "Validation errors are shown inline"
+            ]
+          },
+
+          {
+            "id": "STORY_DRIVER_BACKEND",
+            "type": "story",
+            "title": "Manage drivers and attenders (backend)",
+            "body": "Persist driver and attender profiles with document tracking.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "Driver profile includes license, phone, assigned vehicle",
+              "Document expiry dates are stored",
+              "Inactive drivers cannot be assigned to trips"
+            ]
+          },
+
+          {
+            "id": "STORY_DRIVER_EXPIRY_ALERTS",
+            "type": "story",
+            "title": "Driver document expiry alerts",
+            "body": "Notify admins before driver document expiration.",
+            "labels": ["story", "backend", "notifications"],
+            "acceptanceCriteria": [
+              "System checks expiries daily",
+              "Alerts trigger at configurable thresholds (e.g. 30 days)",
+              "Expired drivers are flagged in UI"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_ROUTE_STOP_MGMT",
+        "type": "feature",
+        "title": "Route and Stop Configuration",
+        "body": "Define transport routes and stops with sequencing and capacity awareness.",
+        "labels": ["feature", "transport"],
+        "stories": [
+
+          {
+            "id": "STORY_ROUTE_BACKEND",
+            "type": "story",
+            "title": "Configure routes (backend)",
+            "body": "Persist route definitions and stop sequences.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "Routes are scoped to branch",
+              "Each route supports ordered stops",
+              "Routes can be activated or deactivated"
+            ]
+          },
+
+          {
+            "id": "STORY_ROUTE_FRONTEND",
+            "type": "story",
+            "title": "Configure routes (admin UI)",
+            "body": "Allow admins to define and manage routes and stops.",
+            "labels": ["story", "frontend"],
+            "acceptanceCriteria": [
+              "Admin can add, reorder, and remove stops",
+              "Route capacity is visible",
+              "Validation prevents duplicate stop names in same route"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_STUDENT_ROUTE_MAPPING",
+        "type": "feature",
+        "title": "Student to Route Mapping with Approvals",
+        "body": "Map students to routes and stops with approval workflows.",
+        "labels": ["feature", "transport"],
+        "stories": [
+
+          {
+            "id": "STORY_MAPPING_BACKEND",
+            "type": "story",
+            "title": "Student-route mapping (backend)",
+            "body": "Persist student transport assignments with approval state.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "Mapping includes route, stop, and effective date",
+              "Mapping supports pending, approved, rejected states",
+              "Capacity constraints are enforced"
+            ]
+          },
+
+          {
+            "id": "STORY_MAPPING_FRONTEND",
+            "type": "story",
+            "title": "Student-route mapping (admin UI)",
+            "body": "Allow admins to approve or reject student transport requests.",
+            "labels": ["story", "frontend"],
+            "acceptanceCriteria": [
+              "Pending requests are clearly listed",
+              "Admin can approve or reject with reason",
+              "Approved mappings are effective immediately or from configured date"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_TRIP_ATTENDANCE",
+        "type": "feature",
+        "title": "Trip-based Attendance",
+        "body": "Track student boarding and off-boarding per trip using a driver app.",
+        "labels": ["feature", "transport"],
+        "stories": [
+
+          {
+            "id": "STORY_TRIP_BACKEND",
+            "type": "story",
+            "title": "Create and manage trips (backend)",
+            "body": "Generate daily trips per route and direction.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "Trips are created per route per day",
+              "Trips support pickup and drop types",
+              "Trip status includes planned, started, completed"
+            ]
+          },
+
+          {
+            "id": "STORY_DRIVER_APP_ATTENDANCE",
+            "type": "story",
+            "title": "Mark boarding/off-boarding (driver app)",
+            "body": "Allow drivers or attenders to mark student attendance during trips.",
+            "labels": ["story", "mobile", "offline"],
+            "acceptanceCriteria": [
+              "Student list loads offline",
+              "Boarded and off-boarded actions are timestamped",
+              "Duplicate marking is prevented",
+              "Offline actions sync automatically when connectivity returns"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_PARENT_NOTIFICATIONS",
+        "type": "feature",
+        "title": "Parent Notifications",
+        "body": "Notify parents for missed boarding events.",
+        "labels": ["feature", "notifications"],
+        "stories": [
+
+          {
+            "id": "STORY_MISSED_BOARDING",
+            "type": "story",
+            "title": "Notify parents for missed boarding",
+            "body": "Trigger notifications when a student is not boarded.",
+            "labels": ["story", "backend", "notifications"],
+            "acceptanceCriteria": [
+              "Notification triggers after configurable grace period",
+              "Message includes student name and trip info",
+              "Supports push notification and SMS"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_OFFLINE_SYNC_NFR",
+        "type": "feature",
+        "title": "Offline-first and Sync (NFR)",
+        "body": "Ensure reliable offline operation and timely data sync.",
+        "labels": ["feature", "nfr"],
+        "stories": [
+
+          {
+            "id": "STORY_OFFLINE_SYNC",
+            "type": "story",
+            "title": "Offline data sync within SLA",
+            "body": "Sync driver app data reliably when connectivity is restored.",
+            "labels": ["story", "nfr"],
+            "acceptanceCriteria": [
+              "App functions fully without internet",
+              "Data syncs within 30 seconds of connectivity",
+              "Conflicts are resolved using server timestamps"
+            ]
+          }
+        ]
+      },
+
+      {
+        "id": "FEATURE_ISSUE_REPORTING",
+        "type": "feature",
+        "title": "Driver Issue Reporting (Optional)",
+        "body": "Allow drivers to report issues during trips.",
+        "labels": ["feature", "optional"],
+        "stories": [
+
+          {
+            "id": "STORY_DRIVER_ISSUES",
+            "type": "story",
+            "title": "Report issues from driver app",
+            "body": "Enable drivers to report vehicle or route issues.",
+            "labels": ["story", "mobile"],
+            "acceptanceCriteria": [
+              "Driver can submit issue with category and notes",
+              "Issues sync when online",
+              "Admins can view reported issues"
+            ]
+          }
+        ]
+      }
+
+    ]
+  }
+}
