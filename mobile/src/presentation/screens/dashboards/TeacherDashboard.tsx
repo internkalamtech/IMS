@@ -1,175 +1,252 @@
+import { DASHBOARD_CONFIG } from '@/core/config/dashboard';
+import { useTheme } from '@/core/theme/ThemeContext';
+import { QuickActionGrid } from '@/presentation/components/dashboard/QuickActionGrid';
+import { ThemedCard } from '@/presentation/components/ThemedCard';
+import { ThemedText } from '@/presentation/components/ThemedText';
+import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const { width } = Dimensions.get('window');
+
 export default function TeacherDashboard() {
-    const { user, logout } = useAuth();
-    const { data, loading, error } = useDashboard();
+    const { logout, user } = useAuth();
+    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
+    const { theme } = useTheme();
+
+    const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
+
+    const upcomingClasses = [
+        { id: 1, subject: 'Mathematics', class: 'Class 10-A', time: '09:00 AM', color: '#3b82f6' },
+        { id: 2, subject: 'Science', class: 'Class 9-B', time: '10:30 AM', color: '#10b981' },
+        { id: 3, subject: 'Physics', class: 'Class 11-A', time: '12:00 PM', color: '#a855f7' },
+    ];
+
+    const getStatValue = (label: string, defaultValue: string = '0') => {
+        return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
+    };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.welcomeText}>Hello,</Text>
-                    <Text style={styles.userName}>{user?.name}</Text>
+        <ThemedView style={styles.container}>
+            <StatusBar barStyle="light-content" />
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primaryForeground} />}
+            >
+                {/* Blue Banner Header */}
+                <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
+                    <SafeAreaView edges={['top']}>
+                        <View style={styles.headerContent}>
+                            <View>
+                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                    Hello, {user?.name?.split(' ')[0] || 'Teacher'} 👋
+                                </ThemedText>
+                                <ThemedText style={styles.subtitle} color="primaryForeground">
+                                    Your academic day at a glance
+                                </ThemedText>
+                            </View>
+                            <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
+                                <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Banner Stats */}
+                        <View style={styles.bannerStats}>
+                            <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                                <View style={styles.statIconContainer}>
+                                    <Ionicons name="people" size={24} color={theme.colors.primaryForeground} />
+                                </View>
+                                <View>
+                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Total Students', '42')}</ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">My Students</ThemedText>
+                                </View>
+                            </View>
+                            <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                                <View style={styles.statIconContainer}>
+                                    <Ionicons name="time" size={24} color={theme.colors.primaryForeground} />
+                                </View>
+                                <View>
+                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Today\'s Classes', '5')}</ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">Classes Today</ThemedText>
+                                </View>
+                            </View>
+                        </View>
+                    </SafeAreaView>
                 </View>
-                <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-                    <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
-                </TouchableOpacity>
-            </View>
 
-            <View style={styles.roleBadge}>
-                <Ionicons name="school" size={16} color="#fff" />
-                <Text style={styles.roleText}>{data?.role || 'Teacher'}</Text>
-            </View>
+                {/* Main Content */}
+                <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
+                    {/* Quick Actions */}
+                    <View style={styles.sectionHeader}>
+                        <ThemedText style={styles.sectionTitle} type="subtitle">Teacher Tools</ThemedText>
+                    </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.sectionTitle}>Daily Overview</Text>
+                    <QuickActionGrid actions={quickActions} />
 
-                {loading && !data ? (
-                    <ActivityIndicator size="large" color="#0066FF" style={{ marginTop: 40 }} />
-                ) : error ? (
-                    <Text style={styles.errorText}>{error}</Text>
-                ) : (
-                    <View style={styles.statsContainer}>
-                        {data?.stats.map((stat, index) => (
-                            <View key={index} style={[styles.statCard, { backgroundColor: '#E8F5E9' }]}>
-                                <Text style={styles.statValue}>{stat.value}</Text>
-                                <Text style={styles.statLabel}>{stat.label}</Text>
+                    {/* Upcoming Classes */}
+                    <View style={styles.sectionHeader}>
+                        <ThemedText style={styles.sectionTitle} type="subtitle">Upcoming Classes</ThemedText>
+                    </View>
+                    <ThemedCard style={styles.updatesCard} padding={0}>
+                        {upcomingClasses.map((item, index) => (
+                            <View key={item.id} style={[
+                                styles.updateItem,
+                                index !== upcomingClasses.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
+                            ]}>
+                                <View style={[styles.classColorBar, { backgroundColor: item.color }]} />
+                                <View style={styles.updateContent}>
+                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">{item.subject}</ThemedText>
+                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">{item.class}</ThemedText>
+                                </View>
+                                <View style={[styles.timeTag, { backgroundColor: theme.colors.primary + '10' }]}>
+                                    <ThemedText style={{ color: theme.colors.primary, fontSize: 12 }} type="defaultSemiBold">{item.time}</ThemedText>
+                                </View>
                             </View>
                         ))}
-                    </View>
-                )}
-
-                <View style={styles.infoBox}>
-                    <Text style={styles.infoTitle}>Intern Note:</Text>
-                    <Text style={styles.infoText}>
-                        Teacher-specific tools like Attendance, Homework, and Results should be built as separate modules.
-                    </Text>
-                    <Text style={styles.infoText}>
-                        Access these modules by passing the user token from `useAuth` to the respective remote data sources.
-                    </Text>
+                    </ThemedCard>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </ThemedView>
     );
 }
-
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F7FA',
+    },
+    scrollView: {
+        flex: 1,
     },
     scrollContent: {
-        padding: 20,
+        flexGrow: 1,
     },
-    header: {
+    banner: {
+        paddingBottom: 30,
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
+    },
+    headerContent: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
-        paddingHorizontal: 20,
-        paddingTop: 10,
-    },
-    welcomeText: {
-        fontSize: 16,
-        color: '#666',
+        paddingHorizontal: 24,
+        paddingTop: 20,
+        paddingBottom: 24,
     },
     userName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
+        fontSize: 26,
+        fontWeight: '700',
     },
-    logoutButton: {
-        padding: 8,
-        borderRadius: 12,
-        backgroundColor: '#fff',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    roleBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#43A047',
-        alignSelf: 'flex-start',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 20,
-        marginBottom: 20,
-        marginLeft: 20,
-    },
-    roleText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: 'bold',
-        marginLeft: 4,
-    },
-    statsContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        marginBottom: 24,
-    },
-    statCard: {
-        width: '48%',
-        padding: 20,
-        borderRadius: 16,
-        marginBottom: 16,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    statValue: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    statLabel: {
-        fontSize: 12,
-        color: '#666',
+    subtitle: {
+        fontSize: 15,
         marginTop: 4,
-        textAlign: 'center',
+    },
+    logoutIcon: {
+        padding: 8,
+    },
+    bannerStats: {
+        flexDirection: 'row',
+        paddingHorizontal: 20,
+        gap: 12,
+    },
+    bannerStatCard: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 20,
+        gap: 12,
+    },
+    statIconContainer: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    bannerStatValue: {
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    bannerStatTitle: {
+        fontSize: 11,
+    },
+    mainContent: {
+        flex: 1,
+        marginTop: 0,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingHorizontal: 24,
+        paddingTop: 32,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 16,
+        fontWeight: '700',
     },
-    errorText: {
-        color: '#FF3B30',
+    quickActionsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        marginBottom: 32,
+    },
+    quickActionItem: {
+        width: (width - 48 - 40) / 3,
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    quickActionIcon: {
+        width: 56,
+        height: 56,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    quickActionLabel: {
+        fontSize: 12,
         textAlign: 'center',
-        marginTop: 20,
+        fontWeight: '500',
     },
-    infoBox: {
-        backgroundColor: '#F0F4E9',
-        padding: 20,
-        borderRadius: 16,
-        borderLeftWidth: 4,
-        borderLeftColor: '#43A047',
-        marginTop: 20,
+    updatesCard: {
+        borderRadius: 24,
+        overflow: 'hidden',
+        marginBottom: 40,
     },
-    infoTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#2E7D32',
-        marginBottom: 8,
+    updateItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
     },
-    infoText: {
-        fontSize: 14,
-        color: '#445544',
-        lineHeight: 20,
-        marginBottom: 8,
+    classColorBar: {
+        width: 4,
+        height: 40,
+        borderRadius: 2,
+        marginRight: 16,
+    },
+    updateContent: {
+        flex: 1,
+    },
+    updateTitle: {
+        fontSize: 15,
+        marginBottom: 2,
+    },
+    updateSubtitle: {
+        fontSize: 13,
+    },
+    timeTag: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
     },
 });
-

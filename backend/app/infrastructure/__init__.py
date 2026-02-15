@@ -1,5 +1,5 @@
 """Infrastructure layer - external concerns and implementations."""
 
-from app.infrastructure.repositories import InMemoryAuthRepository
+from app.infrastructure.repositories import DatabaseAuthRepository
 
-__all__ = ["InMemoryAuthRepository"]
+__all__ = ["DatabaseAuthRepository"]

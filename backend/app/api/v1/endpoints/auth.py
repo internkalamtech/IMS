@@ -211,12 +211,13 @@ async def get_demo_credentials(
 
         for user in users:
             role_name = user.role.lower()
+            email_prefix = user.email.split("@")[0]
             credentials.append(
                 DemoCredential(
                     role=user.role.capitalize(),
                     icon=icon_map.get(role_name, "person"),
                     email=user.email,
-                    password=f"{role_name}123",
+                    password=f"{email_prefix}123",
                     description="Transport Roles" if role_name in transport_roles else "Core Roles"
                 )
             )

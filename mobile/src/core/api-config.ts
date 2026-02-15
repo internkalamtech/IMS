@@ -42,6 +42,24 @@ export const getApiBaseUrl = (): string => {
             return url;
         }
 
+        // Detect if we are using an Expo tunnel (ngrok, expo.direct)
+        const isTunnel = hostUri.includes('ngrok.io') || hostUri.includes('expo.direct');
+
+        if (isTunnel) {
+            // In tunnel mode, the hostUri DOES NOT correspond to the backend IP.
+            // We must use the local IP if on the same network, or configuredUrl if provided.
+            if (configuredUrl) {
+                Logger.debug(`[Config] Tunnel detected, using configured API URL: ${configuredUrl}`);
+                return configuredUrl;
+            }
+
+            // Note: We can't easily auto-detect the local IP here without hostUri,
+            // so we warn the user and use a likely local IP or localhost.
+            const url = 'http://localhost:8000/api/v1';
+            Logger.warn(`[Config] Tunnel detected. hostUri is ${hostUri}. Automatic backend detection may fail. Please set EXPO_PUBLIC_API_URL in .env if you get Network Errors.`);
+            return url;
+        }
+
         // Get the IP from hostUri (e.g., "192.168.1.5:8081" -> "192.168.1.5")
         const hostIp = hostUri.split(':')[0];
         const dynamicUrl = `http://${hostIp}:8000/api/v1`;

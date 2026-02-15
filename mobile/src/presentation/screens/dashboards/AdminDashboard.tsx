@@ -1,180 +1,267 @@
+import { DASHBOARD_CONFIG } from '@/core/config/dashboard';
+import { useTheme } from '@/core/theme/ThemeContext';
+import { QuickActionGrid } from '@/presentation/components/dashboard/QuickActionGrid';
+import { ThemedCard } from '@/presentation/components/ThemedCard';
+import { ThemedText } from '@/presentation/components/ThemedText';
+import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const { width } = Dimensions.get('window');
+
 export default function AdminDashboard() {
-    const { user, logout } = useAuth();
-    const { data, loading, error, refresh } = useDashboard();
+    const { logout, user } = useAuth();
+    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
+    const { theme, isDark } = useTheme();
+
+    const quickActions = DASHBOARD_CONFIG.admin.quickActions;
+
+    const getStatValue = (label: string, defaultValue: string = '0') => {
+        return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
+    };
+
+    const stats = [
+        { title: 'Total Students', value: getStatValue('Total Students'), icon: 'people', color: '#fff' },
+        { title: 'Total Teachers', value: getStatValue('Total Teachers'), icon: 'school', color: '#fff' },
+    ];
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.welcomeText}>Welcome back,</Text>
-                    <Text style={styles.userName}>{user?.name}</Text>
-                </View>
-                <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-                    <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.roleBadge}>
-                <Ionicons name="shield-checkmark" size={16} color="#fff" />
-                <Text style={styles.roleText}>{data?.role || 'Branch Admin'}</Text>
-            </View>
-
+        <ThemedView style={styles.container}>
+            <StatusBar barStyle={isDark ? "light-content" : "light-content"} />
             <ScrollView
+                style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
-                refreshControl={
-                    <ActivityIndicator animating={loading} />
-                }
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
             >
-                <Text style={styles.sectionTitle}>Overview (From Server)</Text>
+                {/* Blue Banner Header */}
+                <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
+                    <SafeAreaView edges={['top']}>
+                        <View style={styles.headerContent}>
+                            <View>
+                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                    {user?.name || 'Admin'}
+                                </ThemedText>
+                                <ThemedText style={styles.subtitle} color="primaryForeground">
+                                    Institute Management Overview
+                                </ThemedText>
+                            </View>
+                            <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
+                                <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
+                            </TouchableOpacity>
+                        </View>
 
-                {loading && !data ? (
-                    <ActivityIndicator size="large" color="#0066FF" style={{ marginTop: 40 }} />
-                ) : error ? (
-                    <Text style={styles.errorText}>{error}</Text>
-                ) : (
-                    <View style={styles.statsContainer}>
-                        {data?.stats.map((stat, index) => (
-                            <View key={index} style={[styles.statCard, { backgroundColor: index % 2 === 0 ? '#E1F5FE' : '#FFF9C4' }]}>
-                                <Text style={styles.statValue}>{stat.value}</Text>
-                                <Text style={styles.statLabel}>{stat.label}</Text>
+                        {/* Banner Stats */}
+                        <View style={styles.bannerStats}>
+                            {stats.map((stat, index) => (
+                                <View key={index} style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                                    <View style={styles.statIconContainer}>
+                                        <Ionicons name={stat.icon as any} size={24} color={theme.colors.primaryForeground} />
+                                    </View>
+                                    <View>
+                                        <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{stat.value}</ThemedText>
+                                        <ThemedText style={styles.bannerStatTitle} color="primaryForeground">{stat.title}</ThemedText>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+                    </SafeAreaView>
+                </View>
+
+                {/* Main Content */}
+                <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
+                    {/* Quick Actions */}
+                    <View style={styles.sectionHeader}>
+                        <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
+                    </View>
+
+                    <QuickActionGrid actions={quickActions} />
+
+                    {/* Recent Updates */}
+                    <View style={styles.sectionHeader}>
+                        <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
+                        <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
+                            <ThemedText style={styles.badgeText} color="primaryForeground">3 new</ThemedText>
+                        </View>
+                    </View>
+                    <ThemedCard style={styles.updatesCard} padding={0}>
+                        {[1, 2, 3].map((item, index) => (
+                            <View key={item} style={[
+                                styles.updateItem,
+                                index !== 2 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
+                            ]}>
+                                <View style={[styles.updateIcon, { backgroundColor: theme.colors.primary + '10' }]}>
+                                    <Ionicons name="people-outline" size={20} color={theme.colors.primary} />
+                                </View>
+                                <View style={styles.updateContent}>
+                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">New Student Enrolled</ThemedText>
+                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">Class 7-B • Roll 24</ThemedText>
+                                    <ThemedText style={styles.updateTime} lightColor="#999" darkColor="#aaa">2 hours ago</ThemedText>
+                                </View>
+                                <TouchableOpacity>
+                                    <ThemedText style={styles.viewLink} type="link">View →</ThemedText>
+                                </TouchableOpacity>
                             </View>
                         ))}
-                    </View>
-                )}
-
-                <View style={styles.infoBox}>
-                    <Text style={styles.infoTitle}>Intern Note:</Text>
-                    <Text style={styles.infoText}>
-                        This dashboard demonstrates how to fetch data from a server repository using a Use Case and a Domain Entity.
-                    </Text>
-                    <Text style={styles.infoText}>
-                        The "Quick Actions" and other functional modules should be implemented by following this pattern.
-                    </Text>
+                    </ThemedCard>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </ThemedView>
     );
 }
-
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F7FA',
+    },
+    scrollView: {
+        flex: 1,
     },
     scrollContent: {
-        padding: 20,
+        flexGrow: 1,
     },
-    header: {
+    banner: {
+        paddingBottom: 30,
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
+    },
+    headerContent: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
-        paddingHorizontal: 20,
-        paddingTop: 10,
-    },
-    welcomeText: {
-        fontSize: 16,
-        color: '#666',
+        paddingHorizontal: 24,
+        paddingTop: 20,
+        paddingBottom: 24,
     },
     userName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
+        fontSize: 28,
+        fontWeight: '700',
     },
-    logoutButton: {
+    subtitle: {
+        fontSize: 16,
+        marginTop: 4,
+    },
+    logoutIcon: {
         padding: 8,
-        borderRadius: 12,
-        backgroundColor: '#fff',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
     },
-    roleBadge: {
+    bannerStats: {
+        flexDirection: 'row',
+        paddingHorizontal: 20,
+        gap: 12,
+    },
+    bannerStatCard: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#0066FF',
-        alignSelf: 'flex-start',
+        padding: 16,
+        borderRadius: 20,
+        gap: 12,
+    },
+    statIconContainer: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    bannerStatValue: {
+        fontSize: 22,
+        fontWeight: '700',
+    },
+    bannerStatTitle: {
+        fontSize: 12,
+    },
+    mainContent: {
+        flex: 1,
+        marginTop: 0,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingHorizontal: 24,
+        paddingTop: 32,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    sectionTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    badge: {
+        backgroundColor: '#2563eb',
         paddingHorizontal: 10,
         paddingVertical: 4,
-        borderRadius: 20,
-        marginBottom: 20,
-        marginLeft: 20,
+        borderRadius: 12,
+        marginLeft: 12,
     },
-    roleText: {
+    badgeText: {
         color: '#fff',
         fontSize: 12,
-        fontWeight: 'bold',
-        marginLeft: 4,
+        fontWeight: '600',
     },
-    statsContainer: {
+    quickActionsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
+        marginBottom: 32,
+    },
+    quickActionItem: {
+        width: (width - 48 - 40) / 3,
+        alignItems: 'center',
         marginBottom: 24,
     },
-    statCard: {
-        width: '48%',
-        padding: 20,
+    quickActionIcon: {
+        width: 60,
+        height: 60,
         borderRadius: 16,
-        marginBottom: 16,
+        justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        marginBottom: 8,
     },
-    statValue: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    statLabel: {
+    quickActionLabel: {
         fontSize: 12,
-        color: '#666',
-        marginTop: 4,
         textAlign: 'center',
+        fontWeight: '500',
     },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 16,
+    updatesCard: {
+        borderRadius: 24,
+        overflow: 'hidden',
+        marginBottom: 40,
     },
-    errorText: {
-        color: '#FF3B30',
-        textAlign: 'center',
-        marginTop: 20,
+    updateItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
     },
-    infoBox: {
-        backgroundColor: '#F0F4FF',
-        padding: 20,
-        borderRadius: 16,
-        borderLeftWidth: 4,
-        borderLeftColor: '#0066FF',
-        marginTop: 20,
+    updateIcon: {
+        width: 48,
+        height: 48,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
     },
-    infoTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#0044AA',
-        marginBottom: 8,
+    updateContent: {
+        flex: 1,
     },
-    infoText: {
-        fontSize: 14,
-        color: '#445577',
-        lineHeight: 20,
-        marginBottom: 8,
+    updateTitle: {
+        fontSize: 15,
+        marginBottom: 2,
+    },
+    updateSubtitle: {
+        fontSize: 13,
+        marginBottom: 4,
+    },
+    updateTime: {
+        fontSize: 11,
+    },
+    viewLink: {
+        fontSize: 13,
+        fontWeight: '600',
     },
 });
-

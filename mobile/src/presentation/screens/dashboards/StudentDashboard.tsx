@@ -1,175 +1,249 @@
+import { DASHBOARD_CONFIG } from '@/core/config/dashboard';
+import { useTheme } from '@/core/theme/ThemeContext';
+import { QuickActionGrid } from '@/presentation/components/dashboard/QuickActionGrid';
+import { ThemedCard } from '@/presentation/components/ThemedCard';
+import { ThemedText } from '@/presentation/components/ThemedText';
+import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const { width } = Dimensions.get('window');
+
 export default function StudentDashboard() {
-    const { user, logout } = useAuth();
-    const { data, loading, error } = useDashboard();
+    const { logout, user } = useAuth();
+    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
+    const { theme } = useTheme();
+
+    const quickActions = DASHBOARD_CONFIG.student.quickActions;
+
+    const getStatValue = (label: string, defaultValue: string = '0') => {
+        return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
+    };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.welcomeText}>Hi,</Text>
-                    <Text style={styles.userName}>{user?.name}</Text>
+        <ThemedView style={styles.container}>
+            <StatusBar barStyle="light-content" />
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primaryForeground} />}
+            >
+                {/* Blue Banner Header */}
+                <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
+                    <SafeAreaView edges={['top']}>
+                        <View style={styles.headerContent}>
+                            <View>
+                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                    Hi, {user?.name?.split(' ')[0] || 'Student'} 👋
+                                </ThemedText>
+                                <ThemedText style={styles.subtitle} color="primaryForeground">
+                                    Ready to learn something new today?
+                                </ThemedText>
+                            </View>
+                            <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
+                                <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Banner Stats */}
+                        <View style={styles.bannerStats}>
+                            <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                                <View style={styles.statIconContainer}>
+                                    <Ionicons name="trending-up" size={24} color={theme.colors.primaryForeground} />
+                                </View>
+                                <View>
+                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Attendance', '92%')}</ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">Attendance</ThemedText>
+                                </View>
+                            </View>
+                            <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                                <View style={styles.statIconContainer}>
+                                    <Ionicons name="star" size={24} color={theme.colors.primaryForeground} />
+                                </View>
+                                <View>
+                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Avg Score', '8.5')}</ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">Avg Score</ThemedText>
+                                </View>
+                            </View>
+                        </View>
+                    </SafeAreaView>
                 </View>
-                <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-                    <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
-                </TouchableOpacity>
-            </View>
 
-            <View style={styles.roleBadge}>
-                <Ionicons name="school-outline" size={16} color="#fff" />
-                <Text style={styles.roleText}>{data?.role || 'Student'}</Text>
-            </View>
+                {/* Main Content */}
+                <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
+                    {/* Quick Actions */}
+                    <View style={styles.sectionHeader}>
+                        <ThemedText style={styles.sectionTitle} type="subtitle">Academic Zone</ThemedText>
+                    </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.sectionTitle}>My Academic Overview</Text>
+                    <QuickActionGrid actions={quickActions} />
 
-                {loading && !data ? (
-                    <ActivityIndicator size="large" color="#0066FF" style={{ marginTop: 40 }} />
-                ) : error ? (
-                    <Text style={styles.errorText}>{error}</Text>
-                ) : (
-                    <View style={styles.statsContainer}>
-                        {data?.stats.map((stat, index) => (
-                            <View key={index} style={[styles.statCard, { backgroundColor: '#F3E5F5' }]}>
-                                <Text style={styles.statValue}>{stat.value}</Text>
-                                <Text style={styles.statLabel}>{stat.label}</Text>
+                    {/* Notice Board */}
+                    <View style={styles.sectionHeader}>
+                        <ThemedText style={styles.sectionTitle} type="subtitle">Notice Board</ThemedText>
+                    </View>
+                    <ThemedCard style={styles.updatesCard} padding={0}>
+                        {[1, 2].map((item, index) => (
+                            <View key={item} style={[
+                                styles.updateItem,
+                                index !== 1 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
+                            ]}>
+                                <View style={[styles.updateIcon, { backgroundColor: '#f59e0b15' }]}>
+                                    <Ionicons name="notifications" size={20} color="#f59e0b" />
+                                </View>
+                                <View style={styles.updateContent}>
+                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">Science Fair Registration</ThemedText>
+                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">Deadline: 25th Oct</ThemedText>
+                                </View>
+                                <TouchableOpacity>
+                                    <ThemedText style={styles.viewLink} type="link">View →</ThemedText>
+                                </TouchableOpacity>
                             </View>
                         ))}
-                    </View>
-                )}
-
-                <View style={styles.infoBox}>
-                    <Text style={styles.infoTitle}>Intern Note:</Text>
-                    <Text style={styles.infoText}>
-                        Student features like Timetable, Courses, and Grades should be built as separate modules.
-                    </Text>
-                    <Text style={styles.infoText}>
-                        Follow the structure of `useDashboard` to create hooks that fetch specific academic data.
-                    </Text>
+                    </ThemedCard>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </ThemedView>
     );
 }
-
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F7FA',
+    },
+    scrollView: {
+        flex: 1,
     },
     scrollContent: {
-        padding: 20,
+        flexGrow: 1,
     },
-    header: {
+    banner: {
+        paddingBottom: 30,
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
+    },
+    headerContent: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
-        paddingHorizontal: 20,
-        paddingTop: 10,
-    },
-    welcomeText: {
-        fontSize: 16,
-        color: '#666',
+        paddingHorizontal: 24,
+        paddingTop: 20,
+        paddingBottom: 24,
     },
     userName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#333',
+        fontSize: 26,
+        fontWeight: '700',
     },
-    logoutButton: {
-        padding: 8,
-        borderRadius: 12,
-        backgroundColor: '#fff',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    roleBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#8E24AA',
-        alignSelf: 'flex-start',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 20,
-        marginBottom: 20,
-        marginLeft: 20,
-    },
-    roleText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: 'bold',
-        marginLeft: 4,
-    },
-    statsContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        marginBottom: 24,
-    },
-    statCard: {
-        width: '48%',
-        padding: 20,
-        borderRadius: 16,
-        marginBottom: 16,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    statValue: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    statLabel: {
-        fontSize: 12,
-        color: '#666',
+    subtitle: {
+        fontSize: 15,
         marginTop: 4,
-        textAlign: 'center',
+    },
+    logoutIcon: {
+        padding: 8,
+    },
+    bannerStats: {
+        flexDirection: 'row',
+        paddingHorizontal: 20,
+        gap: 12,
+    },
+    bannerStatCard: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 20,
+        gap: 12,
+    },
+    statIconContainer: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    bannerStatValue: {
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    bannerStatTitle: {
+        fontSize: 11,
+    },
+    mainContent: {
+        flex: 1,
+        marginTop: 0,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingHorizontal: 24,
+        paddingTop: 32,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 16,
+        fontWeight: '700',
     },
-    errorText: {
-        color: '#FF3B30',
+    quickActionsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        marginBottom: 32,
+    },
+    quickActionItem: {
+        width: (width - 48 - 40) / 3,
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    quickActionIcon: {
+        width: 56,
+        height: 56,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    quickActionLabel: {
+        fontSize: 12,
         textAlign: 'center',
-        marginTop: 20,
+        fontWeight: '500',
     },
-    infoBox: {
-        backgroundColor: '#F3E5F5',
-        padding: 20,
-        borderRadius: 16,
-        borderLeftWidth: 4,
-        borderLeftColor: '#8E24AA',
-        marginTop: 20,
+    updatesCard: {
+        borderRadius: 24,
+        overflow: 'hidden',
+        marginBottom: 40,
     },
-    infoTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#6A1B9A',
-        marginBottom: 8,
+    updateItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
     },
-    infoText: {
-        fontSize: 14,
-        color: '#554455',
-        lineHeight: 20,
-        marginBottom: 8,
+    updateIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    updateContent: {
+        flex: 1,
+    },
+    updateTitle: {
+        fontSize: 15,
+        marginBottom: 2,
+    },
+    updateSubtitle: {
+        fontSize: 13,
+    },
+    viewLink: {
+        fontSize: 12,
+        fontWeight: '600',
     },
 });
-

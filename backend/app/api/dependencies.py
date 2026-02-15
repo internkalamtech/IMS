@@ -6,11 +6,13 @@ These dependencies handle JWT token validation and user authentication.
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_access_token
 from app.domain.entities.user import User
 from app.domain.usecases.auth_usecases import GetCurrentUserUseCase
-from app.infrastructure.repositories.auth_repository_impl import InMemoryAuthRepository
+from app.infrastructure.database.database import get_db
+from app.infrastructure.repositories.database_auth_repository import DatabaseAuthRepository
 
 # Security scheme for JWT bearer tokens
 security = HTTPBearer()
@@ -18,6 +20,7 @@ security = HTTPBearer()
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db),
 ) -> User:
     """
     Dependency to get the current authenticated user from JWT token.
@@ -52,7 +55,7 @@ async def get_current_user(
         )
 
     # Get user from repository
-    repository = InMemoryAuthRepository()
+    repository = DatabaseAuthRepository(db)
     use_case = GetCurrentUserUseCase(repository)
 
     try:
