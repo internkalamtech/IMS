@@ -43,13 +43,13 @@ AsyncSessionLocal = async_sessionmaker(
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     Dependency function to get database session.
-    
+
     This function is used with FastAPI's dependency injection system.
     It ensures proper session lifecycle management with automatic cleanup.
-    
+
     Yields:
         AsyncSession: Database session
-        
+
     Example:
         @app.get("/users")
         async def get_users(db: AsyncSession = Depends(get_db)):
@@ -70,7 +70,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def init_db() -> None:
     """
     Initialize database by creating all tables.
-    
+
     This function should be called on application startup.
     In production, use Alembic migrations instead.
     """
@@ -81,7 +81,7 @@ async def init_db() -> None:
 async def close_db() -> None:
     """
     Close database connections.
-    
+
     This function should be called on application shutdown.
     """
     await engine.dispose()

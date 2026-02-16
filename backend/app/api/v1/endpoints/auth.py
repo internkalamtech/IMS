@@ -9,13 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
 from app.api.schemas import (
-    LoginRequest, 
-    LoginResponse, 
-    UserResponse, 
-    ErrorResponse, 
+    LoginRequest,
+    LoginResponse,
+    UserResponse,
+    ErrorResponse,
     RoleResponse,
     DemoCredentialsResponse,
-    DemoCredential
+    DemoCredential,
 )
 
 from app.core.errors import AuthenticationError, ValidationError, DatabaseError
@@ -41,22 +41,19 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     summary="User login",
     description="Authenticate a user with email and password, return user data with JWT access token.",
 )
-async def login(
-    request: LoginRequest,
-    db: AsyncSession = Depends(get_db)
-) -> LoginResponse:
+async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)) -> LoginResponse:
     """
     Login endpoint.
-    
+
     Authenticates a user by email and password, returns user data with JWT token.
-    
+
     Args:
         request: Login request with email and password
         db: Database session (injected)
-        
+
     Returns:
         LoginResponse with user data and access token
-        
+
     Raises:
         HTTPException: If validation fails or authentication error occurs
     """
@@ -124,14 +121,14 @@ async def login(
 async def logout(current_user: User = Depends(get_current_user)) -> dict:
     """
     Logout endpoint.
-    
+
     Since JWT tokens are stateless, this endpoint mainly serves as a confirmation
     for the client to clear the token. In a production system, you might want to
     implement token blacklisting.
-    
+
     Args:
         current_user: Current authenticated user (from dependency)
-        
+
     Returns:
         Success message
     """
@@ -151,12 +148,12 @@ async def logout(current_user: User = Depends(get_current_user)) -> dict:
 async def get_me(current_user: User = Depends(get_current_user)) -> UserResponse:
     """
     Get current user endpoint.
-    
+
     Returns the currently authenticated user's information based on the JWT token.
-    
+
     Args:
         current_user: Current authenticated user (from dependency)
-        
+
     Returns:
         UserResponse with current user data
     """
@@ -180,33 +177,31 @@ async def get_me(current_user: User = Depends(get_current_user)) -> UserResponse
     summary="Get demo credentials",
     description="Retrieve a list of demo credentials for development and testing. This is a public endpoint.",
 )
-async def get_demo_credentials(
-    db: AsyncSession = Depends(get_db)
-) -> DemoCredentialsResponse:
+async def get_demo_credentials(db: AsyncSession = Depends(get_db)) -> DemoCredentialsResponse:
     """
     Get demo credentials endpoint.
-    
+
     Returns a list of demo credentials that can be used to log into the system.
     Users are fetched from the database based on the email domain @myuser.com.
     """
     try:
         from app.domain.usecases.auth_usecases import GetDemoUsersUseCase
-        
+
         repository = DatabaseAuthRepository(db)
         use_case = GetDemoUsersUseCase(repository)
         users = await use_case.execute("%@myuser.com")
 
         credentials = []
-        
+
         icon_map = {
             "admin": "person",
             "teacher": "school",
             "parent": "people",
             "student": "school-outline",
             "transport": "bus",
-            "driver": "car-sport"
+            "driver": "car-sport",
         }
-        
+
         transport_roles = ["transport", "driver"]
 
         for user in users:
@@ -218,13 +213,15 @@ async def get_demo_credentials(
                     icon=icon_map.get(role_name, "person"),
                     email=user.email,
                     password=f"{email_prefix}123",
-                    description="Transport Roles" if role_name in transport_roles else "Core Roles"
+                    description="Transport Roles" if role_name in transport_roles else "Core Roles",
                 )
             )
 
         # Sort credentials to keep a consistent order (Admin first etc.)
         role_order = ["admin", "teacher", "parent", "student", "transport", "driver"]
-        credentials.sort(key=lambda x: role_order.index(x.role.lower()) if x.role.lower() in role_order else 99)
+        credentials.sort(
+            key=lambda x: role_order.index(x.role.lower()) if x.role.lower() in role_order else 99
+        )
 
         return DemoCredentialsResponse(credentials=credentials)
 
@@ -232,5 +229,3 @@ async def get_demo_credentials(
         Logger.error(f"Error fetching demo credentials: {str(e)}", exc_info=True)
         # Fallback to empty list if something goes wrong, but log the error
         return DemoCredentialsResponse(credentials=[])
-
-

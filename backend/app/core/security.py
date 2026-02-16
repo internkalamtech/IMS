@@ -15,11 +15,11 @@ from app.core.config import settings
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
     """
     Create a JWT access token.
-    
+
     Args:
         data: Data to encode in the token (typically user_id)
         expires_delta: Optional custom expiration time
-        
+
     Returns:
         Encoded JWT token string
     """
@@ -40,10 +40,10 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
 def decode_access_token(token: str) -> dict[str, Any] | None:
     """
     Decode and validate a JWT access token.
-    
+
     Args:
         token: JWT token string to decode
-        
+
     Returns:
         Decoded token payload if valid, None otherwise
     """

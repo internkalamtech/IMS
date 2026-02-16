@@ -21,22 +21,22 @@ from app.infrastructure.database.database import init_db, close_db
 async def lifespan(app: FastAPI):
     """
     Application lifespan manager.
-    
+
     Handles startup and shutdown events.
     """
     # Startup
     Logger.info("Starting IMS Backend...")
     Logger.info(f"Environment: {'Development' if settings.debug else 'Production'}")
-    
+
     try:
         await init_db()
         Logger.info("Database initialized successfully")
     except Exception as e:
         Logger.error(f"Failed to initialize database: {e}", exc_info=True)
         raise
-    
+
     yield
-    
+
     # Shutdown
     Logger.info("Shutting down IMS Backend...")
     await close_db()
@@ -102,7 +102,7 @@ app.include_router(api_v1_router, prefix="/api")
 async def root() -> dict:
     """
     Root endpoint.
-    
+
     Returns basic information about the API.
     """
     return {

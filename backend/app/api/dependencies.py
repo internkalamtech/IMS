@@ -24,13 +24,13 @@ async def get_current_user(
 ) -> User:
     """
     Dependency to get the current authenticated user from JWT token.
-    
+
     Args:
         credentials: HTTP authorization credentials with bearer token
-        
+
     Returns:
         Current authenticated user
-        
+
     Raises:
         HTTPException: If token is invalid or user not found
     """

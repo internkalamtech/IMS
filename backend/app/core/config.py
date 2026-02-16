@@ -32,7 +32,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
 
     # CORS - stored as string in env, parsed to list
-    cors_origins: Union[str, list[str]] = "http://localhost:8081,exp://localhost:8081,http://localhost:19000,http://localhost:19006"
+    cors_origins: Union[str, list[str]] = (
+        "http://localhost:8081,exp://localhost:8081,http://localhost:19000,http://localhost:19006"
+    )
 
     # Logging
     log_level: str = "INFO"

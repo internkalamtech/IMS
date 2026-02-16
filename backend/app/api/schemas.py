@@ -15,9 +15,7 @@ class LoginRequest(BaseModel):
     password: str = Field(..., min_length=6, description="User password (minimum 6 characters)")
 
     model_config = {
-        "json_schema_extra": {
-            "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
-        }
+        "json_schema_extra": {"examples": [{"email": "admin@myuser.com", "password": "admin123"}]}
     }
 
 
@@ -117,5 +115,3 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
-
-

@@ -88,10 +88,10 @@ ROLES = [
 async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     """
     Create roles if they don't exist.
-    
+
     Args:
         db: Database session
-        
+
     Returns:
         Dictionary mapping role names to RoleModel instances
     """
@@ -100,9 +100,7 @@ async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
 
     for role_data in ROLES:
         # Check if role exists
-        result = await db.execute(
-            select(RoleModel).where(RoleModel.name == role_data["name"])
-        )
+        result = await db.execute(select(RoleModel).where(RoleModel.name == role_data["name"]))
         role = result.scalar_one_or_none()
 
         if not role:
@@ -122,7 +120,7 @@ async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
 async def create_users(db: AsyncSession, roles_map: dict[str, RoleModel]) -> None:
     """
     Create demo users if they don't exist.
-    
+
     Args:
         db: Database session
         roles_map: Dictionary mapping role names to RoleModel instances
@@ -131,9 +129,7 @@ async def create_users(db: AsyncSession, roles_map: dict[str, RoleModel]) -> Non
 
     for user_data in DEMO_USERS:
         # Check if user exists
-        result = await db.execute(
-            select(UserModel).where(UserModel.email == user_data["email"])
-        )
+        result = await db.execute(select(UserModel).where(UserModel.email == user_data["email"]))
         user = result.unique().scalar_one_or_none()
 
         if not user:
@@ -166,7 +162,7 @@ async def create_users(db: AsyncSession, roles_map: dict[str, RoleModel]) -> Non
 async def seed_database() -> None:
     """
     Main function to seed the database.
-    
+
     This function:
     1. Initializes database (creates tables)
     2. Creates roles

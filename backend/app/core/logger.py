@@ -42,7 +42,7 @@ class ColoredFormatter(logging.Formatter):
 def setup_logging() -> logging.Logger:
     """
     Configure application logging.
-    
+
     Returns:
         Configured logger instance
     """
@@ -67,7 +67,7 @@ def setup_logging() -> logging.Logger:
     try:
         logs_dir = Path("logs")
         logs_dir.mkdir(exist_ok=True)
-        
+
         file_handler = logging.FileHandler(logs_dir / "ims.log")
         file_handler.setLevel(logging.INFO)
         file_formatter = logging.Formatter(
@@ -89,7 +89,7 @@ logger = setup_logging()
 class Logger:
     """
     Logger wrapper with convenience methods.
-    
+
     Provides structured logging with context.
     """
 
