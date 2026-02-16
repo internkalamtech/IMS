@@ -86,9 +86,7 @@ ROLES = [
     },
     {
         "name": "parent",
-        "description": (
-            "Parent with access to their children's information"
-        ),
+        "description": ("Parent with access to their children's information"),
     },
     {
         "name": "student",
@@ -123,9 +121,7 @@ async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     for role_data in ROLES:
         # Check if role exists
         result = await db.execute(
-            select(RoleModel).where(
-                RoleModel.name == role_data["name"]
-            )
+            select(RoleModel).where(RoleModel.name == role_data["name"])
         )
         role = result.scalar_one_or_none()
 
@@ -158,9 +154,7 @@ async def create_users(
     for user_data in DEMO_USERS:
         # Check if user exists
         result = await db.execute(
-            select(UserModel).where(
-                UserModel.email == user_data["email"]
-            )
+            select(UserModel).where(UserModel.email == user_data["email"])
         )
         user = result.unique().scalar_one_or_none()
 

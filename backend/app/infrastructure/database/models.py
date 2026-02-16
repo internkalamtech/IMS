@@ -12,7 +12,15 @@ Following best practices:
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Table
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -52,15 +60,11 @@ class UserModel(Base):
 
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, index=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     email: Mapped[str] = mapped_column(
         String(255), unique=True, index=True, nullable=False
     )
-    password_hash: Mapped[str] = mapped_column(
-        String(255), nullable=False
-    )
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, nullable=False
@@ -77,11 +81,16 @@ class UserModel(Base):
 
     # Relationships
     roles: Mapped[List["RoleModel"]] = relationship(
-        "RoleModel", secondary=user_roles, back_populates="users", lazy="joined"
+        "RoleModel",
+        secondary=user_roles,
+        back_populates="users",
+        lazy="joined",
     )
 
     def __repr__(self) -> str:
-        return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
+        return (
+            f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
+        )
 
 
 class RoleModel(Base):
@@ -94,15 +103,11 @@ class RoleModel(Base):
 
     __tablename__ = "roles"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, index=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
     )
-    description: Mapped[str | None] = mapped_column(
-        String(255), nullable=True
-    )
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Relationships
     users: Mapped[List["UserModel"]] = relationship(

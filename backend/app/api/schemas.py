@@ -12,10 +12,14 @@ class LoginRequest(BaseModel):
     """Request schema for login endpoint."""
 
     email: EmailStr
-    password: str = Field(..., min_length=6, description="User password (minimum 6 characters)")
+    password: str = Field(
+        ..., min_length=6, description="User password (minimum 6 characters)"
+    )
 
     model_config = {
-        "json_schema_extra": {"examples": [{"email": "admin@myuser.com", "password": "admin123"}]}
+        "json_schema_extra": {
+            "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
+        }
     }
 
 
@@ -23,7 +27,9 @@ class RoleResponse(BaseModel):
     """Response schema for role data."""
 
     id: str
-    name: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
+    name: Literal[
+        "admin", "teacher", "student", "parent", "transport", "driver"
+    ]
     description: str | None = None
 
 
@@ -33,7 +39,9 @@ class UserResponse(BaseModel):
     id: str
     name: str
     email: str
-    role: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
+    role: Literal[
+        "admin", "teacher", "student", "parent", "transport", "driver"
+    ]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -45,7 +53,13 @@ class UserResponse(BaseModel):
                     "name": "Admin User",
                     "email": "admin@myuser.com",
                     "role": "admin",
-                    "roles": [{"id": "1", "name": "admin", "description": "Administrator"}],
+                    "roles": [
+                        {
+                            "id": "1",
+                            "name": "admin",
+                            "description": "Administrator",
+                        }
+                    ],
                     "avatarUrl": None,
                 }
             ]
@@ -84,7 +98,9 @@ class ErrorResponse(BaseModel):
 
     detail: str
 
-    model_config = {"json_schema_extra": {"examples": [{"detail": "Error message"}]}}
+    model_config = {
+        "json_schema_extra": {"examples": [{"detail": "Error message"}]}
+    }
 
 
 class DemoCredential(BaseModel):
