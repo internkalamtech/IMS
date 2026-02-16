@@ -14,25 +14,29 @@ Following Clean Architecture principles:
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import AuthenticationError, DatabaseError, NotFoundError
+from app.core.errors import (
+    AuthenticationError,
+    DatabaseError,
+    NotFoundError,
+)
 from app.core.logger import Logger
 from app.core.password import verify_password
 from app.domain.entities.user import Role, User
 from app.domain.repositories.auth_repository import AuthRepository
-from app.infrastructure.database.models import RoleModel, UserModel
+from app.infrastructure.database.models import UserModel
 
 
 class DatabaseAuthRepository(AuthRepository):
     """
     Database-backed implementation of AuthRepository.
-    
+
     Uses PostgreSQL with SQLAlchemy for data persistence.
     """
 
     def __init__(self, db: AsyncSession):
         """
         Initialize repository with database session.
-        
+
         Args:
             db: SQLAlchemy async session
         """
@@ -41,14 +45,14 @@ class DatabaseAuthRepository(AuthRepository):
     async def login(self, email: str, password: str) -> User:
         """
         Authenticate user by email and password.
-        
+
         Args:
             email: User's email address
             password: User's password (plain text)
-            
+
         Returns:
             User entity if authentication successful
-            
+
         Raises:
             AuthenticationError: If credentials are invalid
             DatabaseError: If database operation fails
@@ -86,7 +90,8 @@ class DatabaseAuthRepository(AuthRepository):
             user = self._to_domain_entity(user_model)
 
             Logger.info(
-                f"Login successful: {email} (roles: {', '.join([r.name for r in user.roles])})"
+                f"Login successful: {email} "
+                f"(roles: {', '.join([r.name for r in user.roles])})"
             )
             return user
 
@@ -100,13 +105,13 @@ class DatabaseAuthRepository(AuthRepository):
     async def get_user_by_id(self, user_id: str) -> User:
         """
         Get user by ID.
-        
+
         Args:
             user_id: User's unique identifier
-            
+
         Returns:
             User entity
-            
+
         Raises:
             NotFoundError: If user not found
             DatabaseError: If database operation fails
@@ -118,26 +123,25 @@ class DatabaseAuthRepository(AuthRepository):
             user_model = result.unique().scalar_one_or_none()
 
             if not user_model:
-                from app.core.errors import NotFoundError
                 raise NotFoundError(f"User with ID {user_id} not found")
 
             return self._to_domain_entity(user_model)
 
         except Exception as e:
             from app.core.errors import NotFoundError
+
             if isinstance(e, NotFoundError):
                 raise
             Logger.error(f"Database error getting user: {e}", exc_info=True)
             raise DatabaseError(f"Failed to get user: {str(e)}")
 
     async def get_user_by_email(self, email: str) -> User | None:
-
         """
         Get user by email.
-        
+
         Args:
             email: User's email address
-            
+
         Returns:
             User entity if found, None otherwise
         """
@@ -153,16 +157,19 @@ class DatabaseAuthRepository(AuthRepository):
             return self._to_domain_entity(user_model)
 
         except Exception as e:
-            Logger.error(f"Database error getting user by email: {e}", exc_info=True)
+            Logger.error(
+                f"Database error getting user by email: {e}",
+                exc_info=True,
+            )
             raise DatabaseError(f"Failed to get user: {str(e)}")
 
     async def get_users_by_email_pattern(self, pattern: str) -> list[User]:
         """
         Retrieve users matching an email pattern.
-        
+
         Args:
             pattern: SQL like pattern (e.g., "%@myuser.com")
-            
+
         Returns:
             List of User entities
         """
@@ -171,21 +178,25 @@ class DatabaseAuthRepository(AuthRepository):
                 select(UserModel).where(UserModel.email.like(pattern))
             )
             user_models = result.scalars().unique().all()
-            
-            return [self._to_domain_entity(um) for um in user_models]
-            
-        except Exception as e:
-            Logger.error(f"Database error getting users by pattern: {e}", exc_info=True)
-            raise DatabaseError(f"Failed to get users matching pattern: {str(e)}")
 
+            return [self._to_domain_entity(um) for um in user_models]
+
+        except Exception as e:
+            Logger.error(
+                f"Database error getting users by pattern: {e}",
+                exc_info=True,
+            )
+            raise DatabaseError(
+                f"Failed to get users matching pattern: {str(e)}"
+            )
 
     def _to_domain_entity(self, user_model: UserModel) -> User:
         """
         Convert database model to domain entity.
-        
+
         Args:
             user_model: SQLAlchemy UserModel instance
-            
+
         Returns:
             User domain entity
         """

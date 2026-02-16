@@ -76,22 +76,42 @@ DEMO_USERS = [
 
 # Roles configuration
 ROLES = [
-    {"name": "admin", "description": "Administrator with full system access"},
-    {"name": "teacher", "description": "Teacher with access to classes and students"},
-    {"name": "parent", "description": "Parent with access to their children's information"},
-    {"name": "student", "description": "Student with access to their own information"},
-    {"name": "transport", "description": "Transport manager with access to routes and vehicles"},
-    {"name": "driver", "description": "Driver with access to assigned routes"},
+    {
+        "name": "admin",
+        "description": "Administrator with full system access",
+    },
+    {
+        "name": "teacher",
+        "description": "Teacher with access to classes and students",
+    },
+    {
+        "name": "parent",
+        "description": ("Parent with access to their children's information"),
+    },
+    {
+        "name": "student",
+        "description": "Student with access to their own information",
+    },
+    {
+        "name": "transport",
+        "description": (
+            "Transport manager with access to routes and vehicles"
+        ),
+    },
+    {
+        "name": "driver",
+        "description": "Driver with access to assigned routes",
+    },
 ]
 
 
 async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     """
     Create roles if they don't exist.
-    
+
     Args:
         db: Database session
-        
+
     Returns:
         Dictionary mapping role names to RoleModel instances
     """
@@ -119,10 +139,12 @@ async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     return roles_map
 
 
-async def create_users(db: AsyncSession, roles_map: dict[str, RoleModel]) -> None:
+async def create_users(
+    db: AsyncSession, roles_map: dict[str, RoleModel]
+) -> None:
     """
     Create demo users if they don't exist.
-    
+
     Args:
         db: Database session
         roles_map: Dictionary mapping role names to RoleModel instances
@@ -155,7 +177,8 @@ async def create_users(db: AsyncSession, roles_map: dict[str, RoleModel]) -> Non
 
             db.add(user)
             Logger.info(
-                f"Created user: {user_data['email']} with roles: {', '.join(user_data['roles'])}"
+                f"Created user: {user_data['email']} "
+                f"with roles: {', '.join(user_data['roles'])}"
             )
         else:
             Logger.info(f"User already exists: {user_data['email']}")
@@ -166,7 +189,7 @@ async def create_users(db: AsyncSession, roles_map: dict[str, RoleModel]) -> Non
 async def seed_database() -> None:
     """
     Main function to seed the database.
-    
+
     This function:
     1. Initializes database (creates tables)
     2. Creates roles

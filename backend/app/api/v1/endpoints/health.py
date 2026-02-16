@@ -18,9 +18,9 @@ router = APIRouter(prefix="/health", tags=["Health"])
 async def health_check() -> dict:
     """
     Health check endpoint.
-    
+
     Returns a simple status message to verify the API is running.
-    
+
     Returns:
         Dictionary with status message
     """

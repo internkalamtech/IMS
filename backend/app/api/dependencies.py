@@ -12,7 +12,9 @@ from app.core.security import decode_access_token
 from app.domain.entities.user import User
 from app.domain.usecases.auth_usecases import GetCurrentUserUseCase
 from app.infrastructure.database.database import get_db
-from app.infrastructure.repositories.database_auth_repository import DatabaseAuthRepository
+from app.infrastructure.repositories.database_auth_repository import (
+    DatabaseAuthRepository,
+)
 
 # Security scheme for JWT bearer tokens
 security = HTTPBearer()
@@ -24,13 +26,13 @@ async def get_current_user(
 ) -> User:
     """
     Dependency to get the current authenticated user from JWT token.
-    
+
     Args:
         credentials: HTTP authorization credentials with bearer token
-        
+
     Returns:
         Current authenticated user
-        
+
     Raises:
         HTTPException: If token is invalid or user not found
     """

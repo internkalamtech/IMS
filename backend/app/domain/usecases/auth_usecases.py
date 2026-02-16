@@ -12,7 +12,7 @@ from app.domain.repositories.auth_repository import AuthRepository
 class LoginUseCase:
     """
     Use case for user login.
-    
+
     This use case handles the business logic for user authentication,
     including validation and error handling.
     """
@@ -20,7 +20,7 @@ class LoginUseCase:
     def __init__(self, auth_repository: AuthRepository):
         """
         Initialize the login use case.
-        
+
         Args:
             auth_repository: Repository for authentication operations
         """
@@ -29,14 +29,14 @@ class LoginUseCase:
     async def execute(self, email: str, password: str) -> User:
         """
         Execute the login use case.
-        
+
         Args:
             email: User's email address
             password: User's password
-            
+
         Returns:
             User entity if login successful
-            
+
         Raises:
             ValidationError: If email or password is invalid or empty
             AuthenticationError: If credentials are incorrect
@@ -67,7 +67,7 @@ class GetCurrentUserUseCase:
     def __init__(self, auth_repository: AuthRepository):
         """
         Initialize the get current user use case.
-        
+
         Args:
             auth_repository: Repository for authentication operations
         """
@@ -76,13 +76,13 @@ class GetCurrentUserUseCase:
     async def execute(self, user_id: str) -> User:
         """
         Execute the get current user use case.
-        
+
         Args:
             user_id: ID of the user to retrieve
-            
+
         Returns:
             User entity if found
-            
+
         Raises:
             ValueError: If user not found
         """
@@ -95,14 +95,14 @@ class GetCurrentUserUseCase:
 class GetDemoUsersUseCase:
     """
     Use case for retrieving demo users from the database.
-    
+
     Demo users are identified by their email domain.
     """
 
     def __init__(self, auth_repository: AuthRepository):
         """
         Initialize the use case.
-        
+
         Args:
             auth_repository: Repository for authentication operations
         """
@@ -111,12 +111,13 @@ class GetDemoUsersUseCase:
     async def execute(self, email_pattern: str = "%@myuser.com") -> list[User]:
         """
         Execute the use case.
-        
+
         Args:
             email_pattern: SQL like pattern for demo users
-            
+
         Returns:
             List of User entities
         """
-        return await self.auth_repository.get_users_by_email_pattern(email_pattern)
-
+        return await self.auth_repository.get_users_by_email_pattern(
+            email_pattern
+        )
