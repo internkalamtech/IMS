@@ -14,12 +14,16 @@ Following Clean Architecture principles:
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import AuthenticationError, DatabaseError, NotFoundError
+from app.core.errors import (
+    AuthenticationError,
+    DatabaseError,
+    NotFoundError,
+)
 from app.core.logger import Logger
 from app.core.password import verify_password
 from app.domain.entities.user import Role, User
 from app.domain.repositories.auth_repository import AuthRepository
-from app.infrastructure.database.models import RoleModel, UserModel
+from app.infrastructure.database.models import UserModel
 
 
 class DatabaseAuthRepository(AuthRepository):
@@ -86,7 +90,8 @@ class DatabaseAuthRepository(AuthRepository):
             user = self._to_domain_entity(user_model)
 
             Logger.info(
-                f"Login successful: {email} (roles: {', '.join([r.name for r in user.roles])})"
+                f"Login successful: {email} "
+                f"(roles: {', '.join([r.name for r in user.roles])})"
             )
             return user
 
@@ -112,12 +117,12 @@ class DatabaseAuthRepository(AuthRepository):
             DatabaseError: If database operation fails
         """
         try:
-            result = await self.db.execute(select(UserModel).where(UserModel.id == int(user_id)))
+            result = await self.db.execute(
+                select(UserModel).where(UserModel.id == int(user_id))
+            )
             user_model = result.unique().scalar_one_or_none()
 
             if not user_model:
-                from app.core.errors import NotFoundError
-
                 raise NotFoundError(f"User with ID {user_id} not found")
 
             return self._to_domain_entity(user_model)
@@ -152,7 +157,10 @@ class DatabaseAuthRepository(AuthRepository):
             return self._to_domain_entity(user_model)
 
         except Exception as e:
-            Logger.error(f"Database error getting user by email: {e}", exc_info=True)
+            Logger.error(
+                f"Database error getting user by email: {e}",
+                exc_info=True,
+            )
             raise DatabaseError(f"Failed to get user: {str(e)}")
 
     async def get_users_by_email_pattern(self, pattern: str) -> list[User]:
@@ -166,14 +174,21 @@ class DatabaseAuthRepository(AuthRepository):
             List of User entities
         """
         try:
-            result = await self.db.execute(select(UserModel).where(UserModel.email.like(pattern)))
+            result = await self.db.execute(
+                select(UserModel).where(UserModel.email.like(pattern))
+            )
             user_models = result.scalars().unique().all()
 
             return [self._to_domain_entity(um) for um in user_models]
 
         except Exception as e:
-            Logger.error(f"Database error getting users by pattern: {e}", exc_info=True)
-            raise DatabaseError(f"Failed to get users matching pattern: {str(e)}")
+            Logger.error(
+                f"Database error getting users by pattern: {e}",
+                exc_info=True,
+            )
+            raise DatabaseError(
+                f"Failed to get users matching pattern: {str(e)}"
+            )
 
     def _to_domain_entity(self, user_model: UserModel) -> User:
         """
