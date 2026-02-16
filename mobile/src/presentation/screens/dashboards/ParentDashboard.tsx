@@ -41,7 +41,7 @@ export default function ParentDashboard() {
                                     Welcome, {user?.name?.split(' ')[0] || 'Priya'} 👋
                                 </ThemedText>
                                 <ThemedText style={styles.subtitle} color="primaryForeground">
-                                    Track your child's progress
+                                    Track your child&apos;s progress
                                 </ThemedText>
                             </View>
                             <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
