@@ -54,18 +54,11 @@ app = FastAPI(
     redoc_url=None,
     lifespan=lifespan,
 )
-from fastapi.middleware.cors import CORSMiddleware
 
+# Configure CORS (only once)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8081",
-        "http://localhost:8082",
-        "http://localhost:8083",
-        "http://127.0.0.1:8081",
-        "http://127.0.0.1:8082",
-        "http://127.0.0.1:8083",
-    ],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -104,15 +97,6 @@ async def log_requests(request: Request, call_next):
     )
     return response
 
-
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Include API routers
 app.include_router(api_v1_router, prefix="/api")
