@@ -19,18 +19,18 @@ def get_driver_maintenance():
             "title": "Oil Change",
             "date": "2026-03-20",
             "status": "Scheduled",
-            "vehicleId": "BUS-101"
+            "vehicleId": "BUS-101",
         },
         {
             "title": "Tire Check",
             "date": "2026-03-15",
             "status": "In Progress",
-            "vehicleId": "BUS-101"
+            "vehicleId": "BUS-101",
         },
         {
             "title": "Brake Inspection",
             "date": "2026-02-28",
             "status": "Completed",
-            "vehicleId": "BUS-101"
-        }
+            "vehicleId": "BUS-101",
+        },
     ]
