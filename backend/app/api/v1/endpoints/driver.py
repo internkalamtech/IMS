@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 
+
 router = APIRouter(prefix="/driver", tags=["Driver"])
+
 
 @router.get("/documents")
 def get_driver_documents():
@@ -9,3 +11,4 @@ def get_driver_documents():
         {"title": "Bus Insurance", "expiryDate": "2026-03-20"},
         {"title": "Fitness Certificate", "expiryDate": "2026-02-15"},
     ]
+    
