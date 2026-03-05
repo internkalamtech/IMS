@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 
+
 router = APIRouter(prefix="/driver", tags=["Driver"])
+
 
 @router.get("/documents")
 def get_driver_documents():
