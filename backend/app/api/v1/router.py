@@ -1,13 +1,18 @@
+"""
+API v1 router.
+
+This module aggregates all v1 API endpoints.
+"""
+
 from fastapi import APIRouter
 
+from app.api.v1.endpoints import auth, health, dashboard, driver
 
-router = APIRouter(prefix="/driver", tags=["Driver"])
+# Create v1 router
+router = APIRouter(prefix="/v1")
 
-
-@router.get("/documents")
-def get_driver_documents():
-    return [
-        {"title": "Driving License", "expiryDate": "2026-04-10"},
-        {"title": "Bus Insurance", "expiryDate": "2026-03-20"},
-        {"title": "Fitness Certificate", "expiryDate": "2026-02-15"},
-    ]
+# Include endpoint routers
+router.include_router(auth.router)
+router.include_router(health.router)
+router.include_router(dashboard.router)
+router.include_router(driver.router)
