@@ -126,3 +126,4 @@ class Payment(Base):
     student_id = Column(Integer)
     amount = Column(Float, nullable=False)
     payment_method = Column(String, nullable=False)
+

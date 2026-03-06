@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, Float, DateTime, String
 from app.infrastructure.database import Base
 import datetime
 
+
 class Ledger(Base):
     __tablename__ = "student_ledger"
 
