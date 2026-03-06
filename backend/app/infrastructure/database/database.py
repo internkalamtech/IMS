@@ -88,3 +88,4 @@ async def close_db() -> None:
     This function should be called on application shutdown.
     """
     await engine.dispose()
+    Base.metadata.create_all(bind=engine)

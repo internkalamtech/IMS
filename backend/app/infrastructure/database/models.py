@@ -16,6 +16,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     String,
@@ -58,7 +59,7 @@ class UserModel(Base):
     and associated roles.
     """
 
-    __tablename__ = "users"
+    __tablename__ = "users.id"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     email: Mapped[str] = mapped_column(
@@ -116,3 +117,12 @@ class RoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+
+
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id = Column(Integer, primary_key=True)
+    student_id = Column(Integer)
+    amount = Column(Float, nullable=False)
+    payment_method = Column(String, nullable=False)
