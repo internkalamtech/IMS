@@ -1,5 +1,12 @@
-from fastapi import APIRouter
+from datetime import datetime
+from uuid import uuid4
+
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from app.infrastructure.database.database import get_db
+from app.infrastructure.database.models import Payment
 
 router = APIRouter()
 
@@ -12,17 +19,9 @@ class PaymentCreate(BaseModel):
     reference_number: str
 
 
-# Create payment transaction
-from uuid import uuid4
-from datetime import datetime
-from sqlalchemy.orm import Session
-from fastapi import Depends
-from app.infrastructure.database.database import get_db
-from app.infrastructure.database.models import Payment
-
+# STEP 3 – Record payment
 @router.post("/transactions")
 def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
-
     receipt = f"REC-{uuid4().hex[:8]}"
 
     new_payment = Payment(
@@ -43,28 +42,11 @@ def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
         "receipt_number": receipt,
         "payment_id": new_payment.id
     }
-    
-
-
-# Student ledger
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from app.infrastructure.database.database import get_db
-from app.infrastructure.database.models import Payment
-
-router = APIRouter()
-
-
-# STEP 3 – Record payment
-@router.post("/transactions")
-def create_payment(payment: PaymentCreate, db: Session = Depends(get_db)):
-    ...
 
 
 # STEP 4 – Student ledger / payment history
 @router.get("/students/{student_id}/ledger")
 def get_student_ledger(student_id: int, db: Session = Depends(get_db)):
-
     payments = db.query(Payment).filter(
         Payment.student_id == student_id
     ).all()
@@ -105,5 +87,3 @@ def fee_dashboard():
         "students_paid": 0,
         "students_pending": 0
     }
-
-
