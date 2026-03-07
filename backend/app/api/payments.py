@@ -4,7 +4,6 @@ from pydantic import BaseModel
 router = APIRouter()
 
 
-
 # Payment schema
 class PaymentCreate(BaseModel):
     student_id: int
@@ -39,4 +38,3 @@ def fee_dashboard():
         "students_paid": 0,
         "students_pending": 0
     }
-                                       
