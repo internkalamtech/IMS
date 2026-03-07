@@ -122,7 +122,10 @@ class RoleModel(Base):
 class Payment(Base):
     __tablename__ = "payments"
 
-    id = Column(Integer, primary_key=True)
-    student_id = Column(Integer)
-    amount = Column(Float, nullable=False)
-    payment_method = Column(String, nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, index=True)
+    amount = Column(Float)
+    payment_mode = Column(String)
+    reference_number = Column(String)
+    receipt_number = Column(String)
+    created_at = Column(DateTime)
