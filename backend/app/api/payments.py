@@ -4,6 +4,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.infrastructure.database.database import get_db
 from app.infrastructure.database.models import Payment
@@ -15,7 +16,7 @@ router = APIRouter()
 class PaymentCreate(BaseModel):
     student_id: int
     amount: float
-    payment_method: str
+    payment_mode: str
     reference_number: str
 
 
@@ -78,12 +79,23 @@ def get_student_ledger(student_id: int, db: Session = Depends(get_db)):
     }
 
 
-# Dashboard analytics
-@router.get("/dashboard")
-def fee_dashboard():
+# Issue #255 – Financial Dashboard Summary
+@router.get("/summary")
+def financial_summary(db: Session = Depends(get_db)):
+
+    total_collected = db.query(func.sum(Payment.amount)).scalar() or 0
+
+    total_collectible = 50000 * db.query(
+        func.count(func.distinct(Payment.student_id))
+    ).scalar() or 0
+
+    total_pending = max(total_collectible - total_collected, 0)
+
+    overdue = 0  # placeholder until overdue logic added
+
     return {
-        "total_collected": 0,
-        "total_pending": 0,
-        "students_paid": 0,
-        "students_pending": 0
+        "total_collectible": total_collectible,
+        "collected": total_collected,
+        "pending": total_pending,
+        "overdue": overdue
     }
