@@ -34,15 +34,19 @@ async def lifespan(app: FastAPI):
         await init_db()
         Logger.info("Database initialized successfully")
     except Exception as e:
-        Logger.error(f"Failed to initialize database: {e}", exc_info=True)
-        raise
+        Logger.warning(f"Database initialization failed: {e}")
+        Logger.warning("Application will continue without database connection")
+        Logger.warning("Some features may not work properly")
 
     yield
 
     # Shutdown
     Logger.info("Shutting down IMS Backend...")
-    await close_db()
-    Logger.info("Database connections closed")
+    try:
+        await close_db()
+        Logger.info("Database connections closed")
+    except Exception as e:
+        Logger.warning(f"Error closing database connections: {e}")
 
 
 # Create FastAPI application
@@ -115,3 +119,6 @@ async def root() -> dict:
         "docs": "/docs",
         "health": "/api/v1/health",
     }
+from app.api.v1.students import router as student_router
+
+app.include_router(student_router)

@@ -22,7 +22,6 @@ from sqlalchemy.ext.asyncio import (
 from app.core.config import settings
 from app.infrastructure.database.models import Base
 
-
 # Create async engine with connection pooling
 engine = create_async_engine(
     settings.database_url,
@@ -77,8 +76,14 @@ async def init_db() -> None:
     This function should be called on application startup.
     In production, use Alembic migrations instead.
     """
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception as e:
+        # Log the error but don't raise it - allow app to start without DB
+        import logging
+        logging.getLogger(__name__).warning(f"Database initialization failed: {e}")
+        raise  # Re-raise to let the lifespan handler catch it
 
 
 async def close_db() -> None:
