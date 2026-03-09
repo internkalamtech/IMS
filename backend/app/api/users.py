@@ -10,6 +10,7 @@ users = [
     {"id": 3, "name": "Sara", "role": "student"},
 ]
 
+
 @router.get("/users")
 def get_users(role: Optional[str] = Query(None)):
     if role:

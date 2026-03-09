@@ -11,12 +11,14 @@ class DashboardRepository:
 
     async def get_total_students(self):
         result = await self.db.execute(
-            select(func.count()).select_from(User).where(User.role == "student")
+            select(func.count()).select_from(
+                User).where(User.role == "student")
         )
         return result.scalar()
 
     async def get_total_teachers(self):
         result = await self.db.execute(
-            select(func.count()).select_from(User).where(User.role == "teacher")
+            select(func.count()).select_from(
+                User).where(User.role == "teacher")
         )
         return result.scalar()
