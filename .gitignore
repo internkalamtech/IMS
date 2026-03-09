@@ -94,7 +94,3 @@ backend/*.sqlite3
 
 # OS
 Thumbs.db
-venv/
-__pycache__/
-*.pyc
-.env
