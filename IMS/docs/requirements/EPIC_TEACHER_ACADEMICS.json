@@ -1,0 +1,83 @@
+{
+  "module": "Academic Management",
+  "epic": {
+    "id": "EPIC_TEACHER_ACADEMICS",
+    "type": "epic",
+    "title": "Teacher Academics Management Module",
+    "body": "Enables teachers to manage homework assignments and study materials across their assigned classes, including the ability to target specific students and manage diverse content types like PDFs and external links.",
+    "labels": ["epic", "academics", "teacher-portal"],
+    "features": [
+      {
+        "id": "FEATURE_HOMEWORK_MANAGEMENT",
+        "type": "feature",
+        "title": "Homework Lifecycle Management",
+        "body": "Allows teachers to create, update, list, and delete homework assignments with specific due dates, descriptions, and student-level targeting.",
+        "labels": ["feature", "homework", "teacher"],
+        "stories": [
+          {
+            "id": "STORY_FE_HOMEWORK_CRUD",
+            "type": "story",
+            "title": "Homework Management Interface",
+            "body": "As a teacher, I want to manage homework for my classes, including selecting target students and setting deadlines.",
+            "labels": ["story", "homework", "frontend"],
+            "acceptanceCriteria": [
+              "List: Display homework cards with Subject, Class, Title, Due Date, and Description.",
+              "Create: Modal to add title, description, and due date for a selected Class/Subject.",
+              "Update: Ability to edit existing homework details using the same form.",
+              "Delete: Remove an assignment with a confirmation prompt.",
+              "Targeting: Toggle between 'Assign to All' and 'Select Students' to assign work to specific individuals in a class.",
+              "Validation: Ensure homework is flagged as 'isOwner' only for the teacher who created it."
+            ]
+          },
+          {
+            "id": "STORY_BE_HOMEWORK_CRUD",
+            "type": "story",
+            "title": "Homework Persistence & Targeting API",
+            "body": "Backend API to store homework data and manage the relationship between assignments and targeted students.",
+            "labels": ["story", "homework", "backend"],
+            "acceptanceCriteria": [
+              "POST/PUT: Save and update homework metadata and student-assignment mappings.",
+              "GET: Retrieve homework filtered by class and teacher ownership.",
+              "DELETE: Endpoint to remove homework and associated student submission records.",
+              "Calculations: Serve 'pendingHomework' counts per class for the teacher dashboard."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_STUDY_MATERIAL_MANAGEMENT",
+        "type": "feature",
+        "title": "Study Material Repository",
+        "body": "Management of educational resources including PDFs, PPTs, and external web links for student reference.",
+        "labels": ["feature", "materials", "teacher"],
+        "stories": [
+          {
+            "id": "STORY_FE_MATERIAL_CRUD",
+            "type": "story",
+            "title": "Study Material Management UI",
+            "body": "As a teacher, I want to upload and categorize study materials like notes and guides for my students.",
+            "labels": ["story", "materials", "frontend"],
+            "acceptanceCriteria": [
+              "List: Display materials categorized by type (PDF, PPT, Link) with metadata like file size and upload date.",
+              "Create: Form to add title and resource type; supports file upload for PDF/PPT or URL entry for Links.",
+              "Update/Delete: Full CRUD support for teacher-owned materials.",
+              "Subject Color-Coding: Automatically apply distinct colors to material cards based on the subject (e.g., Blue for Math, Green for Science)."
+            ]
+          },
+          {
+            "id": "STORY_BE_MATERIAL_SERVICE",
+            "type": "story",
+            "title": "Resource Management API",
+            "body": "API for handling file metadata, external links, and resource organization by class and subject.",
+            "labels": ["story", "materials", "backend"],
+            "acceptanceCriteria": [
+              "POST/PUT: Endpoints to save material title, type, and associated file reference or link.",
+              "GET: Retrieve materials filtered by class and subject with owner-verification.",
+              "DELETE: Remove resource records and trigger cleanup of stored files."
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
