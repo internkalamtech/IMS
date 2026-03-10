@@ -8,7 +8,6 @@ passlib[bcrypt]==1.7.4
 python-multipart==0.0.20
 sqlalchemy==2.0.36
 asyncpg==0.30.0
-psycopg2-binary==2.9.10
 bcrypt==4.2.1
 email-validator==2.3.0
 greenlet==3.3.1
