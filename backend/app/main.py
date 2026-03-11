@@ -41,6 +41,7 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     Logger.info("Shutting down IMS Backend...")
+    
     await close_db()
     Logger.info("Database connections closed")
 
