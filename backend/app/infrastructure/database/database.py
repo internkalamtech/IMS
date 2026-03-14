@@ -1,9 +1,9 @@
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
-
-DATABASE_URL = "postgresql+asyncpg://ims_user:ims_password@localhost:5432/ims_db"
-
+DATABASE_URL = (
+    "postgresql+asyncpg://ims_user:ims_password@localhost:5432/ims_db"
+)
 engine = create_async_engine(DATABASE_URL, echo=True)
 
 AsyncSessionLocal = sessionmaker(
@@ -27,4 +27,4 @@ async def get_db():
 
 async def close_db():
     """Close the database engine."""
-    await engine.dispose()
+    await engine.dispose()

@@ -82,4 +82,4 @@ class Payment(Base):
 
     status = Column(String, default="Paid")
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)

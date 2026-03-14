@@ -7,7 +7,6 @@ from typing import List, Optional, Literal
 from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func, extract, select
 
@@ -225,9 +224,7 @@ async def financial_summary(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(func.count(func.distinct(Payment.student_id)))
     )
-    student_count = resulttudent_count = db.query(
-        func.count(func.distinct(Payment.student_id))
-    ).scalar() or 0
+    student_count = result.scalar() or 0
 
     total_collectible = student_count * 50000
     pending = max(total_collectible - total_collected, 0)
@@ -249,11 +246,7 @@ async def payment_stats(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(func.count(func.distinct(Payment.student_id)))
     )
-    students_paid = resultotal_collected = db.query(func.sum(Payment.amount)).scalar() or 0
-
-    students_paid = db.query(
-        func.count(func.distinct(Payment.student_id))
-    ).scalar() or 0
+    students_paid = result.scalar() or 0
 
     return PaymentStats(
         total_collected=total_collected,
@@ -336,4 +329,4 @@ async def export_payments(db: AsyncSession = Depends(get_db)):
         headers={
             "Content-Disposition": "attachment; filename=payments.csv"
         },
-    )
+    )
