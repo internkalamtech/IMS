@@ -116,3 +116,62 @@ class RoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+
+""" 
+    Subject database model.
+    Represents a subject that can be taught in the school.
+    Examples: Math, Science, English, History, etc.
+"""
+
+class SubjectModel(Base):
+    __tablename__ = "subjects"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+
+    classes: Mapped[List["ClassSectionModel"]] = relationship(
+        "ClassSectionModel",
+        secondary="class_subject_link",
+        back_populates="subjects"
+    )
+
+
+""" 
+    ClassSection database model.
+    Represents a class section in the school.
+    Examples: Grade 1, Grade 2, Grade 3, etc.
+"""
+
+class ClassSectionModel(Base):
+    __tablename__ = "class_sections"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    subjects: Mapped[List["SubjectModel"]] = relationship(
+        "SubjectModel",
+        secondary="class_subject_link",
+        back_populates="classes"
+    )
+
+
+"""Association table for many-to-many relationship between ClassSection and Subject.
+A class section can have multiple subjects, and a subject can be taught in multiple class sections.
+"""
+
+class_subject_link = Table(
+    "class_subject_link",
+    Base.metadata,
+    Column(
+        "class_id",
+        Integer,
+        ForeignKey("class_sections.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "subject_id",
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
