@@ -61,17 +61,11 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
-    )
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -88,9 +82,7 @@ class UserModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
-        )
+        return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
 
 
 class RoleModel(Base):
@@ -104,9 +96,7 @@ class RoleModel(Base):
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Relationships
@@ -117,11 +107,13 @@ class RoleModel(Base):
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
 
+
 """ 
     Subject database model.
     Represents a subject that can be taught in the school.
     Examples: Math, Science, English, History, etc.
 """
+
 
 class SubjectModel(Base):
     __tablename__ = "subjects"
@@ -130,9 +122,7 @@ class SubjectModel(Base):
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
 
     classes: Mapped[List["ClassSectionModel"]] = relationship(
-        "ClassSectionModel",
-        secondary="class_subject_link",
-        back_populates="subjects"
+        "ClassSectionModel", secondary="class_subject_link", back_populates="subjects"
     )
 
 
@@ -142,6 +132,7 @@ class SubjectModel(Base):
     Examples: Grade 1, Grade 2, Grade 3, etc.
 """
 
+
 class ClassSectionModel(Base):
     __tablename__ = "class_sections"
 
@@ -149,9 +140,7 @@ class ClassSectionModel(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
 
     subjects: Mapped[List["SubjectModel"]] = relationship(
-        "SubjectModel",
-        secondary="class_subject_link",
-        back_populates="classes"
+        "SubjectModel", secondary="class_subject_link", back_populates="classes"
     )
 
 

@@ -1,5 +1,6 @@
 """
-Subject repository for handling database operations related to subjects.
+Subject repository for handling database operations
+related to subjects.
 """
 
 from sqlalchemy import select
@@ -13,9 +14,11 @@ class SubjectRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_by_id(self, subject_id: int) -> SubjectModel | None:
+    async def get_by_id(
+        self, subject_id: int
+    ) -> SubjectModel | None:
         """
-        Fetch subject by ID
+        Fetch subject by ID.
         """
 
         result = await self.db.execute(
@@ -26,9 +29,11 @@ class SubjectRepository:
 
         return result.scalar_one_or_none()
 
-    async def get_by_name(self, name: str) -> SubjectModel | None:
+    async def get_by_name(
+        self, name: str
+    ) -> SubjectModel | None:
         """
-        Fetch subject by name
+        Fetch subject by name.
         """
 
         result = await self.db.execute(
@@ -41,7 +46,7 @@ class SubjectRepository:
 
     async def create(self, name: str) -> SubjectModel:
         """
-        Create a new subject
+        Create a new subject.
         """
 
         subject = SubjectModel(name=name)
