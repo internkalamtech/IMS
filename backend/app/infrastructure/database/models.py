@@ -61,11 +61,15 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(255), unique=True, index=True, nullable=False
+    )
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -96,7 +100,9 @@ class RoleModel(Base):
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    name: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False, index=True
+    )
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Relationships
@@ -108,10 +114,10 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
-""" 
-    Subject database model.
-    Represents a subject that can be taught in the school.
-    Examples: Math, Science, English, History, etc.
+"""
+Subject database model.
+Represents a subject that can be taught in the school.
+Examples: Math, Science, English, History, etc.
 """
 
 
@@ -122,14 +128,16 @@ class SubjectModel(Base):
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
 
     classes: Mapped[List["ClassSectionModel"]] = relationship(
-        "ClassSectionModel", secondary="class_subject_link", back_populates="subjects"
+        "ClassSectionModel",
+        secondary="class_subject_link",
+        back_populates="subjects",
     )
 
 
-""" 
-    ClassSection database model.
-    Represents a class section in the school.
-    Examples: Grade 1, Grade 2, Grade 3, etc.
+"""
+ClassSection database model.
+Represents a class section in the school.
+Examples: Grade 1, Grade 2, Grade 3, etc.
 """
 
 
@@ -140,13 +148,17 @@ class ClassSectionModel(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
 
     subjects: Mapped[List["SubjectModel"]] = relationship(
-        "SubjectModel", secondary="class_subject_link", back_populates="classes"
+        "SubjectModel",
+        secondary="class_subject_link",
+        back_populates="classes",
     )
 
 
-"""Association table for many-to-many relationship between ClassSection and Subject.
+"""
+Association table for many-to-many relationship between ClassSection and Subject.
 A class section can have multiple subjects, and a subject can be taught in multiple class sections.
 """
+
 
 class_subject_link = Table(
     "class_subject_link",
