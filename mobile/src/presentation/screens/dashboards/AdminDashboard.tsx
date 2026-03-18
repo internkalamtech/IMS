@@ -7,8 +7,20 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  TextInput,
+  Button,
+  View,
+  Text
+} from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
@@ -17,13 +29,74 @@ export default function AdminDashboard() {
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [open, setOpen] = useState(false)
+const addUser = async () => {
 
+console.log("Submit button clicked")
+
+try {
+
+const response = await fetch("http://localhost:8000/api/v1/v1/users", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+name: name,
+email: email
+})
+})
+
+const data = await response.json()
+
+console.log("Server response:", data)
+
+alert("User added successfully")
+
+setName("")
+setEmail("")
+setOpen(false)
+
+} catch (error) {
+
+console.log("Error:", error)
+alert("API Error")
+
+}
+
+}
     const quickActions = DASHBOARD_CONFIG.admin.quickActions;
 
     const getStatValue = (label: string, defaultValue: string = '0') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
-    };
+        };
+      const handleSubmit = async () => {
+     try {
+    const response = await fetch("http://127.0.0.1:8000/api/v1/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+      }),
+    });
 
+    const data = await response.json();
+    console.log("Server response:", data);
+
+    setModalVisible(false);
+    setName("");
+    setEmail("");
+
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
     const stats = [
         { title: 'Total Students', value: getStatValue('Total Students'), icon: 'people', color: '#fff' },
         { title: 'Total Teachers', value: getStatValue('Total Teachers'), icon: 'school', color: '#fff' },
@@ -51,6 +124,9 @@ export default function AdminDashboard() {
                             </View>
                             <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
                                 <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
+                            </TouchableOpacity>
+                             <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.logoutIcon}>
+                                <Ionicons name="information-circle-outline" size={24} color={theme.colors.primaryForeground} />
                             </TouchableOpacity>
                         </View>
 
@@ -108,6 +184,57 @@ export default function AdminDashboard() {
                         ))}
                     </ThemedCard>
                 </View>
+                <Modal visible={modalVisible} transparent animationType="slide">
+  <View
+    style={{
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(0,0,0,0.4)"
+    }}
+  >
+    <View
+      style={{
+        width: 300,
+        padding: 20,
+        backgroundColor: "white",
+        borderRadius: 10
+      }}
+    >
+      <Text style={{ fontSize: 18, marginBottom: 10 }}>
+        Add User
+      </Text>
+
+      <TextInput
+        placeholder="Enter Name"
+        value={name}
+        onChangeText={setName}
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          padding: 10,
+          marginBottom: 10
+        }}
+      />
+
+      <TextInput
+        placeholder="Enter Email"
+        value={email}
+        onChangeText={setEmail}
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          padding: 10,
+          marginBottom: 10
+        }}
+      />
+
+      <Button title="Submit" onPress={handleSubmit} />
+
+      <Button title="Close" onPress={() => setModalVisible(false)} />
+    </View>
+  </View>
+</Modal>
             </ScrollView>
         </ThemedView>
     );

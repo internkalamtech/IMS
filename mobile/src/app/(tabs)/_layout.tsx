@@ -52,6 +52,19 @@ export default function TabLayout() {
                     ),
                 }}
             />
+            <Tabs.Screen
+  name="notices"
+  options={{
+    title: "Notices",
+    tabBarIcon: ({ color, focused }) => (
+      <Ionicons
+        name={focused ? "megaphone" : "megaphone-outline"}
+        size={24}
+        color={color}
+      />
+    ),
+  }}
+/>
         </Tabs>
     );
 }

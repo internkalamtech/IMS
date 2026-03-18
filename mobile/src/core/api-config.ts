@@ -27,7 +27,7 @@ export const getApiBaseUrl = (): string => {
     // 2. Web Development
     if (Platform.OS === 'web') {
         // On web, if configuredUrl is set (e.g. to a local IP), use it, otherwise localhost
-        return configuredUrl || 'http://localhost:8000/api/v1';
+       return configuredUrl || 'http://localhost:8000/api/v1/v1';
     }
 
     // 3. Native Development (iOS/Android)
@@ -37,7 +37,7 @@ export const getApiBaseUrl = (): string => {
         if (!hostUri) {
             // Fallback for emulators if hostUri is not available
             const fallbackHost = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
-            const url = `http://${fallbackHost}:8000/api/v1`;
+            const url = `http://${fallbackHost}:8000/api/v1/v1`;
             Logger.debug(`[Config] No hostUri found, using fallback: ${url}`);
             return url;
         }
@@ -55,19 +55,19 @@ export const getApiBaseUrl = (): string => {
 
             // Note: We can't easily auto-detect the local IP here without hostUri,
             // so we warn the user and use a likely local IP or localhost.
-            const url = 'http://localhost:8000/api/v1';
+            const url = 'http://localhost:8000/api/v1/v1';
             Logger.warn(`[Config] Tunnel detected. hostUri is ${hostUri}. Automatic backend detection may fail. Please set EXPO_PUBLIC_API_URL in .env if you get Network Errors.`);
             return url;
         }
 
         // Get the IP from hostUri (e.g., "192.168.1.5:8081" -> "192.168.1.5")
         const hostIp = hostUri.split(':')[0];
-        const dynamicUrl = `http://${hostIp}:8000/api/v1`;
+        const dynamicUrl = `http://${hostIp}:8000/api/v1/v1`;
 
         Logger.debug(`[Config] Dynamic API URL detected: ${dynamicUrl}`);
         return dynamicUrl;
     } catch (error) {
         Logger.error('[Config] Error detecting dynamic API URL', error);
-        return configuredUrl || 'http://10.0.2.2:8000/api/v1';
+      return configuredUrl || 'http://localhost:8000/api/v1/v1';
     }
 };
