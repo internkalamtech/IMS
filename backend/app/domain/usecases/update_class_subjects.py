@@ -3,6 +3,7 @@ Use case for updating subjects of a class.
 This use case allows updating the subjects associated with a class. It checks if the class exists, then processes the provided subjects. If a subject has an ID, it retrieves it from the database; if not, it checks for an existing subject by name or creates a new one. Finally, it updates the class's subjects and commits the changes to the database.
 """
 
+
 class UpdateClassSubjectsUseCase:
 
     def __init__(self, class_repo, subject_repo, db):
@@ -48,5 +49,5 @@ class UpdateClassSubjectsUseCase:
         return {
             "message": "Class subjects updated successfully",
             "class_id": class_id,
-            "subjects_count": len(subject_entities)
+            "subjects_count": len(subject_entities),
         }

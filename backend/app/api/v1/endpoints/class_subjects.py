@@ -16,22 +16,14 @@ router = APIRouter()
 
 @router.post("/class/subjects")
 async def update_class_subjects(
-    request: UpdateClassSubjectsRequest,
-    db: AsyncSession = Depends(get_db)
+    request: UpdateClassSubjectsRequest, db: AsyncSession = Depends(get_db)
 ):
 
     class_repo = ClassRepository(db)
     subject_repo = SubjectRepository(db)
 
-    usecase = UpdateClassSubjectsUseCase(
-        class_repo,
-        subject_repo,
-        db
-    )
+    usecase = UpdateClassSubjectsUseCase(class_repo, subject_repo, db)
 
-    result = await usecase.execute(
-        request.class_id,
-        [s.dict() for s in request.subjects]
-    )
+    result = await usecase.execute(request.class_id, [s.dict() for s in request.subjects])
 
     return result
