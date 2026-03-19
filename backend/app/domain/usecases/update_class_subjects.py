@@ -1,6 +1,11 @@
 """
 Use case for updating subjects of a class.
-This use case allows updating the subjects associated with a class. It checks if the class exists, then processes the provided subjects. If a subject has an ID, it retrieves it from the database; if not, it checks for an existing subject by name or creates a new one. Finally, it updates the class's subjects and commits the changes to the database.
+This use case allows updating the subjects associated with a class.
+It checks if the class exists, then processes the provided subjects.
+If a subject has an ID, it retrieves it from the database; if not,
+it checks for an existing subject by name or creates a new one.
+Finally, it updates the class's subjects and commits the changes
+to the database.
 """
 
 
@@ -29,14 +34,20 @@ class UpdateClassSubjectsUseCase:
                 subject_obj = await self.subject_repo.get_by_id(subject["id"])
 
                 if not subject_obj:
-                    raise Exception(f"Subject with id {subject['id']} not found")
+                    raise Exception(
+                        f"Subject with id {subject['id']} not found"
+                        )
 
             # If name is provided → find or create
             else:
-                subject_obj = await self.subject_repo.get_by_name(subject["name"])
+                subject_obj = await self.subject_repo.get_by_name(
+                    subject["name"]
+                    )
 
                 if not subject_obj:
-                    subject_obj = await self.subject_repo.create(subject["name"])
+                    subject_obj = await self.subject_repo.create(
+                        subject["name"]
+                        )
 
             subject_entities.append(subject_obj)
 

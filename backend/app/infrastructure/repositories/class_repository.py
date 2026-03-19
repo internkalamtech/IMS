@@ -1,5 +1,6 @@
 """
-Class section repository for handling database operations related to class sections.
+Class section repository for handling database operations related
+to class sections.
 """
 
 from sqlalchemy import select
