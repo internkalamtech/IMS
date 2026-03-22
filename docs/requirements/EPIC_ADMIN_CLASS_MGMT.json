@@ -1,0 +1,150 @@
+{
+  "module": "Admin & Academic Management",
+  "epic": {
+    "id": "EPIC_ADMIN_CLASS_MGMT",
+    "type": "epic",
+    "title": "Class & Curriculum Configuration",
+    "body": "Core academic structure management allowing admins to define classes, map subjects to curriculums, and assign class responsibilities to teachers.",
+    "labels": ["epic", "admin", "academics"],
+    "features": [
+      {
+        "id": "FEATURE_CLASS_REGISTRY",
+        "type": "feature",
+        "title": "Class Registry & Lifecycle",
+        "body": "Full CRUD capabilities for Class entities, serving as the foundational containers for students and timetables.",
+        "labels": ["feature", "admin", "core"],
+        "stories": [
+          {
+            "id": "STORY_CLASS_CREATE_API",
+            "type": "story",
+            "title": "Create Class API",
+            "body": "Endpoint to create a new class entity with name, section, and initial subject configuration.",
+            "labels": ["story", "backend", "admin"],
+            "acceptanceCriteria": [
+              "POST /classes accepts name, section, and academicPeriodId",
+              "Validates uniqueness of Class Name + Section pair within the organization",
+              "Returns 201 Created with the new class object"
+            ]
+          },
+          {
+            "id": "STORY_CLASS_LIST_API",
+            "type": "story",
+            "title": "Fetch Class List API",
+            "body": "Endpoint to retrieve all classes for the current organization/branch, optimized for list views.",
+            "labels": ["story", "backend", "admin"],
+            "acceptanceCriteria": [
+              "GET /classes returns a list of class objects",
+              "Response includes aggregated counts (e.g., total students) if required for the UI",
+              "Supports optional filtering by Academic Year"
+            ]
+          },
+          {
+            "id": "STORY_CLASS_UPDATE_API",
+            "type": "story",
+            "title": "Update Class Details API",
+            "body": "Endpoint to modify existing class details, including renaming or changing sections.",
+            "labels": ["story", "backend", "admin"],
+            "acceptanceCriteria": [
+              "PUT/PATCH /classes/{id} updates allowed fields (Name, Section)",
+              "Prevents updates that result in duplicate Class Name + Section pairs",
+              "Logs the modification for audit purposes"
+            ]
+          },
+          {
+            "id": "STORY_CLASS_DELETE_API",
+            "type": "story",
+            "title": "Delete Class API",
+            "body": "Endpoint to soft-delete a class. Must enforce constraints to prevent deleting classes with active students.",
+            "labels": ["story", "backend", "admin"],
+            "acceptanceCriteria": [
+              "DELETE /classes/{id} checks for active student enrollments",
+              "Returns 409 Conflict if students are still enrolled",
+              "Performs soft delete (sets isDeleted flag) if safe"
+            ]
+          },
+          {
+            "id": "STORY_CLASS_MGMT_UI",
+            "type": "story",
+            "title": "Class Management UI (List, Create, Edit)",
+            "body": "Implement the Class grid view and the Add/Edit Modal as per the prototype.",
+            "labels": ["story", "frontend", "ui", "admin"],
+            "acceptanceCriteria": [
+              "Display classes in a grid with Teacher and Subject summaries",
+              "'Add Class' button opens a modal to enter details",
+              "'Edit' button pre-fills the modal with existing class data",
+              "Form submission connects to Create or Update API based on context"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_SUBJECT_ALLOCATION",
+        "type": "feature",
+        "title": "Subject & Curriculum Mapping",
+        "body": "Flexible system to define what subjects are taught in a specific class, including the ability to define new subjects on the fly.",
+        "labels": ["feature", "admin", "curriculum"],
+        "stories": [
+          {
+            "id": "STORY_SUBJECT_MAPPING_UI",
+            "type": "story",
+            "title": "Dynamic Subject Selector UI",
+            "body": "Develop the subject input component that supports selecting from existing subjects or creating new ones immediately.",
+            "labels": ["story", "frontend", "ux", "admin"],
+            "acceptanceCriteria": [
+              "Autocomplete dropdown filters existing available subjects",
+              "User can type a new subject and click 'Add' to create it locally",
+              "Selected subjects appear as removable tags"
+            ]
+          },
+          {
+            "id": "STORY_SUBJECT_PERSISTENCE_API",
+            "type": "story",
+            "title": "Persist Class Subjects API",
+            "body": "Backend logic to update the list of subjects associated with a class. Handles mapping existing subjects and creating new ones.",
+            "labels": ["story", "backend", "admin"],
+            "acceptanceCriteria": [
+              "Accepts list of Subject IDs or Names",
+              "If a Subject Name is provided without an ID, create the Subject master record first",
+              "Updates the link between Class and Subjects (M2M relationship)"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_CLASS_TEACHER_ASSIGNMENT",
+        "type": "feature",
+        "title": "Class Teacher Assignment",
+        "body": "Designate a specific teacher as the 'Class Teacher' responsible for the section.",
+        "labels": ["feature", "admin", "staff-allocation"],
+        "stories": [
+          {
+            "id": "STORY_ASSIGN_TEACHER_API",
+            "type": "story",
+            "title": "Assign Class Teacher API",
+            "body": "Backend endpoint to assign or re-assign a teacher to a specific class.",
+            "labels": ["story", "backend", "admin"],
+            "acceptanceCriteria": [
+              "PATCH /classes/{id}/teacher accepts a teacherUserId",
+              "Validates that the user exists and has the 'TEACHER' role",
+              "Updates the class record with the new teacher ID",
+              "Handles removal of teacher if teacherUserId is null"
+            ]
+          },
+          {
+            "id": "STORY_TEACHER_DROPDOWN_UI",
+            "type": "story",
+            "title": "Teacher Selection Interface",
+            "body": "Integrate the 'Class Teacher' dropdown in the Class Modal with the user list.",
+            "labels": ["story", "frontend", "admin"],
+            "acceptanceCriteria": [
+              "Dropdown fetches users where role = 'TEACHER'",
+              "Displays teacher names clearly",
+              "Pre-fills existing assignment when editing a class",
+              "Updates the class payload with the selected teacher ID"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "module": "Attendance Management",
+  "epic": {
+    "id": "EPIC_TEACHER_ATTENDANCE",
+    "type": "epic",
+    "title": "Teacher Attendance Management Module",
+    "body": "Enables teachers to efficiently track student attendance, manage class-wise records, and monitor historical trends for their assigned subjects and sections.",
+    "labels": ["epic", "attendance", "teacher-portal"],
+    "features": [
+      {
+        "id": "FEATURE_ATTENDANCE_MARKING",
+        "type": "feature",
+        "title": "Daily Attendance Marking",
+        "body": "Interface for teachers to record presence, absence, or leave for students in their assigned classes and subjects on a daily basis.",
+        "labels": ["feature", "attendance", "teacher"],
+        "stories": [
+          {
+            "id": "STORY_ATTENDANCE_MARKING_UI",
+            "type": "story",
+            "title": "Mark Student Attendance (Frontend)",
+            "body": "As a teacher, I want to list students for a specific class and subject and toggle their attendance status so I can submit daily records.",
+            "labels": ["story", "attendance", "frontend"],
+            "acceptanceCriteria": [
+              "List: Admin can view all students assigned to a selected Class/Subject.",
+              "Update: Ability to toggle status between 'Present', 'Absent', and 'Leave' for each student.",
+              "Search: Filter students by name or roll number within the marking screen.",
+              "Summary: Real-time display of total present, absent, and leave counts before submission.",
+              "Submit: Finalize attendance for the selected date with a confirmation prompt."
+            ]
+          },
+          {
+            "id": "STORY_ATTENDANCE_PERSISTENCE_BACKEND",
+            "type": "story",
+            "title": "Attendance Record Management (Backend)",
+            "body": "API endpoints to save and update attendance logs mapped to specific classes, subjects, and dates.",
+            "labels": ["story", "attendance", "backend"],
+            "acceptanceCriteria": [
+              "Create/Update: POST/PUT endpoints to store student attendance statuses (present/absent/leave) for a specific date and class.",
+              "Validation: Ensure attendance cannot be marked for future dates.",
+              "Audit: Maintain a record of the teacher ID who submitted the attendance."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_ATTENDANCE_HISTORY",
+        "type": "feature",
+        "title": "Attendance Analytics & History",
+        "body": "Visual representation of attendance trends and detailed historical logs for individual students and classes.",
+        "labels": ["feature", "attendance", "analytics"],
+        "stories": [
+          {
+            "id": "STORY_ATTENDANCE_DASHBOARD_VIEW",
+            "type": "story",
+            "title": "View Attendance Trends (Frontend)",
+            "body": "As a teacher, I want to see a monthly calendar view and percentage-based summaries of attendance to track consistency.",
+            "labels": ["story", "attendance", "frontend"],
+            "acceptanceCriteria": [
+              "List: Display a monthly calendar with color-coded indicators for present/absent days.",
+              "Summary Card: Show 'This Month' percentage and total missed days.",
+              "Class Selector: Switch between different assigned classes to view their respective histories."
+            ]
+          },
+          {
+            "id": "STORY_STUDENT_PERFORMANCE_METRICS",
+            "type": "story",
+            "title": "Student Attendance Metrics (Frontend)",
+            "body": "As a teacher, I want to see the specific attendance percentage for each student in the student list.",
+            "labels": ["story", "attendance", "frontend"],
+            "acceptanceCriteria": [
+              "List: Show student attendance percentage alongside their profile in the class list.",
+              "Visual Cue: Color-code percentages (e.g., green for >90%, red for <75%) to identify students with low attendance."
+            ]
+          },
+          {
+            "id": "STORY_ATTENDANCE_REPORTS_BACKEND",
+            "type": "story",
+            "title": "Attendance Analytics Retrieval (Backend)",
+            "body": "API to calculate and serve attendance percentages and monthly logs for students and classes.",
+            "labels": ["story", "attendance", "backend"],
+            "acceptanceCriteria": [
+              "GET: Retrieve monthly attendance data for a student/class for the calendar view.",
+              "Calculation: Aggregate total days vs. present days to serve real-time attendance percentages."
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
