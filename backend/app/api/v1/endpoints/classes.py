@@ -9,7 +9,7 @@ classes = []
 # ---------------------------
 # CREATE CLASS
 # ---------------------------
-@router.post("/classes", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 def create_class(name: str, section: str, academicPeriodId: int):
 
     # Check duplicate name + section

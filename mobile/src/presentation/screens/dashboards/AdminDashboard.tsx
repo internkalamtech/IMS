@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -78,7 +79,14 @@ export default function AdminDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid
+                        actions={quickActions}
+                        onActionPress={(action) => {
+                            if (action.title === 'Manage Classes') {
+                                router.push('/(tabs)/classes');
+                            }
+                        }}
+                    />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
