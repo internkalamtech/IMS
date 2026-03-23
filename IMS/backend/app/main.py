@@ -9,15 +9,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.v1.admin.dashboard_router import router as dashboard_router
-from app.api.v1 import router as api_v1_router
-
-# Existing Users API
-from app.api.users import router as users_router
-
-# ✅ STEP 3 IMPORT (Class Teacher Router)
-from app.class_teacher import router as class_teacher_router
-
+from app.api.v1 import router as api_v1_router  # ✅ correct import
 from app.core.config import settings
 from app.core.errors import IMSException
 from app.core.logger import Logger
@@ -26,9 +18,6 @@ from app.infrastructure.database.database import init_db, close_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Application lifespan manager.
-    """
     Logger.info("Starting IMS Backend...")
     Logger.info(
         f"Environment: {'Development' if settings.debug else 'Production'}"
@@ -95,15 +84,8 @@ app.add_middleware(
 )
 
 
-# Existing routers
+# ✅ ONLY THIS ROUTER (IMPORTANT)
 app.include_router(api_v1_router, prefix="/api")
-app.include_router(dashboard_router, prefix="/api/v1")
-
-# Users API
-app.include_router(users_router, prefix="/api")
-
-# ✅ STEP 3 ADDED (Class Teacher API)
-app.include_router(class_teacher_router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Root"])

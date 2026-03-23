@@ -9,7 +9,7 @@ from fastapi import APIRouter
 # Import endpoint routers
 from app.api.v1.endpoints import auth
 from app.api.v1.endpoints import health
-from app.api.v1.endpoints import dashboard
+from app.api.v1.endpoints import dashboard, users
 
 # Create v1 router
 router = APIRouter(prefix="/v1")
@@ -17,4 +17,17 @@ router = APIRouter(prefix="/v1")
 # Register routes
 router.include_router(auth.router)
 router.include_router(health.router)
-router.include_router(dashboard.router)
+
+# Admin Dashboard
+router.include_router(
+    dashboard.router,
+    prefix="/admin/dashboard",
+    tags=["Admin Dashboard"]
+)
+
+# Users
+router.include_router(
+    users.router,
+    prefix="/users",
+    tags=["Users"]
+)
