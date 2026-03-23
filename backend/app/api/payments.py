@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func, extract, select
 
 from app.infrastructure.database.database import get_db
-from app.infrastructure.database.models import Payment
+from app.infrastructure.database.models import Payment, FeeStructure
 
 
 router = APIRouter(
@@ -183,8 +183,12 @@ async def student_ledger(
     if not payments:
         raise HTTPException(status_code=404, detail="No payments found")
 
+    student_class = payments[0].student_class
+    fee_result = await db.execute(select(FeeStructure.fee_amount).filter_by(student_class=student_class))
+    fee_amount = fee_result.scalar()
+    
     total_paid = sum(p.amount for p in payments)
-    total_fee = 50000
+    total_fee = fee_amount if fee_amount else 0
     balance = total_fee - total_paid
 
     history = []
@@ -221,12 +225,17 @@ async def financial_summary(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(func.sum(Payment.amount)))
     total_collected = result.scalar() or 0
 
-    result = await db.execute(
-        select(func.count(func.distinct(Payment.student_id)))
+    stmt = (
+        select(Payment.student_class, func.count(func.distinct(Payment.student_id)))
+        .group_by(Payment.student_class)
     )
-    student_count = result.scalar() or 0
+    class_counts = (await db.execute(stmt)).all()
 
-    total_collectible = student_count * 50000
+    total_collectible = 0
+    for s_class, count in class_counts:
+        fee_result = await db.execute(select(FeeStructure.fee_amount).filter_by(student_class=s_class))
+        fee_amount = fee_result.scalar() or 0
+        total_collectible += fee_amount * count
     pending = max(total_collectible - total_collected, 0)
 
     return FinancialSummary(

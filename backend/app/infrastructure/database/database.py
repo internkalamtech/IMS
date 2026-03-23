@@ -26,5 +26,5 @@ async def get_db():
 
 
 async def close_db():
-    """Close the database engine."""
-    await engine.dispose()
+    """Close database connections on application shutdown."""
+    await engine.dispose()

@@ -5,8 +5,6 @@ This module handles all application configuration using Pydantic Settings.
 Environment variables are loaded from .env file.
 """
 
-from typing import Union
-
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -34,9 +32,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
 
     # CORS - stored as string in env, parsed to list
-    cors_origins: Union[str, list[str]] = (
-        "http://localhost:8081,exp://localhost:8081,"
-        "http://localhost:19000,http://localhost:19006"
+    cors_origins = (
+        "http://localhost:8081,http://localhost:8083,"
+        "exp://localhost:8081,http://localhost:19000,http://localhost:19006"
     )
 
     # Logging
