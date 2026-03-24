@@ -22,5 +22,8 @@
         "monorepo"
     ],
     "author": "",
-    "license": "ISC"
+    "license": "ISC",
+    "dependencies": {
+        "@react-native-picker/picker": "^2.11.4"
+    }
 }

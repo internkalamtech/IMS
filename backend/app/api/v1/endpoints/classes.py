@@ -1,20 +1,26 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import Optional
+from pydantic import BaseModel
 
 router = APIRouter()
 
 # Temporary storage (until database is connected)
 classes = []
 
+class ClassCreate(BaseModel):
+    name: str
+    section: str
+    academicPeriodId: int
+
 # ---------------------------
 # CREATE CLASS
 # ---------------------------
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_class(name: str, section: str, academicPeriodId: int):
+def create_class(payload: ClassCreate):
 
     # Check duplicate name + section
     for cls in classes:
-        if cls["name"] == name and cls["section"] == section and not cls["isDeleted"]:
+        if cls["name"] == payload.name and cls["section"] == payload.section and not cls["isDeleted"]:
             raise HTTPException(
                 status_code=400,
                 detail="Class with same Name and Section already exists"
@@ -22,9 +28,9 @@ def create_class(name: str, section: str, academicPeriodId: int):
 
     new_class = {
         "id": len(classes) + 1,
-        "name": name,
-        "section": section,
-        "academicPeriodId": academicPeriodId,
+        "name": payload.name,
+        "section": payload.section,
+        "academicPeriodId": payload.academicPeriodId,
         "totalStudents": 0,
         "isDeleted": False
     }
@@ -37,7 +43,7 @@ def create_class(name: str, section: str, academicPeriodId: int):
 # ---------------------------
 # FETCH CLASSES
 # ---------------------------
-@router.get("/classes")
+@router.get("/")
 def get_classes(academicPeriodId: Optional[int] = None):
 
     if academicPeriodId is None:
@@ -48,25 +54,38 @@ def get_classes(academicPeriodId: Optional[int] = None):
 # ---------------------------
 # UPDATE CLASS
 # ---------------------------
-@router.put("/classes/{class_id}")
-def update_class(class_id: int, name: str, section: str):
+@router.put("/{class_id}")
+def update_class(class_id: int, payload: ClassCreate):
 
-    # Check duplicate name + section
+    # Check duplicate name + section excluding current class
     for cls in classes:
-        if cls["id"] != class_id and cls["name"] == name and cls["section"] == section and not cls["isDeleted"]:
+        if (
+            cls["id"] != class_id and
+            cls["name"] == payload.name and
+            cls["section"] == payload.section and
+            not cls["isDeleted"]
+        ):
             raise HTTPException(
                 status_code=400,
                 detail="Another class with same Name and Section exists"
             )
 
+    # Find class and update values
     for cls in classes:
         if cls["id"] == class_id and not cls["isDeleted"]:
-            cls["name"] = name
-            cls["section"] = section
+
+            # Update fields
+            cls["name"] = payload.name
+            cls["section"] = payload.section
+            cls["academicPeriodId"] = payload.academicPeriodId
+
             return cls
 
-    raise HTTPException(status_code=404, detail="Class not found")
-
+    # If class not found
+    raise HTTPException(
+        status_code=404,
+        detail="Class not found"
+    )
 
 # ---------------------------
 # DELETE CLASS (SOFT DELETE)
