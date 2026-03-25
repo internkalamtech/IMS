@@ -9,7 +9,6 @@ import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    Dimensions,
     RefreshControl,
     ScrollView,
     StatusBar,
@@ -20,11 +19,53 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '@/core/api-client';
 
-const { width } = Dimensions.get('window');
+// Type definitions for API responses
+interface Route {
+    id: string;
+    name: string;
+    status: 'on_time' | 'delayed';
+    total_stops: number;
+    total_students: number;
+    assigned_bus: string;
+    driver: string;
+    next_stop?: string;
+    next_time?: string;
+    current_location?: { lat: number; lng: number };
+    delay_minutes: number;
+}
+
+interface ComplianceStatus {
+    valid_documents: number;
+    expiring_soon: number;
+    expired: number;
+}
+
+type TransportAlertType = 'danger' | 'warning' | 'maintenance' | 'alert';
+
+interface TransportAlert {
+    id: string;
+    bus_id: string;
+    type: TransportAlertType;
+    message: string;
+    timestamp: string;
+    location: string;
+    resolved: boolean;
+    icon?: React.ComponentProps<typeof Ionicons>['name'];
+}
+
+interface ExpiringDocument {
+    id: string;
+    bus_id: string;
+    type: string;
+    document_number: string;
+    expiry_date: string;
+    status: string;
+    days_left: number;
+}
 
 export default function TransportDashboard() {
     const { logout, user } = useAuth();
-    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
+    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
 
     const quickActions = DASHBOARD_CONFIG.transport?.quickActions || [];
@@ -41,11 +82,10 @@ export default function TransportDashboard() {
     ];
 
     // Transport-specific state
-    const [routes, setRoutes] = useState([]);
-    const [complianceStatus, setComplianceStatus] = useState(null);
-    const [transportAlerts, setTransportAlerts] = useState([]);
-    const [expiringDocuments, setExpiringDocuments] = useState([]);
-    const [transportLoading, setTransportLoading] = useState(true);
+    const [routes, setRoutes] = useState<Route[]>([]);
+    const [complianceStatus, setComplianceStatus] = useState<ComplianceStatus | null>(null);
+    const [transportAlerts, setTransportAlerts] = useState<TransportAlert[]>([]);
+    const [expiringDocuments, setExpiringDocuments] = useState<ExpiringDocument[]>([]);
 
     // Fetch transport data
     const fetchTransportData = async () => {
@@ -64,8 +104,6 @@ export default function TransportDashboard() {
         } catch (error) {
             console.error('Failed to fetch transport data:', error);
             // Keep existing fallback data
-        } finally {
-            setTransportLoading(false);
         }
     };
 
@@ -73,20 +111,50 @@ export default function TransportDashboard() {
         fetchTransportData();
     }, []);
 
-    const alerts = [
-        { id: '1', bus: 'BUS-007', time: '15 min ago', message: 'Over-speeding detected - 68 km/h in 50 km/h zone', type: 'danger', icon: 'flash' },
-        { id: '2', bus: 'BUS-002', time: '25 min ago', message: 'Route B delayed by 10 minutes due to traffic', type: 'warning', icon: 'time' },
-        { id: '3', bus: 'BUS-012', time: '1 hour ago', message: 'Insurance expires in 7 days', type: 'maintenance', icon: 'construct' },
-        { id: '4', bus: 'BUS-005', time: '2 hours ago', message: 'Student misbehavior reported', type: 'alert', icon: 'warning' },
-    ];
+    interface AlertColors {
+        bg: string;
+        border: string;
+        text: string;
+        icon: string;
+    }
 
-    const getAlertColors = (type: string) => {
+    const getAlertColors = (type: TransportAlertType): AlertColors => {
         switch (type) {
-            case 'danger': return { bg: '#fee2e2', border: '#fca5a5', text: '#ef4444', icon: '#ef4444' }; // Red
-            case 'warning': return { bg: '#ffedd5', border: '#fdba74', text: '#f97316', icon: '#4b5563' }; // Orange
-            case 'maintenance': return { bg: '#ffedd5', border: '#fdba74', text: '#d97706', icon: '#9ca3af' }; // Soft Orange/Gray icon
-            case 'alert': return { bg: '#fef9c3', border: '#fde047', text: '#ca8a04', icon: '#ca8a04' }; // Yellow
-            default: return { bg: theme.colors.card, border: theme.colors.border, text: theme.colors.text, icon: theme.colors.text };
+            case 'danger':
+                return {
+                    bg: '#fee2e2',
+                    border: '#fca5a5',
+                    text: '#ef4444',
+                    icon: '#ef4444',
+                };
+            case 'warning':
+                return {
+                    bg: '#ffedd5',
+                    border: '#fdba74',
+                    text: '#f97316',
+                    icon: '#4b5563',
+                };
+            case 'maintenance':
+                return {
+                    bg: '#ffedd5',
+                    border: '#fdba74',
+                    text: '#d97706',
+                    icon: '#9ca3af',
+                };
+            case 'alert':
+                return {
+                    bg: '#fef9c3',
+                    border: '#fde047',
+                    text: '#ca8a04',
+                    icon: '#ca8a04',
+                };
+            default:
+                return {
+                    bg: theme.colors.card,
+                    border: theme.colors.border,
+                    text: '#374151',
+                    icon: '#6b7280',
+                };
         }
     };
 
@@ -248,7 +316,12 @@ export default function TransportDashboard() {
                                         { backgroundColor: colors.bg, borderColor: colors.border },
                                     ]}
                                 >
-                                    <Ionicons name={alert.icon || 'warning'} size={20} color={colors.icon} style={styles.alertIcon} />
+                                    <Ionicons
+                                        name={(alert.icon ?? 'warning') as React.ComponentProps<typeof Ionicons>['name']}
+                                        size={20}
+                                        color={colors.icon}
+                                        style={styles.alertIcon}
+                                    />
                                     <View style={styles.alertContent}>
                                         <View style={styles.alertHeader}>
                                             <ThemedText style={[styles.alertBusTitle, { color: colors.text }]}>{alert.bus_id}</ThemedText>
@@ -529,11 +602,11 @@ const styles = StyleSheet.create({
     routeInfo: {
         fontSize: 14,
         marginBottom: 4,
-        lightColor: '#6b7280',
-        darkColor: '#9ca3af',
+        color: '#6b7280',
     },
     routeTime: {
         fontSize: 12,
+        color: '#9ca3af',
     },
     complianceContainer: {
         flexDirection: 'row',
@@ -560,13 +633,9 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginBottom: 4,
         textAlign: 'center',
-        lightColor: '#6b7280',
-        darkColor: '#9ca3af',
     },
     complianceCount: {
         fontSize: 20,
         fontWeight: '700',
-        lightColor: '#111827',
-        darkColor: '#f9fafb',
     },
 });

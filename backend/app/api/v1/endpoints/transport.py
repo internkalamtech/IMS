@@ -9,17 +9,24 @@ from app.api.schemas import (
 from app.domain.entities.user import User
 from app.domain.usecases.transport_usecases import (
     GetRoutesUseCase, GetRouteUseCase, GetAlertsUseCase,
-    GetExpiringDocumentsUseCase, GetComplianceStatusUseCase, GetTransportStatsUseCase
+    GetExpiringDocumentsUseCase, GetComplianceStatusUseCase,
+    GetTransportStatsUseCase
 )
-from app.infrastructure.repositories.transport_repository_impl import TransportRepositoryImpl
+from app.infrastructure.repositories.transport_repository_impl import (
+    TransportRepositoryImpl
+)
 
 # Initialize dependencies (in production, use dependency injection)
 transport_repository = TransportRepositoryImpl()
 get_routes_usecase = GetRoutesUseCase(transport_repository)
 get_route_usecase = GetRouteUseCase(transport_repository)
 get_alerts_usecase = GetAlertsUseCase(transport_repository)
-get_expiring_documents_usecase = GetExpiringDocumentsUseCase(transport_repository)
-get_compliance_status_usecase = GetComplianceStatusUseCase(transport_repository)
+get_expiring_documents_usecase = (
+    GetExpiringDocumentsUseCase(transport_repository)
+)
+get_compliance_status_usecase = (
+    GetComplianceStatusUseCase(transport_repository)
+)
 get_transport_stats_usecase = GetTransportStatsUseCase(transport_repository)
 
 router = APIRouter(prefix="/transport", tags=["Transport"])
@@ -30,7 +37,10 @@ router = APIRouter(prefix="/transport", tags=["Transport"])
     response_model=RouteListResponse,
     status_code=status.HTTP_200_OK,
     summary="Get all transport routes",
-    description="Retrieve all transport routes with their current status and details."
+    description=(
+        "Retrieve all transport routes with their "
+        "current status and details."
+    )
 )
 async def get_routes(
     current_user: User = Depends(get_current_user),
@@ -63,7 +73,9 @@ async def get_routes(
             delay_minutes=route.delay_minutes
         ))
 
-    return RouteListResponse(routes=route_responses, total=len(route_responses))
+    return RouteListResponse(
+        routes=route_responses, total=len(route_responses)
+        )
 
 
 @router.get(
@@ -71,7 +83,10 @@ async def get_routes(
     response_model=RouteResponse,
     status_code=status.HTTP_200_OK,
     summary="Get specific route details",
-    description="Retrieve detailed information for a specific transport route."
+    description=(
+        "Retrieve detailed information for a specific "
+        "transport route."
+    )
 )
 async def get_route(
     route_id: str,
@@ -113,7 +128,10 @@ async def get_route(
     response_model=ComplianceStatusResponse,
     status_code=status.HTTP_200_OK,
     summary="Get compliance document status overview",
-    description="Retrieve compliance document status counts (valid, expiring, expired)."
+    description=(
+        "Retrieve compliance document status counts "
+        "(valid, expiring, expired)."
+    )
 )
 async def get_compliance_status(
     current_user: User = Depends(get_current_user),
@@ -140,7 +158,10 @@ async def get_compliance_status(
     response_model=AlertListResponse,
     status_code=status.HTTP_200_OK,
     summary="Get recent transport alerts",
-    description="Retrieve recent alerts and notifications for transport operations."
+    description=(
+        "Retrieve recent alerts and notifications "
+        "for transport operations."
+    )
 )
 async def get_alerts(
     limit: Optional[int] = 10,
@@ -168,7 +189,9 @@ async def get_alerts(
             resolved=alert.resolved
         ))
 
-    return AlertListResponse(alerts=alert_responses, total=len(alert_responses))
+    return AlertListResponse(
+        alerts=alert_responses, total=len(alert_responses)
+        )
 
 
 @router.get(
@@ -176,7 +199,10 @@ async def get_alerts(
     response_model=DocumentExpiryListResponse,
     status_code=status.HTTP_200_OK,
     summary="Get documents expiring soon",
-    description="Retrieve documents that are expiring within the next 30 days."
+    description=(
+        "Retrieve documents that are expiring "
+        "within the next 30 days."
+    )
 )
 async def get_expiring_documents(
     days: Optional[int] = 30,
@@ -204,7 +230,9 @@ async def get_expiring_documents(
             days_left=doc.days_left
         ))
 
-    return DocumentExpiryListResponse(documents=document_responses, total=len(document_responses))
+    return DocumentExpiryListResponse(
+        documents=document_responses, total=len(document_responses)
+        )
 
 
 @router.get(
@@ -212,7 +240,10 @@ async def get_expiring_documents(
     response_model=TransportStatsResponse,
     status_code=status.HTTP_200_OK,
     summary="Get comprehensive transport statistics",
-    description="Retrieve comprehensive transport statistics for dashboard display."
+    description=(
+        "Retrieve comprehensive transport "
+        "statistics for dashboard display."
+    )
 )
 async def get_transport_stats(
     current_user: User = Depends(get_current_user),

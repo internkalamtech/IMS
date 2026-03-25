@@ -12,7 +12,7 @@ export function ThemedCard({
     children,
     ...rest
 }: ThemedCardProps) {
-    const { theme, isDark } = useTheme();
+    const { theme } = useTheme();
 
     return (
         <View

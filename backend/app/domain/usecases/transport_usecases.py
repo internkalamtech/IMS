@@ -1,6 +1,7 @@
 from typing import List, Optional
 from app.domain.entities.transport import (
-    TransportRepository, Route, Alert, Document, ComplianceStatus, TransportStats
+    TransportRepository, Route, Alert, Document,
+    ComplianceStatus, TransportStats
 )
 
 

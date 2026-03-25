@@ -1,7 +1,8 @@
 from typing import List, Optional
 from datetime import datetime, timedelta
 from app.domain.entities.transport import (
-    TransportRepository, Route, Alert, Document, ComplianceStatus, TransportStats
+    TransportRepository, Route, Alert, Document,
+    ComplianceStatus, TransportStats
 )
 
 
@@ -130,7 +131,9 @@ class TransportRepositoryImpl(TransportRepository):
 
     async def get_route(self, route_id: str) -> Optional[Route]:
         """Get a specific route by ID."""
-        route_data = next((r for r in self.MOCK_ROUTES if r["id"] == route_id), None)
+        route_data = next(
+            (r for r in self.MOCK_ROUTES if r["id"] == route_id), None
+        )
         if not route_data:
             return None
         return Route(**route_data)
@@ -179,17 +182,33 @@ class TransportRepositoryImpl(TransportRepository):
         """Get comprehensive transport statistics."""
         # Calculate stats from mock data
         total_routes = len(self.MOCK_ROUTES)
-        active_trips = len([r for r in self.MOCK_ROUTES if r["status"] in ["on_time", "delayed"]])
-        total_students = sum(r["total_students"] for r in self.MOCK_ROUTES)
-        total_buses = len(set(r["assigned_bus"] for r in self.MOCK_ROUTES))
+        active_trips = len([
+            r for r in self.MOCK_ROUTES
+            if r["status"] in ["on_time", "delayed"]
+        ])
+        total_students = sum(
+            r["total_students"] for r in self.MOCK_ROUTES
+        )
+        total_buses = len(set(
+            r["assigned_bus"] for r in self.MOCK_ROUTES
+        ))
 
         # Compliance stats
         valid_docs = 24
-        expiring_docs = len([d for d in self.MOCK_DOCUMENTS if d["status"] == "expiring_soon"])
-        expired_docs = len([d for d in self.MOCK_DOCUMENTS if d["status"] == "expired"])
+        expiring_docs = len([
+            d for d in self.MOCK_DOCUMENTS
+            if d["status"] == "expiring_soon"
+        ])
+        expired_docs = len([
+            d for d in self.MOCK_DOCUMENTS
+            if d["status"] == "expired"
+        ])
 
         # Alert stats
-        active_alerts = len([a for a in self.MOCK_ALERTS if not a["resolved"]])
+        active_alerts = len([
+            a for a in self.MOCK_ALERTS
+            if not a["resolved"]
+        ])
 
         return TransportStats(
             total_routes=total_routes,

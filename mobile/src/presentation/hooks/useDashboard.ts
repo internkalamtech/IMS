@@ -1,7 +1,7 @@
 import { UserRepositoryImpl } from '@/data/repositories/user-repository-impl';
 import { DashboardData } from '@/domain/repositories/user-repository';
 import { GetDashboardDataUseCase } from '@/domain/usecases/get-dashboard-data-usecase';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from './useAuth';
 
 const userRepository = new UserRepositoryImpl();
@@ -14,13 +14,7 @@ export function useDashboard() {
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (user) {
-            fetchData();
-        }
-    }, [user]);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -32,7 +26,13 @@ export function useDashboard() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
+
+    useEffect(() => {
+        if (user) {
+            fetchData();
+        }
+    }, [user, fetchData]);
 
     const onRefresh = async () => {
         setRefreshing(true);
