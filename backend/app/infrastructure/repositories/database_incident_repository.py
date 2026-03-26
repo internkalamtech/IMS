@@ -6,7 +6,6 @@ Follows the same pattern as database_auth_repository.py.
 """
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logger import Logger
 from app.domain.entities.incident import Incident
