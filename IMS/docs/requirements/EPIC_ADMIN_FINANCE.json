@@ -1,0 +1,93 @@
+{
+  "module": "Finance & Fee Management",
+  "epic": {
+    "id": "EPIC_ADMIN_FINANCE",
+    "type": "epic",
+    "title": "Finance & Fee Management Module",
+    "body": "Handles all fee configuration, invoicing, collection, tracking, reconciliation, and reporting across multi-organization and multi-branch institutes with accuracy, auditability, and scalability.",
+    "labels": ["epic", "finance", "admin"],
+    "features": [
+      {
+        "id": "FEATURE_FEE_STRUCTURE",
+        "type": "feature",
+        "title": "Fee Structure Configuration",
+        "body": "Administrators can define class-wise fee structures including granular fee heads (Tuition, Transport, Lab, etc.) and installment plans for an academic year.",
+        "labels": ["feature", "finance", "admin"],
+        "stories": [
+          {
+            "id": "STORY_FEE_STRUCTURE_CRUD",
+            "type": "story",
+            "title": "Manage Fee Structures (Frontend)",
+            "body": "As an admin, I want to create, list, update, and delete fee structures for different classes so that I can set clear financial expectations for each grade.",
+            "labels": ["story", "finance", "frontend", "admin"],
+            "acceptanceCriteria": [
+              "List: Admin can view existing fee structures filtered by class name.",
+              "Create: Form to add a new structure with class mapping, academic year, and multiple fee breakdown items.",
+              "Update: Ability to edit existing structure details including installment dates and amounts.",
+              "Delete: Option to remove a fee structure with a confirmation prompt.",
+              "Validation: Ensure total amount is calculated automatically based on fee head breakdown."
+            ]
+          },
+          {
+            "id": "STORY_FEE_BREAKDOWN_BACKEND",
+            "type": "story",
+            "title": "Fee Breakdown & Installment Persistence (Backend)",
+            "body": "API to store and manage the details of fee heads and installment schedules associated with a class.",
+            "labels": ["story", "finance", "backend", "admin"],
+            "acceptanceCriteria": [
+              "POST/PUT endpoints to save fee structure objects containing arrays of breakdown items and installments.",
+              "GET endpoint to retrieve structures by classId and academicYear.",
+              "DELETE endpoint to remove structures and ensure data integrity with student records."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_STUDENT_FEE_TRACKING",
+        "type": "feature",
+        "title": "Student Fee & Payment Management",
+        "body": "Comprehensive tracking of individual student payments, balances, and collection management including receipt generation.",
+        "labels": ["feature", "finance", "payments", "admin"],
+        "stories": [
+          {
+            "id": "STORY_STUDENT_FEE_CRUD",
+            "type": "story",
+            "title": "Student Payment & Ledger Management (Admin)",
+            "body": "As an admin, I want to record new payments, view payment history, and update payment status for individual students.",
+            "labels": ["story", "finance", "frontend"],
+            "acceptanceCriteria": [
+              "List: Search and filter student fee records by name, roll number, class, and payment status (Paid, Partial, Overdue).",
+              "Create: Add payment modal to record transactions including amount, mode (Cash, UPI, Card), and reference numbers.",
+              "View: Detail view for student payment history showing receipt numbers and collection dates.",
+              "Auto-Update: System must automatically recalculate student balance and update status (e.g., to 'Paid') upon recording a payment."
+            ]
+          },
+          {
+            "id": "STORY_COLLECTION_ANALYTICS",
+            "type": "story",
+            "title": "Fee Dashboard & Analytics (Admin)",
+            "body": "High-level summary of financial health including total collectibles, collected fees, and overdue amounts.",
+            "labels": ["story", "finance", "analytics", "admin"],
+            "acceptanceCriteria": [
+              "Display cards for Total Collectible, Collected, Pending, and Overdue amounts.",
+              "Collapsible stats section to optimize screen space for list views.",
+              "Export/Download: Option to download payment reports or receipts (UI placeholder exists)."
+            ]
+          },
+          {
+            "id": "STORY_PAYMENT_BACKEND",
+            "type": "story",
+            "title": "Payment Transaction Processing (Backend)",
+            "body": "API for processing payments and maintaining the audit trail of all financial transactions.",
+            "labels": ["story", "finance", "backend", "admin"],
+            "acceptanceCriteria": [
+              "POST endpoint to record a transaction and generate a unique receipt number (REC...).",
+              "Logic to handle partial payments and update the 'nextDue' object for the student.",
+              "GET endpoints to fetch student-specific ledgers and global collection stats."
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

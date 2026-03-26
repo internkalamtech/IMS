@@ -1,0 +1,116 @@
+{
+  "module": "Admin & User Management",
+  "epic": {
+    "id": "EPIC_ADMIN_USER_ONBOARDING",
+    "type": "epic",
+    "title": "User Onboarding & Identity Management",
+    "body": "Centralized management of user lifecycles, enabling the secure creation and onboarding of students, teachers, administrators, and support staff with role-specific data validation.",
+    "labels": ["epic", "admin", "onboarding"],
+    "features": [
+      {
+        "id": "FEATURE_STAFF_PROVISIONING",
+        "type": "feature",
+        "title": "Staff Provisioning (Teachers, Admin, Transport)",
+        "body": "Enable administrators to register staff members (Teachers, Drivers, Transport Managers) with attributes specific to their roles, such as subject expertise or employee IDs.",
+        "labels": ["feature", "admin", "staff"],
+        "stories": [
+          {
+            "id": "STORY_CREATE_STAFF_API",
+            "type": "story",
+            "title": "Create Staff User API",
+            "body": "Implement backend endpoint to create staff users. Must accept specific fields based on role (e.g., 'subjects' for Teachers, 'license' for Drivers).",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "Endpoint validates mandatory fields (Name, Email, Phone, Role)",
+              "Ensures Email and Phone are unique across the system",
+              "Persists role-specific data (e.g., ClassAssigned, Subjects) for Teachers"
+            ]
+          },
+          {
+            "id": "STORY_STAFF_CREATION_UI",
+            "type": "story",
+            "title": "Staff Creation Interface",
+            "body": "Develop the 'Add User' modal form to support Staff roles as per the prototype designs.",
+            "labels": ["story", "frontend", "ui"],
+            "acceptanceCriteria": [
+              "Form displays dynamic fields when 'Teacher' role is selected (Subjects, Classes)",
+              "Form hides irrelevant fields (e.g., Parent Details) when creating staff",
+              "Validates required fields before submission",
+              "Success notification upon user creation"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_STUDENT_ENROLLMENT",
+        "type": "feature",
+        "title": "Student & Parent Enrollment",
+        "body": "Streamlined process to register students, assign them to classes, and simultaneously link/create their parent or guardian profiles.",
+        "labels": ["feature", "admin", "student"],
+        "stories": [
+          {
+            "id": "STORY_CREATE_STUDENT_API",
+            "type": "story",
+            "title": "Create Student with Parent Link API",
+            "body": "Backend logic to create a Student user and an associated Parent profile in a single transaction or link to an existing parent.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "Validates Student basic info (Name, Class, Roll Number)",
+              "Validates Parent info (Name, Phone, Email)",
+              "Creates relationship between Student and Parent entities",
+              "Ensures Student is assigned to a valid Class Section"
+            ]
+          },
+          {
+            "id": "STORY_STUDENT_FORM_UI",
+            "type": "story",
+            "title": "Student Registration Form",
+            "body": "Implement the 'Student' role selection in the Add User form which reveals the Parent Details section.",
+            "labels": ["story", "frontend", "ui"],
+            "acceptanceCriteria": [
+              "Selecting 'Student' reveals 'Parent Details' section (Name, Phone, Email)",
+              "Includes fields for Roll Number, DOB, and Blood Group",
+              "Client-side validation ensures Parent details are filled",
+              "Supports assigning the student to a specific class from a dropdown"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_USER_DIRECTORY",
+        "type": "feature",
+        "title": "User Directory & Search",
+        "body": "A searchable and filterable view of all system users to allow admins to manage existing accounts efficiently.",
+        "labels": ["feature", "admin", "ux"],
+        "stories": [
+          {
+            "id": "STORY_USER_LIST_API",
+            "type": "story",
+            "title": "Fetch Users API with Filters",
+            "body": "API to retrieve paginated list of users with support for filtering by Role and searching by Name/Email.",
+            "labels": ["story", "backend"],
+            "acceptanceCriteria": [
+              "Supports pagination (limit/offset)",
+              "Filters by Role (Teacher, Student, Admin, etc.)",
+              "Search query applies to Name and Email fields",
+              "Returns appropriate metadata (Total count)"
+            ]
+          },
+          {
+            "id": "STORY_USER_LIST_UI",
+            "type": "story",
+            "title": "User Management Dashboard UI",
+            "body": "Implement the user list table with search bar, role filter tabs, and action buttons (Edit/Delete).",
+            "labels": ["story", "frontend"],
+            "acceptanceCriteria": [
+              "Displays users with Role icons (GraduationCap, BookOpen, etc.)",
+              "Implements 'Search' input to filter the list client-side or server-side",
+              "Implements Role filter dropdown/tabs",
+              "Shows 'Edit' and 'Delete' actions for each row"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
