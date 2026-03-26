@@ -131,3 +131,70 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
+
+
+class CreateIncidentRequest(BaseModel):
+    """Request schema for creating an incident."""
+
+    type: Literal["breakdown", "accident", "delay"] = Field(
+        ..., description="Type of incident"
+    )
+    severity: Literal["low", "medium", "high", "critical"] = Field(
+        ..., description="Severity level of the incident"
+    )
+    description: str = Field(
+        ...,
+        min_length=1,
+        max_length=1000,
+        description="Description of the incident",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "type": "breakdown",
+                    "severity": "high",
+                    "description": (
+                        "Vehicle engine overheating on Route 5"
+                    ),
+                }
+            ]
+        }
+    }
+
+
+class IncidentResponse(BaseModel):
+    """Response schema for a single incident."""
+
+    id: str
+    driver_id: str
+    type: str
+    severity: str
+    description: str
+    status: str
+    created_at: str | None = None
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "1",
+                    "driver_id": "6",
+                    "type": "breakdown",
+                    "severity": "high",
+                    "description": (
+                        "Vehicle engine overheating on Route 5"
+                    ),
+                    "status": "open",
+                    "created_at": "2026-03-26T10:30:00",
+                }
+            ]
+        }
+    }
+
+
+class IncidentListResponse(BaseModel):
+    """Response schema for list of incidents."""
+
+    incidents: list[IncidentResponse]

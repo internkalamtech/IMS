@@ -116,3 +116,52 @@ class RoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+
+
+class IncidentModel(Base):
+    """
+    Incident database model.
+
+    Represents an incident reported by a driver.
+    Examples: vehicle breakdown, accident, delay.
+    """
+
+    __tablename__ = "incidents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    driver_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # breakdown, accident, delay
+    severity: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # low, medium, high, critical
+    description: Mapped[str] = mapped_column(String(1000), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(50), default="open", nullable=False
+    )  # open, acknowledged, resolved
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    driver: Mapped["UserModel"] = relationship(
+        "UserModel", foreign_keys=[driver_id], lazy="joined"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Incident(id={self.id}, type='{self.type}', "
+            f"severity='{self.severity}', status='{self.status}')>"
+        )
