@@ -12,6 +12,7 @@ Following Clean Architecture principles:
 """
 
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import (
@@ -62,7 +63,9 @@ class DatabaseAuthRepository(AuthRepository):
 
             # Query user by email (with roles eagerly loaded)
             result = await self.db.execute(
-                select(UserModel).where(UserModel.email == email.lower())
+                select(UserModel)
+                .options(selectinload(UserModel.roles))
+                .where(UserModel.email == email.lower())
             )
             user_model = result.unique().scalar_one_or_none()
 
@@ -118,7 +121,9 @@ class DatabaseAuthRepository(AuthRepository):
         """
         try:
             result = await self.db.execute(
-                select(UserModel).where(UserModel.id == int(user_id))
+                select(UserModel)
+                .options(selectinload(UserModel.roles))
+                .where(UserModel.id == int(user_id))
             )
             user_model = result.unique().scalar_one_or_none()
 
@@ -147,7 +152,9 @@ class DatabaseAuthRepository(AuthRepository):
         """
         try:
             result = await self.db.execute(
-                select(UserModel).where(UserModel.email == email.lower())
+                select(UserModel)
+                .options(selectinload(UserModel.roles))
+                .where(UserModel.email == email.lower())
             )
             user_model = result.unique().scalar_one_or_none()
 
@@ -175,7 +182,9 @@ class DatabaseAuthRepository(AuthRepository):
         """
         try:
             result = await self.db.execute(
-                select(UserModel).where(UserModel.email.like(pattern))
+                select(UserModel)
+                .options(selectinload(UserModel.roles))
+                .where(UserModel.email.like(pattern))
             )
             user_models = result.scalars().unique().all()
 

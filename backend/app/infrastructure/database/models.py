@@ -40,10 +40,12 @@ class UserModel(Base):
     is_active = Column(Boolean, default=True)
 
     roles = relationship(
-        "RoleModel",
-        secondary=user_roles,
-        back_populates="users",
-    )
+    "RoleModel",
+    secondary=user_roles,
+    back_populates="users",
+    lazy="selectin"
+)
+    
 
 
 # -------------------------
