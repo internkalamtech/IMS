@@ -120,7 +120,7 @@ export default function TimetableScreen() {
                                 <Ionicons
                                     name="chevron-back"
                                     size={24}
-                                    color={dayIndex === 0 ? theme.colors.border : theme.colors.text}
+                                    color={dayIndex === 0 ? theme.colors.border : theme.colors.foreground}
                                 />
                             </TouchableOpacity>
                             <ThemedText style={styles.dayText} type="defaultSemiBold">
@@ -133,7 +133,7 @@ export default function TimetableScreen() {
                                 <Ionicons
                                     name="chevron-forward"
                                     size={24}
-                                    color={dayIndex === 5 ? theme.colors.border : theme.colors.text}
+                                    color={dayIndex === 5 ? theme.colors.border : theme.colors.foreground}
                                 />
                             </TouchableOpacity>
                         </View>

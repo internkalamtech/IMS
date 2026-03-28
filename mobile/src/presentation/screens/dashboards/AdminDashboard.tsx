@@ -10,7 +10,6 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
     Dimensions,
-    Platform,
     RefreshControl,
     ScrollView,
     StatusBar,
@@ -24,7 +23,7 @@ const { width } = Dimensions.get('window');
 
 export default function AdminDashboard() {
     const { logout, user } = useAuth();
-    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
+    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
 
     const quickActions = DASHBOARD_CONFIG.admin.quickActions;

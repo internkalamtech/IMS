@@ -191,7 +191,7 @@ export default function AlertsTab() {
                             No Alerts
                         </ThemedText>
                         <ThemedText lightColor="#999" darkColor="#666">
-                            You're all caught up!
+                            You&apos;re all caught up!
                         </ThemedText>
                     </View>
                 ) : (
