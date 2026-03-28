@@ -29,12 +29,16 @@ class Settings(BaseSettings):
     # Security
     secret_key: str = "dev-secret-key-change-in-production"
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 1440  # 24 hours for dev (was 30 min)
 
     # CORS - stored as string in env, parsed to list
     cors_origins: Union[str, list[str]] = (
-        "http://localhost:8081,exp://localhost:8081,"
-        "http://localhost:19000,http://localhost:19006"
+        "http://localhost:8081,http://localhost:8082,http://localhost:8083,"
+        "http://localhost:8084,http://localhost:8085,"
+        "http://localhost:19000,http://localhost:19006,"
+        "exp://localhost:8081,exp://localhost:8082,"
+        "exp://localhost:19000,exp://192.168.0.0/16,"
+        "http://192.168.1.1:8000,http://10.0.2.2:8000"
     )
 
     # Logging
