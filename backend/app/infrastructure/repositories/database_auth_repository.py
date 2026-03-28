@@ -89,7 +89,8 @@ class DatabaseAuthRepository(AuthRepository):
             user = self._to_domain_entity(user_model)
 
             Logger.info(
-                f"Login successful: {email} " f"(roles: {', '.join([r.name for r in user.roles])})"
+                f"Login successful: {email} "
+                f"(roles: {', '.join([r.name for r in user.roles])})"
             )
             return user
 
@@ -190,7 +191,9 @@ class DatabaseAuthRepository(AuthRepository):
                 f"Database error getting users by pattern: {e}",
                 exc_info=True,
             )
-            raise DatabaseError(f"Failed to get users matching pattern: {str(e)}")
+            raise DatabaseError(
+                f"Failed to get users matching pattern: {str(e)}"
+            )
 
     def _to_domain_entity(self, user_model: UserModel) -> User:
         """

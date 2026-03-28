@@ -1,7 +1,15 @@
 from datetime import datetime
 
-from sqlalchemy import (Boolean, Column, DateTime, Float, ForeignKey, Integer,
-                        String, Table)
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+)
 from sqlalchemy.orm import relationship
 
 from app.infrastructure.database.database import Base
@@ -29,7 +37,13 @@ class UserModel(Base):
     name = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
 
-    roles = relationship("RoleModel", secondary=user_roles, back_populates="users", lazy="selectin")
+
+roles = relationship(
+    "Role",
+    secondary=user_roles,
+    back_populates="users",
+    lazy="selectin",
+)
 
 
 # -------------------------

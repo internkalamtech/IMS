@@ -179,7 +179,9 @@ async def student_ledger(
     db: AsyncSession = Depends(get_db),
 ):
 
-    result = await db.execute(select(Payment).filter(Payment.student_id == student_id))
+    result = await db.execute(
+        select(Payment).filter(Payment.student_id == student_id)
+    )
     payments = result.scalars().all()
 
     if not payments:
@@ -229,9 +231,10 @@ async def financial_summary(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(func.sum(Payment.amount)))
     total_collected = result.scalar() or 0
 
-    stmt = select(Payment.student_class, func.count(func.distinct(Payment.student_id))).group_by(
-        Payment.student_class
-    )
+    stmt = select(
+        Payment.student_class,
+        func.count(func.distinct(Payment.student_id)),
+    ).group_by(Payment.student_class)
     class_counts = (await db.execute(stmt)).all()
 
     total_collectible = 0
@@ -257,7 +260,9 @@ async def payment_stats(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(func.sum(Payment.amount)))
     total_collected = result.scalar() or 0
 
-    result = await db.execute(select(func.count(func.distinct(Payment.student_id))))
+    result = await db.execute(
+        select(func.count(func.distinct(Payment.student_id)))
+    )
     students_paid = result.scalar() or 0
 
     return PaymentStats(

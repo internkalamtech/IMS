@@ -26,7 +26,8 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     Logger.info("Starting IMS Backend...")
-    Logger.info(f"Environment: {'Development' if settings.debug else 'Production'}")
+    env_type = "Development" if settings.debug else "Production"
+    Logger.info(f"Environment: {env_type}")
 
     try:
         await init_db()
@@ -82,7 +83,8 @@ async def log_requests(request: Request, call_next):
     """Log all HTTP requests."""
     Logger.info(f"{request.method} {request.url.path}")
     response = await call_next(request)
-    Logger.info(f"{request.method} {request.url.path} - {response.status_code}")
+    status_code = response.status_code
+    Logger.info(f"{request.method} {request.url.path} - {status_code}")
     return response
 
 
