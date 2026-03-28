@@ -116,3 +116,23 @@ class RoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+
+
+class ContactModel(Base):
+    """
+    Contact database model.
+
+    Stores contact information (name and email) submitted via the dashboard.
+    """
+
+    __tablename__ = "contacts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+
+    def __repr__(self) -> str:
+        return f"<Contact(id={self.id}, name='{self.name}', email='{self.email}')>"

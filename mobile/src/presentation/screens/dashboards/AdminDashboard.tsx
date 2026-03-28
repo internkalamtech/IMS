@@ -8,7 +8,16 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+    Dimensions,
+    Platform,
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
@@ -49,9 +58,11 @@ export default function AdminDashboard() {
                                     Institute Management Overview
                                 </ThemedText>
                             </View>
-                            <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
-                                <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
-                            </TouchableOpacity>
+                            <View style={styles.headerActions}>
+                                <TouchableOpacity onPress={logout} style={styles.iconButton}>
+                                    <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
+                                </TouchableOpacity>
+                            </View>
                         </View>
 
                         {/* Banner Stats */}
@@ -144,7 +155,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginTop: 4,
     },
-    logoutIcon: {
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    iconButton: {
         padding: 8,
     },
     bannerStats: {
@@ -262,6 +278,74 @@ const styles = StyleSheet.create({
     },
     viewLink: {
         fontSize: 13,
+        fontWeight: '600',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+    },
+    modalCentered: {
+        width: '100%',
+        maxWidth: 340,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        width: '100%',
+    },
+    dialog: {
+        width: '100%',
+        borderRadius: 20,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 24,
+        elevation: 12,
+    },
+    dialogHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 20,
+        paddingBottom: 16,
+    },
+    dialogTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+    },
+    closeButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    dialogBody: {
+        paddingHorizontal: 20,
+        paddingBottom: 24,
+        gap: 16,
+    },
+    input: {
+        height: 48,
+        borderWidth: 1,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        fontSize: 16,
+    },
+    submitButton: {
+        height: 48,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 8,
+    },
+    submitButtonText: {
+        fontSize: 16,
         fontWeight: '600',
     },
 });

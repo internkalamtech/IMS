@@ -131,3 +131,16 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
+
+
+class ContactSubmitRequest(BaseModel):
+    """Request schema for submitting name and email."""
+
+    name: str = Field(..., min_length=1, description="Contact name")
+    email: EmailStr = Field(..., description="Contact email")
+
+
+class ContactSubmitResponse(BaseModel):
+    """Response schema for contact submission."""
+
+    message: str = "Contact submitted successfully"
