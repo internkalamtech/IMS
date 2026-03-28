@@ -11,7 +11,7 @@ Endpoints:
       Returns daily attendance for a specific child + month summary.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 import calendar as cal_lib
 
