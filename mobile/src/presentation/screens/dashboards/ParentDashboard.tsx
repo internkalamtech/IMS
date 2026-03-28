@@ -7,6 +7,7 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,8 +18,15 @@ export default function ParentDashboard() {
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
+    const router = useRouter();
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
+
+    const handleQuickAction = (action: typeof quickActions[0]) => {
+        if (action.title === 'Attendance') {
+            router.push('/attendance-summary');
+        }
+    };
 
     const getStatValue = (label: string, defaultValue: string = '0%') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
@@ -90,7 +98,7 @@ export default function ParentDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickAction} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>

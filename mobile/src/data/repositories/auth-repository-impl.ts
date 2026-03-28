@@ -32,12 +32,50 @@ export class AuthRepositoryImpl implements AuthRepository {
             return domainUser;
         } catch (error: any) {
             Logger.error('Login failed', error);
+
+            // If backend is unreachable, try offline demo login
+            if (error.message === 'No response received from server' || error.code === 'ECONNABORTED') {
+                return this._offlineMockLogin(email, password);
+            }
+
             if (error.response?.data?.detail) {
                 throw new NetworkError(error.response.data.detail);
             }
             throw error;
         }
     }
+
+    /** Validates credentials against local demo accounts when the backend is offline. */
+    private async _offlineMockLogin(email: string, password: string): Promise<User> {
+        const MOCK_USERS: Record<string, { name: string; role: User['role']; password: string }> = {
+            'admin@myuser.com':     { name: 'Admin User',     role: 'admin',     password: 'admin123' },
+            'teacher@myuser.com':   { name: 'Teacher User',   role: 'teacher',   password: 'teacher123' },
+            'parent@myuser.com':    { name: 'Parent User',    role: 'parent',    password: 'parent123' },
+            'student@myuser.com':   { name: 'Student User',  role: 'student',   password: 'student123' },
+            'transport@myuser.com': { name: 'Transport User', role: 'transport', password: 'transport123' },
+            'driver@myuser.com':    { name: 'Driver User',    role: 'driver',    password: 'driver123' },
+        };
+
+        const match = MOCK_USERS[email.toLowerCase()];
+        if (!match || match.password !== password) {
+            throw new NetworkError('Invalid email or password (offline mode)');
+        }
+
+        const mockUser: User = {
+            id: `offline-${match.role}`,
+            name: match.name,
+            email: email.toLowerCase(),
+            role: match.role,
+            avatarUrl: undefined,
+        };
+
+        await StorageService.setItem(TOKEN_STORAGE_KEY, `offline-mock-token-${match.role}`);
+        await StorageService.setItem(USER_STORAGE_KEY, mockUser);
+
+        Logger.warn(`[Offline Mode] Logged in as ${email} without backend.`);
+        return mockUser;
+    }
+
 
     async logout(): Promise<void> {
         await StorageService.removeItem(USER_STORAGE_KEY);
@@ -70,6 +108,34 @@ export class AuthRepositoryImpl implements AuthRepository {
                     email: "teacher@myuser.com",
                     password: "teacher123",
                     description: "Core Roles (Offline Mock)"
+                },
+                {
+                    role: "Parent",
+                    icon: "people",
+                    email: "parent@myuser.com",
+                    password: "parent123",
+                    description: "Core Roles (Offline Mock)"
+                },
+                {
+                    role: "Student",
+                    icon: "school-outline",
+                    email: "student@myuser.com",
+                    password: "student123",
+                    description: "Core Roles (Offline Mock)"
+                },
+                {
+                    role: "Transport",
+                    icon: "bus",
+                    email: "transport@myuser.com",
+                    password: "transport123",
+                    description: "Transport Roles (Offline Mock)"
+                },
+                {
+                    role: "Driver",
+                    icon: "car-sport",
+                    email: "driver@myuser.com",
+                    password: "driver123",
+                    description: "Transport Roles (Offline Mock)"
                 },
             ];
         }

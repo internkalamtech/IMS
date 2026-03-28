@@ -5,15 +5,15 @@ import { ThemeProvider } from '../core/theme/ThemeContext';
 import { AuthProvider } from '../presentation/context/AuthContext';
 
 export default function RootLayout() {
-  return (
-    <AuthProvider>
-      <ThemeProvider>
-        <SafeAreaProvider>
-          <StatusBar style="auto" />
-          <Stack screenOptions={{ headerShown: false }} />
-        </SafeAreaProvider>
-      </ThemeProvider>
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider>
+            <ThemeProvider>
+                <SafeAreaProvider>
+                    <StatusBar style="auto" />
+                    <Stack screenOptions={{ headerShown: false }} />
+                </SafeAreaProvider>
+            </ThemeProvider>
+        </AuthProvider>
+    );
 }
 

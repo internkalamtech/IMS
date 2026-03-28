@@ -116,3 +116,48 @@ class RoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+
+
+# Association table linking parents to their children (students)
+parent_student = Table(
+    "parent_student",
+    Base.metadata,
+    Column("parent_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("student_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
+class AttendanceModel(Base):
+    """
+    Daily attendance record for a student.
+    status: 'present' | 'absent' | 'leave' | 'holiday' | 'not-marked'
+    """
+    __tablename__ = "attendances"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    date: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="not-marked")
+    marked_by_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    student: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[student_id])
+
+
+class LeaveRequestModel(Base):
+    """
+    Leave request submitted by a parent for a student.
+    status: 'pending' | 'approved' | 'rejected'
+    """
+    __tablename__ = "leave_requests"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    start_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    end_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    reason: Mapped[str] = mapped_column(String(500), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    teacher_note: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    reviewed_by_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    applied_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    student: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[student_id])
