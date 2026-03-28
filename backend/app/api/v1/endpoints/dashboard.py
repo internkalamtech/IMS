@@ -2,10 +2,17 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
-from app.api.schemas import ContactSubmitRequest, ContactSubmitResponse, DashboardResponse, StatItem
+from app.api.schemas import (
+    ContactSubmitRequest,
+    ContactSubmitResponse,
+    DashboardResponse,
+    StatItem,
+)
 from app.domain.entities.user import User
 from app.infrastructure.database.database import get_db
-from app.infrastructure.repositories.database_contact_repository import DatabaseContactRepository
+from app.infrastructure.repositories.database_contact_repository import (
+    DatabaseContactRepository,
+)
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
@@ -84,7 +91,10 @@ async def get_dashboard_stats(
     response_model=ContactSubmitResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Submit contact (name and email)",
-    description="Submit a contact with name and email. Saved to database. Requires authentication.",
+    description=(
+        "Submit a contact with name and email. "
+        "Saved to database. Requires authentication."
+    ),
 )
 async def submit_contact(
     body: ContactSubmitRequest,

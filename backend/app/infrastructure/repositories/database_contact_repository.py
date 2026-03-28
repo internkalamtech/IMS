@@ -44,7 +44,9 @@ class DatabaseContactRepository(ContactRepository):
             DatabaseError: If database operation fails
         """
         try:
-            model = ContactModel(name=name.strip(), email=email.strip().lower())
+            model = ContactModel(
+                name=name.strip(), email=email.strip().lower()
+            )
             self.db.add(model)
             await self.db.flush()  # Get the ID without committing
             await self.db.refresh(model)
@@ -59,5 +61,7 @@ class DatabaseContactRepository(ContactRepository):
             return contact
 
         except Exception as e:
-            Logger.error(f"Database error creating contact: {e}", exc_info=True)
+            Logger.error(
+                f"Database error creating contact: {e}", exc_info=True
+            )
             raise DatabaseError(f"Failed to save contact: {str(e)}")
