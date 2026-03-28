@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, Modal, TextInput } from 'react-native';
+import { View, Text, FlatList, Button, Modal, TextInput,StyleSheet } from 'react-native';
 import { UserRepositoryImpl } from '@/data/repositories/user-repository-impl';
 import { GetClassesUseCase } from '@/domain/usecases/get-classes-usecase';
 import { ClassData } from '@/domain/repositories/user-repository';
@@ -19,7 +19,10 @@ export default function ClassesScreen() {
     // Stores the class currently selected for editing.
     // If null = create mode, if filled = edit mode.
     const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
-
+    // Optional teacher input
+    const [teacher, setTeacher] = useState('');
+    // Optional subject input
+    const [subject, setSubject] = useState(''); 
     useEffect(() => {
         const loadClasses = async () => {
             const repo = new UserRepositoryImpl();
@@ -31,51 +34,65 @@ export default function ClassesScreen() {
         loadClasses();
     }, []);
 
-        // Handles both create and update depending on selectedClass
     const handleCreateClass = async () => {
-        try {
-            if (selectedClass) {
-                // EDIT MODE → update existing class
-                await api.put(`/classes/${selectedClass.id}`, {
-                    name,
-                    section,
-                    academicPeriodId: Number(academicPeriodId)
-                });
-            } else {
-                // CREATE MODE → add new class
-                await api.post('/classes/', {
-                    name,
-                    section,
-                    academicPeriodId: Number(academicPeriodId)
-                });
-            }
+    try {
+        if (selectedClass) {
+            // EDIT MODE → update existing class
+            await api.put(`/classes/${selectedClass.id}`, {
+                name,
+                section,
+                academicPeriodId: Number(academicPeriodId),
 
-            // Refresh class list after save/update
-            const data = await getClassesUseCase.execute();
-            setClasses(data);
+                // Optional teacher field
+                teacher,
 
-            // Success alert
-            Alert.alert('Success', selectedClass ? 'Class updated successfully' : 'Class created successfully');
+                // Optional subject field
+                subject
+            });
+        } else {
+            // CREATE MODE → add new class
+            await api.post('/classes/', {
+                name,
+                section,
+                academicPeriodId: Number(academicPeriodId),
 
-            // Close modal
-            setModalVisible(false);
+                // Optional teacher field
+                teacher,
 
-            // Clear form fields
-            setName('');
-            setSection('');
-            setAcademicPeriodId('');
+                // Optional subject field
+                subject
+            });
+        }
 
-            // Reset edit state
-            setSelectedClass(null);
+        // Refresh class list after save/update
+        const data = await getClassesUseCase.execute();
+        setClasses(data);
 
-        } // Catch backend error and show actual message
-            catch (error: any) {
-                const message =
-                    error?.response?.data?.detail || 'Operation failed';
+        // Success alert
+        Alert.alert(
+            'Success',
+            selectedClass
+                ? 'Class updated successfully'
+                : 'Class created successfully'
+        );
 
-                Alert.alert('Error', message);
-            }
-    };
+        // Close modal
+        setModalVisible(false);
+
+        // Clear form fields
+        setName('');
+        setSection('');
+        setAcademicPeriodId('');
+        setTeacher('');
+        setSubject('');
+
+        // Reset edit state
+        setSelectedClass(null);
+
+    } catch (error: any) {
+        Alert.alert('Error', error?.response?.data?.detail || 'Operation failed');
+    }
+};
     // Opens modal in edit mode and fills inputs with selected class data
     const handleEdit = (item: ClassData) => {
         // Save selected class so save button knows update is needed
@@ -125,30 +142,22 @@ export default function ClassesScreen() {
             keyExtractor={(item: any) => item.id.toString()}
 
             renderItem={({ item }: any) => (
-                <View
-                    style={{
-                        flex: 1,
-                        margin: 6,
-                        padding: 12,
-                        borderWidth: 1,
-                        borderRadius: 8,
-                        backgroundColor: '#fff',
-                    }}
-                >
-                    {/* Class name */}
-                    <Text>Class: {item.name}</Text>
+                <View style={styles.classCard}>
+                    <Text style={styles.classTitle}>{item.name}</Text>
 
-                    {/* Section */}
                     <Text>Section: {item.section}</Text>
 
-                    {/* Academic year display */}
-                    <Text>
-                        Academic Year: {academicYearMap[item.academicPeriodId] || 'Unknown'}
-                    </Text>
+                    {/* Academic year */}
+                    <Text>Academic Year: {item.academicPeriodId}</Text>
 
-                    {/* Temporary summary placeholders */}
-                    <Text>Teachers: 0 Assigned</Text>
-                    <Text>Subjects: 0 Subjects</Text>
+                    {/* Optional teacher */}
+                    <Text>Teacher: {item.teacher || 'Not Assigned'}</Text>
+
+                    {/* Optional subject */}
+                    <Text>Subject: {item.subject || 'Not Assigned'}</Text>
+
+                    {/* Placeholder total students */}
+                    <Text>Total Students: {item.totalStudents}</Text>
 
                     {/* Edit button */}
                     <Button title="Edit" onPress={() => handleEdit(item)} />
@@ -178,6 +187,21 @@ export default function ClassesScreen() {
                         <Picker.Item label="2025-2026" value="1" />
                         <Picker.Item label="2026-2027" value="2" />
                     </Picker>
+                     {/* Optional teacher input */}
+                    <TextInput
+                        placeholder="Teacher (Optional)"
+                        value={teacher}
+                        onChangeText={setTeacher}
+                        style={styles.input}
+                    />
+
+                    {/* Optional subject input */}
+                    <TextInput
+                        placeholder="Subject (Optional)"
+                        value={subject}
+                        onChangeText={setSubject}
+                        style={styles.input}
+                    />
 
                     <Button title="Save class" onPress={handleCreateClass} />
                     <Button title="back" onPress={() => setModalVisible(false)} />
@@ -187,3 +211,60 @@ export default function ClassesScreen() {
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 20,
+        backgroundColor: '#fff'
+    },
+
+    header: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 15
+    },
+
+    addButton: {
+        marginBottom: 15
+    },
+
+    card: {
+        backgroundColor: '#f5f5f5',
+        padding: 15,
+        marginBottom: 10,
+        borderRadius: 10
+    },
+
+    cardTitle: {
+        fontSize: 18,
+        fontWeight: 'bold'
+    },
+
+    cardText: {
+        fontSize: 14,
+        marginTop: 4
+    },
+    classCard: {
+    flex: 1,
+    margin: 6,
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: '#fff'
+    },
+
+    classTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 6
+    },
+
+    input: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        padding: 10,
+        marginBottom: 10,
+        borderRadius: 6
+    }
+});

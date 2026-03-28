@@ -11,6 +11,12 @@ class ClassCreate(BaseModel):
     name: str
     section: str
     academicPeriodId: int
+    
+    # Optional teacher field
+    teacher: str = ""
+
+    # Optional subject field
+    subject: str = ""
 
 # ---------------------------
 # CREATE CLASS
@@ -31,9 +37,13 @@ def create_class(payload: ClassCreate):
         "name": payload.name,
         "section": payload.section,
         "academicPeriodId": payload.academicPeriodId,
+         # Optional teacher field
+        "teacher":teacher,
+        # Optional subject field
+        "subject": subject,
         "totalStudents": 0,
         "isDeleted": False
-    }
+        }
 
     classes.append(new_class)
 
