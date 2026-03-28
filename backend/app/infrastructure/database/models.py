@@ -138,7 +138,9 @@ class AttendanceModel(Base):
     student_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     date: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="not-marked")
-    marked_by_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    marked_by_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
 
     student: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[student_id])
 
@@ -157,7 +159,9 @@ class LeaveRequestModel(Base):
     reason: Mapped[str] = mapped_column(String(500), nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="pending")
     teacher_note: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    reviewed_by_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    reviewed_by_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
     applied_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     student: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[student_id])

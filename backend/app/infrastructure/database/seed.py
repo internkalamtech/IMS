@@ -13,7 +13,7 @@ Following best practices:
 import asyncio
 from datetime import datetime, timedelta
 import calendar as cal_lib
-import random
+import random  # noqa: F401 kept for future use
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -284,10 +284,10 @@ async def seed_attendance_records(db: AsyncSession) -> None:
 
     # Patterns per child: (present_ratio, absent_days_of_month, leave_days)
     child_patterns = {
-        "aarav@myuser.com":  {"present_bias": 0.93, "absent_days": [10, 20], "leave_days": [14, 15]},
-        "priya@myuser.com":  {"present_bias": 0.82, "absent_days": [5, 10, 20, 25, 28, 30], "leave_days": []},
-        "ravi@myuser.com":   {"present_bias": 0.88, "absent_days": [7, 17, 27], "leave_days": [22]},
-        "student@myuser.com":{"present_bias": 0.90, "absent_days": [12, 22], "leave_days": []},
+        "aarav@myuser.com": {"present_bias": 0.93, "absent_days": [10, 20], "leave_days": [14, 15]},
+        "priya@myuser.com": {"present_bias": 0.82, "absent_days": [5, 10, 20, 25, 28, 30], "leave_days": []},
+        "ravi@myuser.com": {"present_bias": 0.88, "absent_days": [7, 17, 27], "leave_days": [22]},
+        "student@myuser.com": {"present_bias": 0.90, "absent_days": [12, 22], "leave_days": []},
     }
 
     now = datetime.utcnow()
@@ -357,7 +357,7 @@ async def seed_leave_requests(db: AsyncSession) -> None:
         {
             "child_email": "aarav@myuser.com",
             "start": datetime(datetime.utcnow().year, datetime.utcnow().month, 14),
-            "end":   datetime(datetime.utcnow().year, datetime.utcnow().month, 15),
+            "end": datetime(datetime.utcnow().year, datetime.utcnow().month, 15),
             "reason": "Medical appointment",
             "status": "Approved",
             "note": "Approved. Get well soon.",
@@ -365,7 +365,7 @@ async def seed_leave_requests(db: AsyncSession) -> None:
         {
             "child_email": "priya@myuser.com",
             "start": datetime(datetime.utcnow().year, datetime.utcnow().month, 5),
-            "end":   datetime(datetime.utcnow().year, datetime.utcnow().month, 5),
+            "end": datetime(datetime.utcnow().year, datetime.utcnow().month, 5),
             "reason": "Family function",
             "status": "Approved",
             "note": "Noted.",
@@ -373,7 +373,7 @@ async def seed_leave_requests(db: AsyncSession) -> None:
         {
             "child_email": "ravi@myuser.com",
             "start": datetime(datetime.utcnow().year, datetime.utcnow().month, 22),
-            "end":   datetime(datetime.utcnow().year, datetime.utcnow().month, 22),
+            "end": datetime(datetime.utcnow().year, datetime.utcnow().month, 22),
             "reason": "Fever",
             "status": "Pending",
             "note": None,

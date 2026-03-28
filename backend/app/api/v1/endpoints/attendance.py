@@ -59,10 +59,10 @@ MOCK_CHILDREN = [
 
 # ─── Per-student metadata (grade, roll, emoji) keyed by email ─────────────────
 STUDENT_META: dict[str, dict] = {
-    "aarav@myuser.com":   {"grade": "Class 7A", "rollNo": "101", "emoji": "👦"},
-    "priya@myuser.com":   {"grade": "Class 5B", "rollNo": "45",  "emoji": "👧"},
-    "ravi@myuser.com":    {"grade": "Class 9C", "rollNo": "22",  "emoji": "🧒"},
-    "student@myuser.com": {"grade": "Class 8A", "rollNo": "10",  "emoji": "👦"},
+    "aarav@myuser.com": {"grade": "Class 7A", "rollNo": "101", "emoji": "👦"},
+    "priya@myuser.com": {"grade": "Class 5B", "rollNo": "45", "emoji": "👧"},
+    "ravi@myuser.com": {"grade": "Class 9C", "rollNo": "22", "emoji": "🧒"},
+    "student@myuser.com": {"grade": "Class 8A", "rollNo": "10", "emoji": "👦"},
 }
 
 
@@ -243,11 +243,16 @@ async def get_child_calendar(
         for d in range(1, days_in_month + 1):
             status = records.get(d, "not-marked")
             days.append(CalendarDay(day=d, status=status))
-            if status == "present":        present += 1
-            elif status == "absent":       absent += 1
-            elif status == "leave":        leave += 1
-            elif status == "holiday":      holiday += 1
-            else:                          not_marked += 1
+            if status == "present":
+                present += 1
+            elif status == "absent":
+                absent += 1
+            elif status == "leave":
+                leave += 1
+            elif status == "holiday":
+                holiday += 1
+            else:
+                not_marked += 1
 
         # Leave history
         leave_stmt = select(LeaveRequestModel).where(
@@ -297,12 +302,11 @@ async def apply_for_leave(
     Validates that the authenticated parent owns the child before saving.
     """
     from datetime import datetime as dt
-    from sqlalchemy import insert
 
     try:
         # Parse dates
         start = dt.strptime(body.startDate, "%Y-%m-%d")
-        end   = dt.strptime(body.endDate,   "%Y-%m-%d")
+        end = dt.strptime(body.endDate, "%Y-%m-%d")
         if end < start:
             raise HTTPException(status_code=400, detail="End date must be on or after start date.")
 
