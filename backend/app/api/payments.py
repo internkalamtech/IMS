@@ -1,18 +1,17 @@
-from datetime import datetime
-from uuid import uuid4
-from io import StringIO
 import csv
-from typing import List, Optional, Literal
+from datetime import datetime
+from io import StringIO
+from typing import List, Literal, Optional
+from uuid import uuid4
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from sqlalchemy import extract, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, extract, select
 
 from app.infrastructure.database.database import get_db
-from app.infrastructure.database.models import Payment, FeeStructure
-
+from app.infrastructure.database.models import FeeStructure, Payment
 
 router = APIRouter(
     prefix="/payments",
@@ -23,6 +22,7 @@ router = APIRouter(
 # -------------------------
 # Schemas
 # -------------------------
+
 
 class PaymentCreate(BaseModel):
     student_id: int
@@ -77,6 +77,7 @@ class PaymentStats(BaseModel):
 # Record Payment
 # -------------------------
 
+
 @router.post("/transactions", response_model=PaymentCreated)
 async def create_payment(
     payment: PaymentCreate,
@@ -113,6 +114,7 @@ async def create_payment(
 # Update Payment Status
 # -------------------------
 
+
 @router.patch("/{payment_id}/status")
 async def update_payment_status(
     payment_id: int,
@@ -135,6 +137,7 @@ async def update_payment_status(
 # -------------------------
 # List Payments (Filters + Pagination)
 # -------------------------
+
 
 @router.get("/", response_model=List[PaymentResponse])
 async def list_payments(
@@ -169,24 +172,25 @@ async def list_payments(
 # Student Ledger
 # -------------------------
 
+
 @router.get("/students/{student_id}")
 async def student_ledger(
     student_id: int,
     db: AsyncSession = Depends(get_db),
 ):
 
-    result = await db.execute(
-        select(Payment).filter(Payment.student_id == student_id)
-    )
+    result = await db.execute(select(Payment).filter(Payment.student_id == student_id))
     payments = result.scalars().all()
 
     if not payments:
         raise HTTPException(status_code=404, detail="No payments found")
 
     student_class = payments[0].student_class
-    fee_result = await db.execute(select(FeeStructure.fee_amount).filter_by(student_class=student_class))
+    fee_result = await db.execute(
+        select(FeeStructure.fee_amount).filter_by(student_class=student_class)
+    )
     fee_amount = fee_result.scalar()
-    
+
     total_paid = sum(p.amount for p in payments)
     total_fee = fee_amount if fee_amount else 0
     balance = total_fee - total_paid
@@ -225,15 +229,16 @@ async def financial_summary(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(func.sum(Payment.amount)))
     total_collected = result.scalar() or 0
 
-    stmt = (
-        select(Payment.student_class, func.count(func.distinct(Payment.student_id)))
-        .group_by(Payment.student_class)
+    stmt = select(Payment.student_class, func.count(func.distinct(Payment.student_id))).group_by(
+        Payment.student_class
     )
     class_counts = (await db.execute(stmt)).all()
 
     total_collectible = 0
     for s_class, count in class_counts:
-        fee_result = await db.execute(select(FeeStructure.fee_amount).filter_by(student_class=s_class))
+        fee_result = await db.execute(
+            select(FeeStructure.fee_amount).filter_by(student_class=s_class)
+        )
         fee_amount = fee_result.scalar() or 0
         total_collectible += fee_amount * count
     pending = max(total_collectible - total_collected, 0)
@@ -252,9 +257,7 @@ async def payment_stats(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(func.sum(Payment.amount)))
     total_collected = result.scalar() or 0
 
-    result = await db.execute(
-        select(func.count(func.distinct(Payment.student_id)))
-    )
+    result = await db.execute(select(func.count(func.distinct(Payment.student_id))))
     students_paid = result.scalar() or 0
 
     return PaymentStats(
@@ -266,6 +269,7 @@ async def payment_stats(db: AsyncSession = Depends(get_db)):
 # -------------------------
 # Monthly Analytics
 # -------------------------
+
 
 @router.get("/analytics/monthly")
 async def monthly_revenue(db: AsyncSession = Depends(get_db)):
@@ -293,6 +297,7 @@ async def monthly_revenue(db: AsyncSession = Depends(get_db)):
 # -------------------------
 # Export Payments CSV
 # -------------------------
+
 
 @router.get("/export")
 async def export_payments(db: AsyncSession = Depends(get_db)):
@@ -335,7 +340,5 @@ async def export_payments(db: AsyncSession = Depends(get_db)):
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={
-            "Content-Disposition": "attachment; filename=payments.csv"
-        },
-    )
+        headers={"Content-Disposition": "attachment; filename=payments.csv"},
+    )

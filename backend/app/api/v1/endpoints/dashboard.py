@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status
+
 from app.api.dependencies import get_current_user
 from app.api.schemas import DashboardResponse, StatItem
 from app.domain.entities.user import User
@@ -11,10 +12,7 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
     response_model=DashboardResponse,
     status_code=status.HTTP_200_OK,
     summary="Get dashboard statistics",
-    description=(
-        "Retrieve dashboard statistics based on the "
-        "authenticated user's role."
-    ),
+    description=("Retrieve dashboard statistics based on the " "authenticated user's role."),
 )
 async def get_dashboard_stats(
     current_user: User = Depends(get_current_user),

@@ -12,14 +12,10 @@ Following Clean Architecture principles:
 """
 
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.core.errors import (
-    AuthenticationError,
-    DatabaseError,
-    NotFoundError,
-)
+from app.core.errors import AuthenticationError, DatabaseError, NotFoundError
 from app.core.logger import Logger
 from app.core.password import verify_password
 from app.domain.entities.user import Role, User
@@ -93,8 +89,7 @@ class DatabaseAuthRepository(AuthRepository):
             user = self._to_domain_entity(user_model)
 
             Logger.info(
-                f"Login successful: {email} "
-                f"(roles: {', '.join([r.name for r in user.roles])})"
+                f"Login successful: {email} " f"(roles: {', '.join([r.name for r in user.roles])})"
             )
             return user
 
@@ -195,9 +190,7 @@ class DatabaseAuthRepository(AuthRepository):
                 f"Database error getting users by pattern: {e}",
                 exc_info=True,
             )
-            raise DatabaseError(
-                f"Failed to get users matching pattern: {str(e)}"
-            )
+            raise DatabaseError(f"Failed to get users matching pattern: {str(e)}")
 
     def _to_domain_entity(self, user_model: UserModel) -> User:
         """

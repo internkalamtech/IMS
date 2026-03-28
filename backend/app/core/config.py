@@ -5,9 +5,10 @@ This module handles all application configuration using Pydantic Settings.
 Environment variables are loaded from .env file.
 """
 
+from typing import List
+
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import List
 
 
 class Settings(BaseSettings):
@@ -23,9 +24,7 @@ class Settings(BaseSettings):
     port: int = 8000
 
     # Database
-    database_url: str = (
-        "postgresql+asyncpg://ims_user:ims_password@localhost:5432/ims_db"
-    )
+    database_url: str = "postgresql+asyncpg://ims_user:ims_password@localhost:5432/ims_db"
 
     # Security
     secret_key: str = "dev-secret-key-change-in-production"
@@ -34,12 +33,12 @@ class Settings(BaseSettings):
 
     # CORS - stored as string in env, parsed to list
     cors_origins: list[str] = [
-    "http://localhost:8081",
-    "http://localhost:8083",
-    "exp://localhost:8081",
-    "http://localhost:19000",
-    "http://localhost:19006",
-]
+        "http://localhost:8081",
+        "http://localhost:8083",
+        "exp://localhost:8081",
+        "http://localhost:19000",
+        "http://localhost:19006",
+    ]
 
     # Logging
     log_level: str = "INFO"

@@ -5,16 +5,15 @@ These dependencies handle JWT token validation and user authentication.
 """
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_access_token
 from app.domain.entities.user import User
 from app.domain.usecases.auth_usecases import GetCurrentUserUseCase
 from app.infrastructure.database.database import get_db
-from app.infrastructure.repositories.database_auth_repository import (
-    DatabaseAuthRepository,
-)
+from app.infrastructure.repositories.database_auth_repository import \
+    DatabaseAuthRepository
 
 # Security scheme for JWT bearer tokens
 security = HTTPBearer()

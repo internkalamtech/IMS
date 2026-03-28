@@ -6,8 +6,8 @@ This module aggregates all v1 API endpoints.
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, health, dashboard
 from app.api import payments
+from app.api.v1.endpoints import auth, dashboard, health
 
 # Create v1 router
 router = APIRouter(prefix="/v1")
