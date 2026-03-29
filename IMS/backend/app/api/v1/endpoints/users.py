@@ -1,20 +1,46 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-from app.infrastructure.database.database import get_db
+from fastapi import APIRouter, Query
+from typing import Optional
 
 router = APIRouter()
 
+# Dummy DB (replace later if needed)
+users_db = [
+    {"id": 1, "name": "John Doe", "email": "john@gmail.com", "role": "TEACHER"},
+    {"id": 2, "name": "Alice", "email": "alice@gmail.com", "role": "STUDENT"},
+    {"id": 3, "name": "Bob", "email": "bob@gmail.com", "role": "ADMIN"},
+    {"id": 4, "name": "David", "email": "david@gmail.com", "role": "TEACHER"},
+]
 
+# ✅ FIXED ROUTE
 @router.get("/")
-async def get_users(db: AsyncSession = Depends(get_db)):
-    """
-    Fetch all users from database
-    """
-    result = await db.execute(text("SELECT id, email FROM users"))
-    users = result.fetchall()
+def get_users(
+    limit: int = Query(10),
+    offset: int = Query(0),
+    role: Optional[str] = None,
+    search: Optional[str] = None,
+):
+    filtered_users = users_db
 
-    return [
-        {"id": user.id, "email": user.email}
-        for user in users
-    ]
+    # Filter by role
+    if role:
+        filtered_users = [u for u in filtered_users if u["role"] == role]
+
+    # Search by name/email
+    if search:
+        filtered_users = [
+            u for u in filtered_users
+            if search.lower() in u["name"].lower()
+            or search.lower() in u["email"].lower()
+        ]
+
+    total = len(filtered_users)
+
+    # Pagination
+    paginated_users = filtered_users[offset: offset + limit]
+
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "data": paginated_users
+    }
