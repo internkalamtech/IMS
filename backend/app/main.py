@@ -4,6 +4,7 @@ IMS Backend - FastAPI Application
 Main application module that initializes and configures the FastAPI app.
 """
 
+from sqlalchemy.ext.asyncio import AsyncSession      # added
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, status, Depends
@@ -33,7 +34,8 @@ async def lifespan(app: FastAPI):
     Handles startup and shutdown events.
     """
     Logger.info("Starting IMS Backend...")
-    Logger.info(f"Environment: {'Development' if settings.debug else 'Production'}")
+    Logger.info(
+        f"Environment: {'Development' if settings.debug else 'Production'}")
 
     try:
         await init_db()
@@ -62,12 +64,11 @@ app = FastAPI(
 
 # ----------------- Add User Endpoint -----------------
 
-from sqlalchemy.ext.asyncio import AsyncSession      # added
-from sqlalchemy import text
 # …existing imports…
 # from sqlalchemy.orm import Session                 # can be removed, not used
 
 # …existing code…
+
 
 @app.post("/add-user")
 async def add_user(user: User, db: AsyncSession = Depends(get_db)):
@@ -87,10 +88,14 @@ async def add_user(user: User, db: AsyncSession = Depends(get_db)):
 
 # …remaining code…
 # ----------------- Exception Handlers -----------------
+
+
 @app.exception_handler(IMSException)
 async def ims_exception_handler(request: Request, exc: IMSException):
     Logger.warning(f"IMS Exception: {exc.message} (status: {exc.status_code})")
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+    return JSONResponse(
+        status_code=exc.status_code, content={
+            "detail": exc.message})
 
 
 @app.exception_handler(Exception)
@@ -107,7 +112,8 @@ async def general_exception_handler(request: Request, exc: Exception):
 async def log_requests(request: Request, call_next):
     Logger.info(f"{request.method} {request.url.path}")
     response = await call_next(request)
-    Logger.info(f"{request.method} {request.url.path} - {response.status_code}")
+    Logger.info(
+        f"{request.method} {request.url.path} - {response.status_code}")
     return response
 
 

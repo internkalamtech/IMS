@@ -2,12 +2,6 @@
 SQLAlchemy database models for the IMS application.
 
 These models represent the database schema using SQLAlchemy ORM.
-
-Best practices followed:
-- Declarative base for model definition
-- Proper relationships and foreign keys
-- Timestamps for audit trail
-- Indexes for performance
 """
 
 from datetime import datetime
@@ -27,7 +21,6 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 class Base(DeclarativeBase):
     """Base class for all database models."""
-
     pass
 
 
@@ -51,30 +44,23 @@ user_roles = Table(
 
 
 class UserModel(Base):
-    """
-    User database model.
-
-    Represents a user with authentication credentials
-    and associated roles.
-    """
-
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
     email: Mapped[str] = mapped_column(
         String(255), unique=True, index=True, nullable=False
-        )
+    )
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, nullable=False
-        )
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
-        )
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -82,7 +68,6 @@ class UserModel(Base):
         nullable=False,
     )
 
-    # Relationships
     roles: Mapped[List["RoleModel"]] = relationship(
         "RoleModel",
         secondary=user_roles,
@@ -91,31 +76,20 @@ class UserModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<User(id={self.id}, "
-            f"email='{self.email}', "
-            f"name='{self.name}')>"
-        )
+        return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
 
 
 class RoleModel(Base):
-    """
-    Role database model.
-
-    Represents roles like admin, teacher, student, etc.
-    """
-
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
     name: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
-        )
+    )
 
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    # Relationships
     users: Mapped[List["UserModel"]] = relationship(
         "UserModel",
         secondary=user_roles,
@@ -124,6 +98,8 @@ class RoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+
+
 class TimetableModel(Base):
     __tablename__ = "timetable"
 
@@ -143,12 +119,6 @@ class TimetableModel(Base):
 
 
 class SubjectModel(Base):
-    """
-    Subject database model.
-
-    Represents subjects like Math, Science, English, etc.
-    """
-
     __tablename__ = "subjects"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -162,12 +132,6 @@ class SubjectModel(Base):
 
 
 class ClassSectionModel(Base):
-    """
-    Class section database model.
-
-    Represents classes like Grade 1, Grade 2, etc.
-    """
-
     __tablename__ = "class_sections"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -180,8 +144,6 @@ class ClassSectionModel(Base):
     )
 
 
-# Association table for many-to-many relationship between
-# ClassSection and Subject
 class_subject_link = Table(
     "class_subject_link",
     Base.metadata,

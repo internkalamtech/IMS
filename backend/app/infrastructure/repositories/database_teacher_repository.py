@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.infrastructure.database.models import TimetableModel
@@ -8,7 +9,7 @@ async def get_timetable_by_teacher(db: AsyncSession, teacher_id: int):
         select(TimetableModel).where(TimetableModel.teacher_id == teacher_id)
     )
     return result.scalars().all()
-from sqlalchemy import text
+
 
 async def get_peer_teachers(db, teacher_id: int):
     result = await db.execute(

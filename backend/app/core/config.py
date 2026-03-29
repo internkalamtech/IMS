@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Application
-    app_name: str = "IMS_Backend"
+    app_name: str = "IMS Backend"
     app_version: str = "1.0.0"
     debug: bool = True
 
@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = (
-        "postgresql+asyncpg://ims_user:ims_password@localhost:5433/ims_db"
+        "postgresql+asyncpg://ims_user:ims_password@localhost:5432/ims_db"
     )
 
     # Security

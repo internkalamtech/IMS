@@ -54,33 +54,34 @@ async def update_user_profile(
 ):
     """
     Update user profile.
-    
+
     - **name**: User's full name
     - **email**: User's email address
     """
     try:
         # Log received data
-        Logger.info(f"📨 Received profile update request: name={request.name}, email={request.email}")
-        
+        Logger.info(
+            f"📨 Received profile update request: name={request.name}, email={request.email}")
+
         # TODO: Update user in database
         # For now, just return success
         # In production, you would:
         # current_user.name = request.name
         # current_user.email = request.email
         # await db.commit()
-        
+
         response_data = {
             "name": request.name,
             "email": request.email
         }
         Logger.info(f"✅ Returning response: {response_data}")
-        
+
         return ProfileUpdateResponse(
             success=True,
             message="Profile updated successfully",
             data=response_data
         )
-        
+
     except Exception as e:
         Logger.error(f"Error updating profile: {str(e)}", exc_info=True)
         raise HTTPException(
