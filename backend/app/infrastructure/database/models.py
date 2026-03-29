@@ -2,7 +2,8 @@
 SQLAlchemy database models for the IMS application.
 
 These models represent the database schema using SQLAlchemy ORM.
-Following best practices:
+
+Best practices followed:
 - Declarative base for model definition
 - Proper relationships and foreign keys
 - Timestamps for audit trail
@@ -30,8 +31,7 @@ class Base(DeclarativeBase):
     pass
 
 
-# Association table for many-to-many relationship
-# between users and roles
+# Association table for many-to-many relationship between users and roles
 user_roles = Table(
     "user_roles",
     Base.metadata,
@@ -54,24 +54,27 @@ class UserModel(Base):
     """
     User database model.
 
-    Represents a user in the system with authentication credentials
+    Represents a user with authentication credentials
     and associated roles.
     """
 
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
     email: Mapped[str] = mapped_column(
         String(255), unique=True, index=True, nullable=False
-    )
+        )
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, nullable=False
-    )
+        )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
-    )
+        )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -89,7 +92,9 @@ class UserModel(Base):
 
     def __repr__(self) -> str:
         return (
-            f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
+            f"<User(id={self.id}, "
+            f"email='{self.email}', "
+            f"name='{self.name}')>"
         )
 
 
@@ -97,21 +102,24 @@ class RoleModel(Base):
     """
     Role database model.
 
-    Represents a role that can be assigned to users.
-    Examples: admin, teacher, student, parent, transport, driver
+    Represents roles like admin, teacher, student, etc.
     """
 
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
     name: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
-    )
+        )
+
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Relationships
     users: Mapped[List["UserModel"]] = relationship(
-        "UserModel", secondary=user_roles, back_populates="roles"
+        "UserModel",
+        secondary=user_roles,
+        back_populates="roles",
     )
 
     def __repr__(self) -> str:
@@ -132,3 +140,61 @@ class TimetableModel(Base):
     start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+
+class SubjectModel(Base):
+    """
+    Subject database model.
+
+    Represents subjects like Math, Science, English, etc.
+    """
+
+    __tablename__ = "subjects"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+
+    classes: Mapped[List["ClassSectionModel"]] = relationship(
+        "ClassSectionModel",
+        secondary="class_subject_link",
+        back_populates="subjects",
+    )
+
+
+class ClassSectionModel(Base):
+    """
+    Class section database model.
+
+    Represents classes like Grade 1, Grade 2, etc.
+    """
+
+    __tablename__ = "class_sections"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    subjects: Mapped[List["SubjectModel"]] = relationship(
+        "SubjectModel",
+        secondary="class_subject_link",
+        back_populates="classes",
+    )
+
+
+# Association table for many-to-many relationship between
+# ClassSection and Subject
+class_subject_link = Table(
+    "class_subject_link",
+    Base.metadata,
+    Column(
+        "class_id",
+        Integer,
+        ForeignKey("class_sections.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "subject_id",
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
