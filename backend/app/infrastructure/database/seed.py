@@ -11,7 +11,7 @@ Following best practices:
 """
 
 import asyncio
-
+from app.infrastructure.database.models import TimetableModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -209,14 +209,33 @@ async def seed_database() -> None:
 
             # Create users
             await create_users(db, roles_map)
+            
+            from datetime import datetime
+            timetable_rows = [
+               TimetableModel(
+                 teacher_id=2,
+                 subject="Math",
+                 room_type="101",
+                 start_time=datetime(2026, 3, 19, 9, 0),
+                 end_time=datetime(2026, 3, 19, 10, 0),
+             ),
+               TimetableModel(
+                 teacher_id=2,
+                 subject="English",
+                 room_type="102",
+                 start_time=datetime(2026, 3, 19, 10, 0),
+                 end_time=datetime(2026, 3, 19, 11, 0),
+             ),
+    ]
 
+            db.add_all(timetable_rows)
+            await db.commit()
+
+            Logger.info("Sample timetable data inserted!")
         Logger.info("Database seeding completed successfully!")
 
     except Exception as e:
         Logger.error(f"Error seeding database: {e}", exc_info=True)
         raise
-
-
-if __name__ == "__main__":
-    # Run seeding
-    asyncio.run(seed_database())
+     
+    

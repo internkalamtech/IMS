@@ -116,3 +116,19 @@ class RoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+class TimetableModel(Base):
+    __tablename__ = "timetable"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    teacher_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False
+    )
+
+    subject: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    room_type: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
