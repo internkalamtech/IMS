@@ -7,13 +7,13 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const { width } = Dimensions.get('window');
-
+import { Modal, TextInput, Button, RefreshControl, ScrollView, StatusBar, TouchableOpacity, View, StyleSheet } from "react-native";
 export default function AdminDashboard() {
+    const [modalVisible, setModalVisible] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
@@ -29,32 +29,50 @@ export default function AdminDashboard() {
         { title: 'Total Teachers', value: getStatValue('Total Teachers'), icon: 'school', color: '#fff' },
     ];
 
-    return (
-        <ThemedView style={styles.container}>
-            <StatusBar barStyle={isDark ? "light-content" : "light-content"} />
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
-            >
-                {/* Blue Banner Header */}
-                <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
-                    <SafeAreaView edges={['top']}>
-                        <View style={styles.headerContent}>
-                            <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
-                                    {user?.name || 'Admin'}
-                                </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
-                                    Institute Management Overview
-                                </ThemedText>
-                            </View>
-                            <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
-                                <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
-                            </TouchableOpacity>
-                        </View>
+const handleSubmit = async () => {
+    console.log("Submitting user:", name, email)
+    try {
+        await createUser(name, email);
 
-                        {/* Banner Stats */}
+        setName("");
+        setEmail("");
+        setModalVisible(false);
+
+        onRefresh(); // refresh dashboard stats
+    } catch (error) {
+        console.error("Failed to create user", error);
+    }
+};
+
+return (
+    <ThemedView style={styles.container}>
+        <StatusBar barStyle={isDark ? "light-content" : "light-content"} />
+        <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
+        >
+            {/* Blue Banner Header */}
+            <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
+                <SafeAreaView edges={['top']}>
+                    <View style={styles.headerContent}>
+                        <View>
+                            <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                {user?.name || 'Admin'}
+                            </ThemedText>
+                            <ThemedText style={styles.subtitle} color="primaryForeground">
+                                Institute Management Overview
+                            </ThemedText>
+                        </View>
+                        <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addIcon}>
+                            <Ionicons name="person-add-outline" size={24} color={theme.colors.primaryForeground} />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
+                            <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Banner Stats */}
                         <View style={styles.bannerStats}>
                             {stats.map((stat, index) => (
                                 <View key={index} style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
@@ -109,6 +127,30 @@ export default function AdminDashboard() {
                     </ThemedCard>
                 </View>
             </ScrollView>
+            <Modal visible={modalVisible} animationType="slide" transparent>
+    <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+
+            <TextInput
+                placeholder="Name"
+                value={name}
+                onChangeText={setName}
+                style={styles.input}
+            />
+
+            <TextInput
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+            />
+
+            <Button title="Submit" onPress={handleSubmit} />
+
+
+        </View>
+    </View>
+</Modal>
         </ThemedView>
     );
 }
@@ -145,6 +187,9 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     logoutIcon: {
+        padding: 8,
+    },
+    addIcon: {
         padding: 8,
     },
     bannerStats: {
@@ -211,7 +256,7 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     quickActionItem: {
-        width: (width - 48 - 40) / 3,
+        width: '32%',
         alignItems: 'center',
         marginBottom: 24,
     },
@@ -264,4 +309,28 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '600',
     },
+    modalOverlay: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "rgba(0,0,0,0.4)",
+},
+
+modalContent: {
+  backgroundColor: "white",
+  padding: 20,
+  borderRadius: 10,
+  width: "80%",
+},
+
+input: {
+  borderWidth: 1,
+  borderColor: "#ccc",
+  padding: 10,
+  marginBottom: 10,
+  borderRadius: 6,
+},
 });
+async function createUser(name: string, email: string) {
+    console.log("Sending to server:", name, email);
+}

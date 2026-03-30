@@ -1,6 +1,7 @@
 import { ColorPalettes, FontSize, FontWeight, Radius, Spacing } from './tokens';
 
 export interface ThemeColors {
+    text: ColorValue | undefined;
     background: string;
     foreground: string;
     card: string;

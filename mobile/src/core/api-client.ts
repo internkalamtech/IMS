@@ -83,3 +83,21 @@ export class ApiClient {
 }
 
 export const api = ApiClient.getInstance().getAxios();
+export const createUser = async (name: string, email: string) => {
+  const response = await fetch(`${getApiBaseUrl()}/users`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name,
+      email,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create user");
+  }
+
+  return await response.json();
+};

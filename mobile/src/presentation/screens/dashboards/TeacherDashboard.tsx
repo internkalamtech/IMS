@@ -10,13 +10,24 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+
 
 const { width } = Dimensions.get('window');
 
+
 export default function TeacherDashboard() {
+    const router = useRouter();
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
+
+    useEffect(() => {
+        if (!user) {
+            router.replace('/');
+        }
+    }, [user, router]);
 
     const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
 
@@ -50,7 +61,9 @@ export default function TeacherDashboard() {
                                     Your academic day at a glance
                                 </ThemedText>
                             </View>
-                            <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
+                            <TouchableOpacity onPress={() => {
+                                 logout();
+                                 router.replace('/');}}>
                                 <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
                             </TouchableOpacity>
                         </View>
