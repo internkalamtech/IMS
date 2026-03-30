@@ -28,9 +28,9 @@ export function ThemedText({
     // 3. Default based on type
     // 4. Default foreground
 
-    let selectedColor = textColor;
+    let selectedColor: string | undefined = textColor;
     if (!selectedColor && themeColorKey) {
-        selectedColor = theme.colors[themeColorKey];
+        selectedColor = theme.colors[themeColorKey as keyof typeof theme.colors] as string | undefined;
     }
     if (!selectedColor) {
         if (type === 'link') {
