@@ -1,17 +1,15 @@
 import datetime
-
-from sqlalchemy import Column, DateTime, Float, Integer, String
-
-from app.infrastructure.database import Base
+from dataclasses import dataclass, field
 
 
-class Ledger(Base):
-    __tablename__ = "student_ledger"
-
-    id = Column(Integer, primary_key=True)
-    student_id = Column(Integer)
-    debit = Column(Float)
-    credit = Column(Float)
-    balance = Column(Float)
-    description = Column(String)
-    transaction_date = Column(DateTime, default=datetime.datetime.utcnow)
+@dataclass
+class Ledger:
+    id: int | None = None
+    student_id: int | None = None
+    debit: float | None = None
+    credit: float | None = None
+    balance: float | None = None
+    description: str | None = None
+    transaction_date: datetime.datetime = field(
+        default_factory=datetime.datetime.utcnow
+    )
