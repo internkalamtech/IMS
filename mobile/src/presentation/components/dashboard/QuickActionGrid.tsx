@@ -5,14 +5,15 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
-const router = useRouter();
+
 interface QuickActionGridProps {
     actions: QuickAction[];
     onActionPress?: (action: QuickAction) => void;
 }
 
 export function QuickActionGrid({ actions, onActionPress }: QuickActionGridProps) {
-    return (
+   const router = useRouter(); 
+   return (
         <View style={styles.container}>
             {actions.map((action) => (
                 <TouchableOpacity
