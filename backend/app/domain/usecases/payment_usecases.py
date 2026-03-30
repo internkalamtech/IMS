@@ -5,14 +5,14 @@ Each use case encapsulates a single business operation, keeping the
 domain layer free from infrastructure concerns.
 """
 
-import random
-import string
+import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
 
 from app.core.errors import NotFoundError, ValidationError
 from app.domain.entities.payment import (
     Payment,
+    PaymentStatus,
     PaymentSummary,
     Student,
 )
@@ -23,19 +23,18 @@ from app.domain.repositories.payment_repository import PaymentRepository
 # Helpers
 # ------------------------------------------------------------------ #
 
-def _generate_receipt_number(repository: PaymentRepository = None) -> str:
+def _generate_receipt_number() -> str:
     """
-    Generate a unique receipt number in the format REC-YYYY-XXXX.
+    Generate a receipt number in the format REC-YYYY-XXXXXXXX.
 
-    The suffix is a 4-character alphanumeric string.  Uniqueness is
-    guaranteed by the caller (RecordPaymentUseCase) which retries on
-    collision.
+    Uses a UUID4 hex suffix (8 characters) to make collisions
+    statistically impossible without requiring a database round-trip.
 
     Returns:
-        Receipt number string, e.g. ``REC-2024-A3F7``
+        Receipt number string, e.g. ``REC-2024-A3F7B2C1``
     """
     year = datetime.utcnow().year
-    suffix = "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
+    suffix = uuid.uuid4().hex[:8].upper()
     return f"REC-{year}-{suffix}"
 
 
@@ -109,13 +108,17 @@ class RecordPaymentUseCase:
         if student is None:
             raise NotFoundError(f"Student with id {student_id} not found.")
 
-        # 3. Verify fee structure exists
+        # 3. Verify fee structure exists and belongs to the given student
         fee_structure = await self.repository.get_fee_structure_by_id(
             fee_structure_id
         )
         if fee_structure is None:
             raise NotFoundError(
                 f"Fee structure with id {fee_structure_id} not found."
+            )
+        if fee_structure.student_id != student_id:
+            raise ValidationError(
+                f"Fee structure {fee_structure_id} does not belong to student {student_id}."
             )
 
         # 4. Determine payment status based on amount vs. balance
@@ -294,7 +297,7 @@ class ListStudentsUseCase:
         name: Optional[str] = None,
         roll_number: Optional[str] = None,
         class_name: Optional[str] = None,
-        status: Optional[str] = None,
+        status: Optional[PaymentStatus] = None,
     ) -> List[Student]:
         """
         List students with optional search and filter criteria.

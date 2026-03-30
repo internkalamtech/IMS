@@ -77,7 +77,9 @@ class PaymentCreate(BaseModel):
             ValueError: If payment_mode is UPI or Card but
                         reference_number is absent or blank.
         """
-        if self.payment_mode in ("UPI", "Card") and not self.reference_number:
+        if self.payment_mode in ("UPI", "Card") and not (
+            self.reference_number and self.reference_number.strip()
+        ):
             raise ValueError(
                 f"reference_number is required for {self.payment_mode} payments."
             )

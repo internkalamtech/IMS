@@ -6,6 +6,7 @@ implementations must fulfill.
 """
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List, Optional
 
 from app.domain.entities.payment import (
@@ -66,7 +67,7 @@ class PaymentRepository(ABC):
 
     @abstractmethod
     async def update_student_next_due_date(
-        self, student_id: int, next_due_date
+        self, student_id: int, next_due_date: Optional[datetime]
     ) -> None:
         """
         Update the next payment due date for a student.

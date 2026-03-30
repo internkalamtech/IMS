@@ -122,8 +122,8 @@ class DatabasePaymentRepository(PaymentRepository):
         """
         List students with optional filters.
 
-        The ``status`` filter is applied by examining the latest payment
-        status recorded for each student.
+        The ``status`` filter is applied in SQL via a subquery that joins
+        students to their latest payment, avoiding N+1 queries.
 
         Args:
             name: Partial name filter (case-insensitive LIKE)
@@ -135,32 +135,49 @@ class DatabasePaymentRepository(PaymentRepository):
             List of Student entities
         """
         try:
-            query = select(StudentModel)
-            if name:
-                query = query.where(
-                    StudentModel.name.ilike(f"%{name}%")
+            if status:
+                # Subquery 1: latest payment_date per student
+                latest_date_subq = (
+                    select(
+                        PaymentModel.student_id,
+                        func.max(PaymentModel.payment_date).label("max_date"),
+                    )
+                    .group_by(PaymentModel.student_id)
+                    .subquery()
                 )
+                # Subquery 2: status of that latest payment per student
+                latest_payment_subq = (
+                    select(
+                        PaymentModel.student_id.label("student_id"),
+                        PaymentModel.status.label("latest_status"),
+                    )
+                    .join(
+                        latest_date_subq,
+                        (PaymentModel.student_id == latest_date_subq.c.student_id)
+                        & (PaymentModel.payment_date == latest_date_subq.c.max_date),
+                    )
+                    .subquery()
+                )
+                query = (
+                    select(StudentModel)
+                    .join(
+                        latest_payment_subq,
+                        StudentModel.id == latest_payment_subq.c.student_id,
+                    )
+                    .where(latest_payment_subq.c.latest_status == status)
+                )
+            else:
+                query = select(StudentModel)
+
+            if name:
+                query = query.where(StudentModel.name.ilike(f"%{name}%"))
             if roll_number:
                 query = query.where(StudentModel.roll_number == roll_number)
             if class_name:
                 query = query.where(StudentModel.class_name == class_name)
 
             result = await self.db.execute(query)
-            models = result.scalars().all()
-            students = [self._student_to_entity(m) for m in models]
-
-            # Filter by payment status if requested
-            if status:
-                filtered: List[Student] = []
-                for student in students:
-                    latest_status = await self._latest_payment_status(
-                        student.id
-                    )
-                    if latest_status == status:
-                        filtered.append(student)
-                return filtered
-
-            return students
+            return [self._student_to_entity(m) for m in result.scalars().all()]
         except DatabaseError:
             raise
         except Exception as exc:
@@ -404,10 +421,23 @@ class DatabasePaymentRepository(PaymentRepository):
             )
             total_collected: float = total_collected_result.scalar() or 0.0
 
-            # Overdue = payments with status 'Overdue'
+            # Overdue = outstanding balances for students past their next_due_date
             overdue_result = await self.db.execute(
-                select(func.coalesce(func.sum(PaymentModel.amount), 0)).where(
-                    PaymentModel.status == "Overdue"
+                select(
+                    func.coalesce(
+                        func.sum(
+                            FeeStructureModel.total_fee - FeeStructureModel.amount_paid
+                        ),
+                        0,
+                    )
+                )
+                .join(
+                    StudentModel,
+                    FeeStructureModel.student_id == StudentModel.id,
+                )
+                .where(
+                    StudentModel.next_due_date < datetime.utcnow(),
+                    FeeStructureModel.total_fee > FeeStructureModel.amount_paid,
                 )
             )
             total_overdue: float = overdue_result.scalar() or 0.0

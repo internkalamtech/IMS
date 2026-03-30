@@ -38,6 +38,7 @@ from app.schemas.payment import (
     PaymentCreate,
     PaymentResponse,
     PaymentSummaryResponse,
+    PaymentStatus,
     StudentResponse,
 )
 
@@ -57,7 +58,10 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
         400: {"model": ErrorResponse, "description": "Validation error"},
         401: {"model": ErrorResponse, "description": "Unauthorized"},
         404: {"model": ErrorResponse, "description": "Student or fee structure not found"},
-        500: {"model": ErrorResponse, "description": "Internal server error"},
+        500: {
+            "model": ErrorResponse,
+            "description": "Internal server error",
+        },
     },
     summary="Record a payment",
     description=(
@@ -342,7 +346,7 @@ async def list_students(
     name: Optional[str] = Query(None, description="Partial name search"),
     roll_number: Optional[str] = Query(None, description="Exact roll number"),
     class_name: Optional[str] = Query(None, description="Class name filter"),
-    payment_status: Optional[str] = Query(
+    payment_status: Optional[PaymentStatus] = Query(
         None,
         alias="status",
         description="Filter by payment status",
@@ -472,7 +476,7 @@ async def export_payments_csv(
     """
     Export all payment records as a streaming CSV download.
 
-    Payments are fetched in a single query and streamed to the client
+    Payments are fetched in paginated chunks and streamed to the client
     as ``text/csv`` to avoid loading the entire dataset into memory.
 
     Args:
