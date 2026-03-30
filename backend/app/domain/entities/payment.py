@@ -5,7 +5,7 @@ These dataclasses represent the core payment business objects with no
 dependencies on external frameworks or database models.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal, Optional
 

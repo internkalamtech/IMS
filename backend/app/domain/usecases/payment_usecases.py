@@ -12,7 +12,6 @@ from typing import List, Optional
 
 from app.core.errors import NotFoundError, ValidationError
 from app.domain.entities.payment import (
-    FeeStructure,
     Payment,
     PaymentSummary,
     Student,
