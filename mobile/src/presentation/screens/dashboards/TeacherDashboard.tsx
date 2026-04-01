@@ -1,4 +1,3 @@
-import { DASHBOARD_CONFIG } from '@/core/config/dashboard';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { QuickActionGrid } from '@/presentation/components/dashboard/QuickActionGrid';
 import { ThemedCard } from '@/presentation/components/ThemedCard';
@@ -8,24 +7,28 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View,Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get('window');
 
 export default function TeacherDashboard() {
     const { logout, user } = useAuth();
+    const router = useRouter();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
-    const { theme } = useTheme();
-
-    const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
+    const { theme } = useTheme()
 
     const upcomingClasses = [
         { id: 1, subject: 'Mathematics', class: 'Class 10-A', time: '09:00 AM', color: '#3b82f6' },
         { id: 2, subject: 'Science', class: 'Class 9-B', time: '10:30 AM', color: '#10b981' },
         { id: 3, subject: 'Physics', class: 'Class 11-A', time: '12:00 PM', color: '#a855f7' },
     ];
-
+const studyMaterials = [
+  { id: 1, title: 'Algebra Worksheet', subject: 'Mathematics', type: 'PDF', color: '#3b82f6' },
+  { id: 2, title: 'Chemical Reactions', subject: 'Science', type: 'PPT', color: '#10b981' },
+  { id: 3, title: 'Quantum Physics', subject: 'Physics', type: 'Link', color: '#a855f7' },
+];
     const getStatValue = (label: string, defaultValue: string = '0') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
     };
@@ -50,6 +53,19 @@ export default function TeacherDashboard() {
                                     Your academic day at a glance
                                 </ThemedText>
                             </View>
+                            <TouchableOpacity
+                onPress={() => router.push("/study-material")}
+                style={{
+                backgroundColor: "#4CAF50",
+                padding: 12,
+                margin: 10,
+                borderRadius: 8,
+                }}
+>
+  <Text style={{ color: "white", textAlign: "center" }}>
+    Study Material
+  </Text>
+</TouchableOpacity>
                             <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
                                 <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
                             </TouchableOpacity>
@@ -85,8 +101,6 @@ export default function TeacherDashboard() {
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Teacher Tools</ThemedText>
                     </View>
-
-                    <QuickActionGrid actions={quickActions} />
 
                     {/* Upcoming Classes */}
                     <View style={styles.sectionHeader}>
@@ -194,12 +208,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '700',
     },
-    quickActionsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        marginBottom: 32,
-    },
+
     quickActionItem: {
         width: (width - 48 - 40) / 3,
         alignItems: 'center',
