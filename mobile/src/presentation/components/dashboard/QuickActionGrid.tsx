@@ -3,8 +3,6 @@ import { ThemedText } from '@/presentation/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useRouter } from 'expo-router';
-
 
 interface QuickActionGridProps {
     actions: QuickAction[];
@@ -12,18 +10,13 @@ interface QuickActionGridProps {
 }
 
 export function QuickActionGrid({ actions, onActionPress }: QuickActionGridProps) {
-   const router = useRouter(); 
    return (
         <View style={styles.container}>
             {actions.map((action) => (
                 <TouchableOpacity
                     key={action.id}
                     style={styles.item}
-                    onPress={() => {
-                    if (action.route) {
-                     router.push(action.route as any);
-                    }
-                       }}                >
+                    onPress={() => onActionPress?.(action)}              >
                     <View style={[styles.iconContainer, { backgroundColor: action.color + '15' }]}>
                         <Ionicons name={action.icon as any} size={28} color={action.color} />
                     </View>

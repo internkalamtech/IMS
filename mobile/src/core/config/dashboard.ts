@@ -38,6 +38,7 @@ export const DASHBOARD_CONFIG = {
             { id: 4, title: 'Library', icon: 'library', color: ColorPalettes.purple[500] },
             { id: 5, title: 'Attendance', icon: 'checkmark-circle', color: ColorPalettes.cyan[500] },
             { id: 6, title: 'Profile', icon: 'person', color: ColorPalettes.indigo[500] },
+            { id: 7, title: 'Students', icon: 'people', color: ColorPalettes.green[500], route: '/student-directory' },
         ] as QuickAction[],
     },
     parent: {

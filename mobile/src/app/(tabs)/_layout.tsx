@@ -52,19 +52,7 @@ export default function TabLayout() {
                     ),
                 }}
             />
-            <Tabs.Screen
-             name="student-directory"
-             options={{
-             title: 'Students',
-             tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-                name={focused ? 'people' : 'people-outline'}
-                size={24}
-                color={color}
-            />
-             ),
-            }}
-            />
+            
         </Tabs>
     );
 }

@@ -20,5 +20,19 @@ export class UserRepositoryImpl implements UserRepository {
             };
         }
     }
+    async createUser(name: string, email: string): Promise<any> {
+        try {
+            const response = await api.post('/users', {
+                name,
+                email,
+            });
+
+            return response.data;
+        } catch (error) {
+            Logger.error('Failed to create user', error);
+            throw error;
+        }
+    }
 }
+
 

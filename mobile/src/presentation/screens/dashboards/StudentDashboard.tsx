@@ -10,10 +10,12 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 export default function StudentDashboard() {
+    const router = useRouter();
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
@@ -80,8 +82,14 @@ export default function StudentDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Academic Zone</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
-
+                     <QuickActionGrid
+                     actions={quickActions}
+                     onActionPress={(action) => {
+                     if (action.route) {
+                          router.push(action.route as any);
+                              }
+                          }}
+                          />
                     {/* Notice Board */}
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Notice Board</ThemedText>

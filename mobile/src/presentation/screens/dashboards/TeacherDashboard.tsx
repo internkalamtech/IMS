@@ -99,8 +99,14 @@ export default function TeacherDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Teacher Tools</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
-
+                 <QuickActionGrid
+  actions={quickActions}
+  onActionPress={(action) => {
+    if (action.route) {
+      router.push(action.route as any);
+    }
+  }}
+/>
                     {/* Upcoming Classes */}
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Upcoming Classes</ThemedText>
