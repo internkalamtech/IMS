@@ -29,6 +29,22 @@ export const DASHBOARD_CONFIG = {
             { id: 6, title: 'Messages', icon: 'chatbubbles', color: ColorPalettes.pink[500] },
         ] as QuickAction[],
     },
+    teacher2: {
+        quickActions: [
+            { title: 'Timetable', icon: 'calendar-outline' },
+            { title: 'Attendance', icon: 'checkmark-circle-outline' },
+            { title: 'Students', icon: 'people-outline' },
+            { title: 'Assessments', icon: 'file-tray-full-outline' },
+            { title: 'Academics', icon: 'book-outline' },
+            { title: 'Leave Requests', icon: 'mail-outline' },
+        ],
+        bottomTabs: [
+            { title: 'Home', icon: 'home-outline' },
+            { title: 'Alerts', icon: 'notifications-outline' },
+            { title: 'Profile', icon: 'person-outline' },
+            { title: 'Homework', icon: 'book-outline' },
+        ],
+    },
     student: {
         quickActions: [
             { id: 1, title: 'Timetable', icon: 'calendar', color: ColorPalettes.blue[500] },

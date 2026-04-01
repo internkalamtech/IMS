@@ -36,6 +36,12 @@ DEMO_USERS = [
         "roles": ["teacher"],
     },
     {
+        "email": "teacher2@myuser.com",
+        "password": "teacher2123",
+        "name": "Teacher Two",
+        "roles": ["teacher"],
+    },
+    {
         "email": "parent@myuser.com",
         "password": "parent123",
         "name": "Parent User",
@@ -182,6 +188,15 @@ async def create_users(
             )
         else:
             Logger.info(f"User already exists: {user_data['email']}")
+            # Ensure demo users stay in sync with known demo passwords and roles
+            user.password_hash = hash_password(user_data["password"])
+            user.is_active = True
+            for role_name in user_data["roles"]:
+                if role_name in roles_map and roles_map[role_name] not in user.roles:
+                    user.roles.append(roles_map[role_name])
+            Logger.info(
+                f"Updated demo user password and roles: {user_data['email']}"
+            )
 
     await db.commit()
 
