@@ -2,13 +2,20 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTheme } from "@/core/theme/ThemeContext";
 import { ScrollView } from "react-native";
+import { MOCK_STUDENTS } from "@/data/local/students";
+
 export default function StudentProfile() {
   const { theme } = useTheme();
   const router = useRouter();
 
-  const { name, roll, class: studentClass, attendance, marks, rank } =
+  const { id } =
     useLocalSearchParams();
-
+  const student = MOCK_STUDENTS.find((s) => s.id === id);
+  
+  if (!student) {
+  return <Text>No student data</Text>;
+}
+  
   return (
   <ScrollView style={{ flex: 1, backgroundColor: "#f5f7fb" }}>
     
@@ -23,26 +30,26 @@ export default function StudentProfile() {
 
       {/* PROFILE CARD */}
       <View style={styles.profileCard}>
-        <Text style={styles.name}>{name}</Text>
+        <Text style={styles.name}>{student.name}</Text>
         <Text style={styles.subText}>
-          Class {studentClass} • Roll No: {roll}
+          Class {student.class} • Roll No: {student.roll}
         </Text>
       </View>
 
       {/* STATS */}
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
-          <Text style={styles.green}>{attendance}</Text>
+          <Text style={styles.green}>{student.attendance}</Text>
           <Text style={styles.statLabel}>Attendance</Text>
         </View>
 
         <View style={styles.statBox}>
-          <Text style={styles.yellow}>{marks}</Text>
+          <Text style={styles.yellow}>{student.marks}</Text>
           <Text style={styles.statLabel}>Overall Score</Text>
         </View>
 
         <View style={styles.statBox}>
-          <Text style={styles.white}>{rank}</Text>
+          <Text style={styles.white}>{student.rank}</Text>
           <Text style={styles.statLabel}>Class Rank</Text>
         </View>
       </View>
