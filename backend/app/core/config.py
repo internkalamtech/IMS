@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = (
-        "postgresql+asyncpg://ims_user:%40Ayan123@localhost:5432/ims_db"
+        "postgresql+asyncpg://ims_user:ims_password@localhost:5432/ims_db"
     )
 
     # Security
