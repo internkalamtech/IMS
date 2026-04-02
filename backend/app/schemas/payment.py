@@ -34,11 +34,15 @@ class PaymentCreate(BaseModel):
       ``"UPI"`` or ``"Card"``; it remains optional for ``"Cash"``.
     """
 
-    student_id: int = Field(..., description="ID of the student making the payment")
+    student_id: int = Field(
+        ..., description="ID of the student making the payment"
+    )
     fee_structure_id: int = Field(
         ..., description="ID of the fee structure being paid against"
     )
-    amount: float = Field(..., gt=0, description="Payment amount (must be > 0)")
+    amount: float = Field(
+        ..., gt=0, description="Payment amount (must be > 0)"
+    )
     payment_mode: PaymentMode = Field(
         ..., description="Mode of payment: Cash, UPI, or Card"
     )
@@ -81,7 +85,8 @@ class PaymentCreate(BaseModel):
             self.reference_number and self.reference_number.strip()
         ):
             raise ValueError(
-                f"reference_number is required for {self.payment_mode} payments."
+                f"reference_number is required for {self.payment_mode} "
+                "payments."
             )
         return self
 
