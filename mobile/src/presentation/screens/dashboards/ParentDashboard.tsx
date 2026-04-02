@@ -7,7 +7,7 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     RefreshControl,
     ScrollView,
@@ -54,10 +54,27 @@ const RECENT_UPDATES = [
 
 export default function ParentDashboard() {
     const { logout, user } = useAuth();
-    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
+    const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+    const { data: dashboardData, refreshing, onRefresh } = useDashboard(selectedChildId ?? undefined);
     const { theme } = useTheme();
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
+
+    useEffect(() => {
+        if (!selectedChildId && dashboardData?.selectedChildId) {
+            setSelectedChildId(dashboardData.selectedChildId);
+        }
+    }, [dashboardData, selectedChildId]);
+
+    const childList = dashboardData?.children ?? [];
+    const selectedChild =
+        childList.find(c => c.id === selectedChildId) ||
+        childList[0] ||
+        null;
+
+    const childName = selectedChild?.name || 'Aarav Kumar';
+    const childClass = selectedChild?.className || 'Class 7-B';
+    const childRoll = selectedChild?.rollNumber || '23';
 
     const getStatValue = (label: string, defaultValue: string = '0%') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value?.toString() || defaultValue;
@@ -93,7 +110,29 @@ export default function ParentDashboard() {
                                 <ThemedText style={styles.subtitleText} color="primaryForeground">
                                     Track your child&apos;s progress
                                 </ThemedText>
+                        {childList.length > 1 && (
+                            <View style={styles.childPickerRow}>
+                                {childList.map((child) => (
+                                    <TouchableOpacity
+                                        key={child.id}
+                                        onPress={() => setSelectedChildId(child.id)}
+                                        style={[
+                                            styles.childPill,
+                                            child.id === selectedChild?.id && {
+                                                backgroundColor: theme.colors.primary,
+                                            },
+                                        ]}
+                                    >
+                                        <ThemedText
+                                            style={[styles.childPillLabel, { color: child.id === selectedChild?.id ? theme.colors.primaryForeground : theme.colors.primaryForeground }]}
+                                        >
+                                            {child.name}
+                                        </ThemedText>
+                                    </TouchableOpacity>
+                                ))}
                             </View>
+                        )}
+                    </View>
                             <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
                                 <Ionicons name="log-out-outline" size={22} color={theme.colors.primaryForeground} />
                             </TouchableOpacity>
@@ -105,12 +144,16 @@ export default function ParentDashboard() {
                                 {/* Child name row */}
                                 <View style={styles.childNameRow}>
                                     <View style={[styles.avatarCircle, { backgroundColor: theme.colors.primary + '20' }]}>
-                                        <ThemedText style={[styles.avatarText, { color: theme.colors.primary }]}>AK</ThemedText>
+                                        <ThemedText style={[styles.avatarText, { color: theme.colors.primary }]}> {childName
+                                            .split(' ')
+                                            .map(token => token?.[0] ?? '')
+                                            .join('')
+                                            .toUpperCase()}</ThemedText>
                                     </View>
                                     <View>
-                                        <ThemedText style={styles.childName} type="defaultSemiBold">Aarav Kumar</ThemedText>
+                                        <ThemedText style={styles.childName} type="defaultSemiBold">{childName}</ThemedText>
                                         <ThemedText style={styles.childClass} lightColor="#666" darkColor="#999">
-                                            Class 7-B • Roll 23
+                                            {childClass} • Roll {childRoll}
                                         </ThemedText>
                                     </View>
                                 </View>
@@ -268,6 +311,23 @@ const styles = StyleSheet.create({
     },
     childName: { fontSize: 17 },
     childClass: { fontSize: 13, marginTop: 2 },
+    childPickerRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: 8,
+    },
+    childPill: {
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#ffffff33',
+    },
+    childPillLabel: {
+        fontSize: 12,
+        fontWeight: '700',
+    },
     statsRow: {
         flexDirection: 'row',
         gap: 12,

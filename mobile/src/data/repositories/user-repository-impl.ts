@@ -3,9 +3,10 @@ import { Logger } from '@/core/logger';
 import { DashboardData, UserRepository } from '@/domain/repositories/user-repository';
 
 export class UserRepositoryImpl implements UserRepository {
-    async getDashboardData(role: string): Promise<DashboardData> {
+    async getDashboardData(role: string, childId?: string): Promise<DashboardData> {
         try {
-            const response = await api.get('/dashboard/stats');
+            const params = childId ? { child_id: childId } : {};
+            const response = await api.get('/dashboard/stats', { params });
             return response.data;
         } catch (error) {
             Logger.error('Failed to fetch dashboard data', error);

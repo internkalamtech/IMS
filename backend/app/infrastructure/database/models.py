@@ -49,6 +49,24 @@ user_roles = Table(
     ),
 )
 
+# Association table for parent-child relationship (parent owns multiple student children)
+parent_child_link = Table(
+    "parent_child_link",
+    Base.metadata,
+    Column(
+        "parent_id",
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "child_id",
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
 
 class UserModel(Base):
     """
@@ -88,6 +106,31 @@ class UserModel(Base):
         secondary=user_roles,
         back_populates="users",
         lazy="joined",
+    )
+
+    children: Mapped[List["UserModel"]] = relationship(
+        "UserModel",
+        secondary=parent_child_link,
+        primaryjoin=id == parent_child_link.c.parent_id,
+        secondaryjoin=id == parent_child_link.c.child_id,
+        back_populates="parents",
+        lazy="joined",
+    )
+
+    parents: Mapped[List["UserModel"]] = relationship(
+        "UserModel",
+        secondary=parent_child_link,
+        primaryjoin=id == parent_child_link.c.child_id,
+        secondaryjoin=id == parent_child_link.c.parent_id,
+        back_populates="children",
+        lazy="joined",
+    )
+
+    profile: Mapped["StudentProfileModel"] = relationship(
+        "StudentProfileModel",
+        back_populates="student",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:
@@ -184,6 +227,40 @@ class_subject_link = Table(
 )
 
 
+class StudentProfileModel(Base):
+    """
+    Student profile database model.
+
+    Includes dashboard metrics for students.
+    """
+
+    __tablename__ = "student_profiles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+    )
+    attendance_percent: Mapped[int] = mapped_column(Integer, default=90)
+    avg_marks: Mapped[int] = mapped_column(Integer, default=75)
+    fee_status: Mapped[str] = mapped_column(String(50), default="Paid")
+    outstanding_fee: Mapped[int] = mapped_column(Integer, default=0)
+
+    student: Mapped["UserModel"] = relationship(
+        "UserModel",
+        back_populates="profile",
+        uselist=False,
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<StudentProfile(id={self.id}, student_id={self.student_id}, "
+            f"attendance={self.attendance_percent}, avg_marks={self.avg_marks})>"
+        )
+
+
 class ContactModel(Base):
     """
     Contact database model.
@@ -205,4 +282,3 @@ class ContactModel(Base):
             f"<Contact(id={self.id}, name='{self.name}', "
             f"email='{self.email}')>"
         )
-

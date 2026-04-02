@@ -18,7 +18,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logger import Logger
 from app.core.password import hash_password
 from app.infrastructure.database.database import AsyncSessionLocal, init_db
-from app.infrastructure.database.models import RoleModel, UserModel
+from app.infrastructure.database.models import (
+    RoleModel,
+    StudentProfileModel,
+    UserModel,
+    parent_child_link,
+)
 
 
 # Demo users configuration
@@ -182,6 +187,61 @@ async def create_users(
             )
         else:
             Logger.info(f"User already exists: {user_data['email']}")
+
+    await db.commit()
+
+    # Create sample parent-child links and student profiles
+    await create_parent_child_links_and_profiles(db)
+
+
+async def create_parent_child_links_and_profiles(db: AsyncSession) -> None:
+    """
+    Create links between parent and student users and their profile data.
+    """
+    # Fetch parent and student records
+    parent_result = await db.execute(
+        select(UserModel).where(UserModel.email == "parent@myuser.com")
+    )
+    student_result = await db.execute(
+        select(UserModel).where(UserModel.email == "student@myuser.com")
+    )
+
+    parent_user = parent_result.unique().scalar_one_or_none()
+    student_user = student_result.unique().scalar_one_or_none()
+
+    if parent_user and student_user:
+        # Link parent and student if not linked
+        existing_link = await db.execute(
+            select(parent_child_link).where(
+                parent_child_link.c.parent_id == parent_user.id,
+                parent_child_link.c.child_id == student_user.id,
+            )
+        )
+        if existing_link.first() is None:
+            await db.execute(
+                parent_child_link.insert().values(
+                    parent_id=parent_user.id,
+                    child_id=student_user.id,
+                )
+            )
+
+    # Add a student profile if missing
+    if student_user:
+        profile_entry = await db.execute(
+            select(StudentProfileModel).where(
+                StudentProfileModel.student_id == student_user.id
+            )
+        )
+        if profile_entry.unique().scalar_one_or_none() is None:
+            db.add(
+                StudentProfileModel(
+                    student_id=student_user.id,
+                    attendance_percent=94,
+                    avg_marks=870,
+                    fee_status="Paid",
+                    outstanding_fee=0,
+                )
+            )
 
     await db.commit()
 

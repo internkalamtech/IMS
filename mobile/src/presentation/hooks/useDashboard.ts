@@ -7,7 +7,7 @@ import { useAuth } from './useAuth';
 const userRepository = new UserRepositoryImpl();
 const getDashboardDataUseCase = new GetDashboardDataUseCase(userRepository);
 
-export function useDashboard() {
+export function useDashboard(childId?: string) {
     const { user } = useAuth();
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -18,13 +18,13 @@ export function useDashboard() {
         if (user) {
             fetchData();
         }
-    }, [user]);
+    }, [user, childId]);
 
     const fetchData = async () => {
         setLoading(true);
         setError(null);
         try {
-            const dashboardData = await getDashboardDataUseCase.execute(user!.role);
+            const dashboardData = await getDashboardDataUseCase.execute(user!.role, childId);
             setData(dashboardData);
         } catch (e) {
             setError('Failed to load dashboard data');
@@ -38,7 +38,7 @@ export function useDashboard() {
         setRefreshing(true);
         setError(null);
         try {
-            const dashboardData = await getDashboardDataUseCase.execute(user!.role);
+            const dashboardData = await getDashboardDataUseCase.execute(user!.role, childId);
             setData(dashboardData);
         } catch (e) {
             setError('Failed to refresh dashboard data');
