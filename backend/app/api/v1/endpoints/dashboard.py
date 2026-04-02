@@ -11,7 +11,11 @@ from app.api.schemas import (
 )
 from app.domain.entities.user import User
 from app.infrastructure.database.database import get_db
-from app.infrastructure.database.models import StudentProfileModel, UserModel
+from app.infrastructure.database.models import (
+    StudentProfileModel,
+    UserModel,
+    parent_child_link,
+)
 from app.infrastructure.repositories.database_contact_repository import (
     DatabaseContactRepository,
 )
@@ -104,7 +108,15 @@ async def get_dashboard_stats(
             )
 
         if role == "parent":
-            children = user_model.children
+            children_query = await db.execute(
+                select(UserModel)
+                .join(
+                    parent_child_link,
+                    parent_child_link.c.child_id == UserModel.id,
+                )
+                .where(parent_child_link.c.parent_id == user_model.id)
+            )
+            children = children_query.unique().scalars().all()
             children_payload = [
                 _build_child_summary(child) for child in children if child
             ]
@@ -121,7 +133,12 @@ async def get_dashboard_stats(
 
                 selected_child_id = str(chosen_child.id)
 
-                profile: StudentProfileModel | None = chosen_child.profile
+                profile_query = await db.execute(
+                    select(StudentProfileModel).where(
+                        StudentProfileModel.student_id == chosen_child.id
+                    )
+                )
+                profile = profile_query.scalar_one_or_none()
                 if profile:
                     attendance = f"{profile.attendance_percent}%"
                     avg_marks = f"{profile.avg_marks}%"
@@ -145,7 +162,12 @@ async def get_dashboard_stats(
                 ]
 
         elif role == "student":
-            profile: StudentProfileModel | None = user_model.profile
+            profile_result = await db.execute(
+                select(StudentProfileModel).where(
+                    StudentProfileModel.student_id == user_model.id
+                )
+            )
+            profile = profile_result.scalar_one_or_none()
             if profile:
                 stats = [
                     StatItem(label="Attendance", value=f"{profile.attendance_percent}%"),
