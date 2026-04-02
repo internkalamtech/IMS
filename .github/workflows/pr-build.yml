@@ -36,6 +36,25 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
+
+      - name: Wait for Postgres service
+        run: |
+          python - <<'PY'
+          import socket, time, sys
+          host = 'postgres'
+          port = 5432
+          for i in range(60):
+              try:
+                  s = socket.create_connection((host, port), timeout=1)
+                  s.close()
+                  print('Postgres reachable')
+                  sys.exit(0)
+              except Exception:
+                  print('Waiting for Postgres...')
+                  time.sleep(1)
+          print('Postgres not reachable after timeout')
+          sys.exit(1)
+          PY
           
       - name: Run tests
         run: pytest tests/
