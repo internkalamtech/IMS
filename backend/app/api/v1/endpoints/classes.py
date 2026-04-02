@@ -17,6 +17,7 @@ class ClassCreate(BaseModel):
 
     # Optional subject field
     subject: str = ""
+    totalStudents: int = 0
 
 # ---------------------------
 # CREATE CLASS
@@ -26,10 +27,15 @@ def create_class(payload: ClassCreate):
 
     # Check duplicate name + section
     for cls in classes:
-        if cls["name"] == payload.name and cls["section"] == payload.section and not cls["isDeleted"]:
+        if (
+            cls["name"].strip().lower() == payload.name.strip().lower()
+            and cls["section"].strip().lower() == payload.section.strip().lower()
+            and cls["academicPeriodId"] == payload.academicPeriodId
+            and not cls["isDeleted"]
+        ):
             raise HTTPException(
                 status_code=400,
-                detail="Class with same Name and Section already exists"
+                detail="Class already exists for this academic year"
             )
 
     new_class = {
@@ -38,10 +44,10 @@ def create_class(payload: ClassCreate):
         "section": payload.section,
         "academicPeriodId": payload.academicPeriodId,
          # Optional teacher field
-        "teacher":teacher,
+        "teacher":payload.teacher,
         # Optional subject field
-        "subject": subject,
-        "totalStudents": 0,
+        "subject": payload.subject,
+        "totalStudents": payload.totalStudents,
         "isDeleted": False
         }
 
@@ -54,13 +60,12 @@ def create_class(payload: ClassCreate):
 # FETCH CLASSES
 # ---------------------------
 @router.get("/")
-def get_classes(academicPeriodId: Optional[int] = None):
+def get_classes():
 
-    if academicPeriodId is None:
-        return classes
+    # Return only non-deleted classes
+    active_classes = [cls for cls in classes if not cls["isDeleted"]]
 
-    return [cls for cls in classes if cls["academicPeriodId"] == academicPeriodId]
-
+    return active_classes
 # ---------------------------
 # UPDATE CLASS
 # ---------------------------
@@ -73,6 +78,7 @@ def update_class(class_id: int, payload: ClassCreate):
             cls["id"] != class_id and
             cls["name"] == payload.name and
             cls["section"] == payload.section and
+            cls["academicPeriodId"] == payload.academicPeriodId and
             not cls["isDeleted"]
         ):
             raise HTTPException(
@@ -89,6 +95,15 @@ def update_class(class_id: int, payload: ClassCreate):
             cls["section"] = payload.section
             cls["academicPeriodId"] = payload.academicPeriodId
 
+            # Update optional teacher
+            cls["teacher"] = payload.teacher
+
+            # Update optional subject
+            cls["subject"] = payload.subject
+
+            # Update total students
+            cls["totalStudents"] = payload.totalStudents
+
             return cls
 
     # If class not found
@@ -100,7 +115,7 @@ def update_class(class_id: int, payload: ClassCreate):
 # ---------------------------
 # DELETE CLASS (SOFT DELETE)
 # ---------------------------
-@router.delete("/classes/{class_id}")
+@router.delete("/{class_id}")
 def delete_class(class_id: int):
 
     for cls in classes:
