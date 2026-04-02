@@ -15,24 +15,27 @@ export function useDashboard(childId?: string) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (user) {
-            fetchData();
-        }
-    }, [user, childId]);
+        if (!user) return;
 
-    const fetchData = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const dashboardData = await getDashboardDataUseCase.execute(user!.role, childId);
-            setData(dashboardData);
-        } catch (e) {
-            setError('Failed to load dashboard data');
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
+        let mounted = true;
+        (async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const dashboardData = await getDashboardDataUseCase.execute(user.role, childId);
+                if (mounted) setData(dashboardData);
+            } catch (e) {
+                if (mounted) setError('Failed to load dashboard data');
+                console.error(e);
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        })();
+
+        return () => {
+            mounted = false;
+        };
+    }, [user, childId]);
 
     const onRefresh = async () => {
         setRefreshing(true);
@@ -53,7 +56,7 @@ export function useDashboard(childId?: string) {
         loading,
         refreshing,
         error,
-        refresh: fetchData,
+        refresh: onRefresh,
         onRefresh
     };
 }
