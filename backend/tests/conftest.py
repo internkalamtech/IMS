@@ -1,3 +1,4 @@
+import asyncio
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -5,19 +6,19 @@ from app.infrastructure.database.database import AsyncSessionLocal, engine
 from app.infrastructure.database.models import Base
 
 
-@pytest.fixture(scope="session")
-async def setup_database():
-    """Create all tables before running tests."""
+# Create all tables once at module startup
+async def _init_db():
+    """Create all database tables."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    yield
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+
+
+asyncio.run(_init_db())
 
 
 @pytest.fixture(scope="function")
-async def db(setup_database) -> AsyncSession:
-    """Provide a database session for tests."""
+async def db() -> AsyncSession:
+    """Provide a database session for each test."""
     session = AsyncSessionLocal()
     trans = await session.begin()
     try:
