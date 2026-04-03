@@ -1,5 +1,5 @@
 /**
- * Attendance domain contracts — Issue #297 / #298 / #299
+ * Attendance domain contracts — Issue #297 / #298 / #299 / #301 / #302 / #303
  */
 
 export interface ChildSummary {
@@ -38,6 +38,8 @@ export interface LeaveHistoryItem {
     status: string;
     appliedDate: string;
     teacherNote?: string;
+    reviewedBy?: string;   // Teacher name, populated after review
+    submittedBy?: string;  // Parent name for audit trail
 }
 
 export interface AttendanceCalendarData {
@@ -56,5 +58,6 @@ export interface LeaveRequestInput {
 export interface AttendanceRepository {
     getParentChildren(): Promise<ChildSummary[]>;
     getChildCalendar(childId: string, month?: string): Promise<AttendanceCalendarData>;
+    getLeaveHistory(childId: string): Promise<LeaveHistoryItem[]>;
     applyLeave(input: LeaveRequestInput): Promise<LeaveHistoryItem>;
 }

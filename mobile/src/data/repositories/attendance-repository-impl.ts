@@ -94,6 +94,18 @@ export class AttendanceRepositoryImpl implements AttendanceRepository {
             return mockCalendar(year, m);
         }
     }
+    async getLeaveHistory(childId: string): Promise<LeaveHistoryItem[]> {
+        try {
+            const response = await api.get<LeaveHistoryItem[]>(
+                `/attendance/parent/children/${childId}/leave`
+            );
+            return response.data ?? [];
+        } catch (error) {
+            Logger.error(`getLeaveHistory(${childId}) error:`, error);
+            return [];
+        }
+    }
+
     async applyLeave(input: LeaveRequestInput): Promise<LeaveHistoryItem> {
         try {
             const response = await api.post<LeaveHistoryItem>(

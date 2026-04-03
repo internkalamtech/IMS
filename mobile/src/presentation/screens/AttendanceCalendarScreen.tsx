@@ -292,6 +292,11 @@ export default function AttendanceCalendarScreen() {
                                                 {lr.days} day{lr.days !== 1 ? 's' : ''} • Applied: {lr.appliedDate}
                                             </Text>
                                             <Text style={styles.leaveReason}>{lr.reason}</Text>
+                                            {lr.reviewedBy && (
+                                                <Text style={styles.teacherNote}>
+                                                    👩‍🏫 Reviewed by: {lr.reviewedBy}
+                                                </Text>
+                                            )}
                                             {lr.teacherNote && (
                                                 <Text style={styles.teacherNote}>💬 {lr.teacherNote}</Text>
                                             )}
