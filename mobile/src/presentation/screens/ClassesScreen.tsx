@@ -99,8 +99,11 @@ export default function ClassesScreen() {
         setSelectedClass(null);
 
     } catch (error: any) {
-        Alert.alert('Error', error.message);
-    }
+            Alert.alert(
+                'Alert',
+                error.response?.data?.detail || 'classs with same name and section already exist for this academic year'
+            );
+        }
 };
     // Opens modal in edit mode and fills inputs with selected class data
     const handleEdit = (item: any) => {
@@ -137,7 +140,7 @@ export default function ClassesScreen() {
         } catch (error: any) {
             Alert.alert(
                 'Error',
-                error.response?.data?.detail || 'cannot delete classs for active students'
+                error.response?.data?.detail || 'Cannot Delete Classs for Active Students'
             );
         }
     };
@@ -175,7 +178,7 @@ export default function ClassesScreen() {
         })
         .sort((a: any, b: any) => {
             if (sortOption === 'name') {
-                return a.name.localeCompare(b.name);
+                return parseInt(a.name) - parseInt(b.name);
             }
 
             return a.academicPeriodId - b.academicPeriodId;
@@ -198,7 +201,18 @@ export default function ClassesScreen() {
             </Text>
 
             {/* Add class button */}
-            <Button title="Add Class" onPress={() => setModalVisible(true)} />
+            <Button title="Add Class" onPress={() => 
+                {
+                    setSelectedClass(null);
+                    setName('');
+                    setSection('');
+                    setAcademicPeriodId('');
+                    setTeacher('');
+                    setSubject('');
+                    setTotalStudents('');
+                    setModalVisible(true);
+                }} 
+            />
         </View>
         <TextInput
             placeholder="Search by class or academic year"
@@ -242,8 +256,8 @@ export default function ClassesScreen() {
                         <Text style={styles.yearBadgeText}>
                             {
                                 academicYears.find(
-                                    (year) => year.id === item.academicPeriodId
-                                )?.label
+                                    (year) => String(year.id) === String(item.academicPeriodId)
+                                )?.label || 'No Year'
                             }
                         </Text>
                     </View>
