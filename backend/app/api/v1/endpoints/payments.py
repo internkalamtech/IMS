@@ -196,7 +196,7 @@ async def list_payments(
     name: Optional[str] = Query(default=None),
     roll_number: Optional[str] = Query(default=None),
     student_class: Optional[str] = Query(default=None),
-    status: Optional[str] = Query(default=None),
+    payment_status: Optional[str] = Query(default=None, alias="status"),
     skip: int = 0,
     limit: int = 20,
     db: AsyncSession = Depends(get_db),
@@ -210,7 +210,7 @@ async def list_payments(
             name=name,
             roll_number=roll_number,
             student_class=student_class,
-            status=status,
+            status=payment_status,
             skip=skip,
             limit=limit,
         )
