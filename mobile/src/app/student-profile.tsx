@@ -1,5 +1,5 @@
 import StudentProfileScreen from '@/presentation/screens/StudentProfileScreen';
 
-export default function Page() {
+export default function StudentProfile() {
   return <StudentProfileScreen />;
 }

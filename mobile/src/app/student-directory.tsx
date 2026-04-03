@@ -1,5 +1,5 @@
 import StudentDirectoryScreen from '@/presentation/screens/StudentDirectoryScreen';
 
-export default function Page() {
+export default function StudentDirectory() {
   return <StudentDirectoryScreen />;
 }

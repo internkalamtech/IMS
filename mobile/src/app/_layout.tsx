@@ -13,7 +13,7 @@ function RootNavigation() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.replace('/'); // 👈 login screen (adjust if needed)
+        router.replace('/'); 
       } else {
         router.replace('/(tabs)'); // 👈 main app
       }

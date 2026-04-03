@@ -10,7 +10,7 @@ export default function StudentProfile() {
 
   const { id } =
     useLocalSearchParams();
-  const student = MOCK_STUDENTS.find((s) => s.id === id);
+  const student = MOCK_STUDENTS.find((s) => s.id === String(id));
   
   if (!student) {
   return <Text>No student data</Text>;

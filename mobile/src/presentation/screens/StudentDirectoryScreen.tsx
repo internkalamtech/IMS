@@ -55,7 +55,7 @@ export default function StudentDirectory() {
      onPress={() =>
       router.push({
     pathname: "/student-profile",
-    params: { student: JSON.stringify(item) },
+    params: { id: item.id },
   })
 }
     >

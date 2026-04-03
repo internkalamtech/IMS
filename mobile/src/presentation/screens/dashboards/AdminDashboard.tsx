@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Modal, TextInput, Button, RefreshControl, ScrollView, StatusBar, TouchableOpacity, View, StyleSheet } from "react-native";
+import { useRouter } from 'expo-router';
 export default function AdminDashboard() {
     const [modalVisible, setModalVisible] = useState(false);
     const [name, setName] = useState('');
@@ -17,7 +18,7 @@ export default function AdminDashboard() {
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
-
+    const router = useRouter();
     const quickActions = DASHBOARD_CONFIG.admin.quickActions;
 
     const getStatValue = (label: string, defaultValue: string = '0') => {
@@ -96,7 +97,14 @@ return (
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid actions={quickActions} 
+                    onActionPress={(action) => {
+                    console.log("CLICKED:", action);
+                     if (action.title === "Students") {
+                       router.push("/student-directory");
+    }
+  }}
+                    />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
