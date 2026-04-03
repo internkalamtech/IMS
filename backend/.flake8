@@ -11,4 +11,4 @@ exclude =
 # E501 already handled by max-line-length above
 # W503 line break before binary operator (conflicts with Black)
 # E203 whitespace before ':' (conflicts with Black)
-ignore = W503,E203
+ignore = W503,E203,E123
