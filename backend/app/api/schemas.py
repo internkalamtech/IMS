@@ -131,3 +131,43 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
+
+# ============ TRIP SCHEMAS ============
+
+class TripCreateRequest(BaseModel):
+    """Request body for creating a trip."""
+    driver_id: int
+    route_id: str
+    vehicle_id: str
+    trip_type: str  # "pickup" or "drop_off"
+    scheduled_start: datetime
+    total_students: int
+
+
+class TripUpdateStatusRequest(BaseModel):
+    """Request body for updating trip status."""
+    status: str  # "scheduled", "in_progress", "completed"
+
+
+class TripResponse(BaseModel):
+    """Response model for a trip."""
+    id: int
+    driver_id: int
+    status: str
+    total_students: int
+    boarded_count: int
+
+    class Config:
+        from_attributes = True
+
+
+class TripStopResponse(BaseModel):
+    """Response model for a trip stop."""
+    id: int
+    trip_id: int
+    stop_sequence: int
+    location_name: str
+    status: str
+
+    class Config:
+        from_attributes = True

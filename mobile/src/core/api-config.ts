@@ -32,6 +32,12 @@ export const getApiBaseUrl = (): string => {
 
     // 3. Native Development (iOS/Android)
     try {
+        // If user has explicitly configured an API URL, use it (takes priority over auto-detection)
+        if (configuredUrl) {
+            Logger.debug(`[Config] Using configured API URL: ${configuredUrl}`);
+            return configuredUrl;
+        }
+
         const hostUri = Constants.expoConfig?.hostUri;
 
         if (!hostUri) {
@@ -47,16 +53,10 @@ export const getApiBaseUrl = (): string => {
 
         if (isTunnel) {
             // In tunnel mode, the hostUri DOES NOT correspond to the backend IP.
-            // We must use the local IP if on the same network, or configuredUrl if provided.
-            if (configuredUrl) {
-                Logger.debug(`[Config] Tunnel detected, using configured API URL: ${configuredUrl}`);
-                return configuredUrl;
-            }
-
-            // Note: We can't easily auto-detect the local IP here without hostUri,
-            // so we warn the user and use a likely local IP or localhost.
-            const url = 'http://localhost:8000/api/v1';
-            Logger.warn(`[Config] Tunnel detected. hostUri is ${hostUri}. Automatic backend detection may fail. Please set EXPO_PUBLIC_API_URL in .env if you get Network Errors.`);
+            // Warn user and use a fallback
+            const fallbackHost = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+            const url = `http://${fallbackHost}:8000/api/v1`;
+            Logger.warn(`[Config] Tunnel detected. hostUri is ${hostUri}. Using fallback: ${url}. For physical devices, please set EXPO_PUBLIC_API_URL in .env.`);
             return url;
         }
 
