@@ -5,7 +5,7 @@ These schemas define the shape of data for API endpoints.
 """
 
 from pydantic import BaseModel, EmailStr, Field
-from typing import Literal
+from typing import List, Literal, Optional
 
 
 class LoginRequest(BaseModel):
@@ -14,12 +14,12 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(
         ..., min_length=6, description="User password (minimum 6 characters)"
-    )
+        )
 
     model_config = {
         "json_schema_extra": {
             "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
-        }
+            }
     }
 
 
@@ -29,7 +29,7 @@ class RoleResponse(BaseModel):
     id: str
     name: Literal[
         "admin", "teacher", "student", "parent", "transport", "driver"
-    ]
+        ]
     description: str | None = None
 
 
@@ -41,7 +41,7 @@ class UserResponse(BaseModel):
     email: str
     role: Literal[
         "admin", "teacher", "student", "parent", "transport", "driver"
-    ]
+        ]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -100,7 +100,7 @@ class ErrorResponse(BaseModel):
 
     model_config = {
         "json_schema_extra": {"examples": [{"detail": "Error message"}]}
-    }
+        }
 
 
 class DemoCredential(BaseModel):
@@ -138,3 +138,17 @@ class AcademicSummaryResponse(BaseModel):
 
     child_id: str
     pending_homework_count: int
+
+
+class SubjectInput(BaseModel):
+    """Schema for subject input when updating class subjects."""
+
+    id: Optional[int] = None
+    name: Optional[str] = None
+
+
+class UpdateClassSubjectsRequest(BaseModel):
+    """Request schema for updating class subjects."""
+
+    class_id: int
+    subjects: List[SubjectInput]
