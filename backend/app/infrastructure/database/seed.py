@@ -578,7 +578,10 @@ async def create_sample_timetable(
         )
 
         db.add(period)
-        Logger.info(f"Created timetable period: Day {period_data['day']}, Period {period_data['period']}")
+        Logger.info(
+            f"Created timetable period: Day {period_data['day']}, "
+            f"Period {period_data['period']}"
+        )
 
     await db.commit()
 
@@ -622,7 +625,9 @@ async def seed_database() -> None:
             teachers_map = await create_teachers(db, roles_map)
 
             # Create sample timetable
-            await create_sample_timetable(db, classes_map, subjects_map, teachers_map, rooms_map)
+            await create_sample_timetable(
+                db, classes_map, subjects_map, teachers_map, rooms_map
+            )
 
         Logger.info("Database seeding completed successfully!")
 

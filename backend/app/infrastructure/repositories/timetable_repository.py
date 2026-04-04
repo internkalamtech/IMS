@@ -4,7 +4,7 @@ Timetable repository module.
 This module provides data access layer for timetable operations.
 """
 
-from typing import List, Optional
+from typing import List
 
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
