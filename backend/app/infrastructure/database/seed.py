@@ -318,7 +318,9 @@ async def create_subjects(db: AsyncSession) -> dict[str, SubjectModel]:
     for subject_data in SUBJECTS:
         # Check if subject exists
         result = await db.execute(
-            select(SubjectModel).where(SubjectModel.name == subject_data["name"])
+            select(SubjectModel).where(
+                SubjectModel.name == subject_data["name"]
+            )
         )
         subject = result.scalar_one_or_none()
 
@@ -336,7 +338,9 @@ async def create_subjects(db: AsyncSession) -> dict[str, SubjectModel]:
     return subjects_map
 
 
-async def create_class_sections(db: AsyncSession) -> dict[str, ClassSectionModel]:
+async def create_class_sections(
+    db: AsyncSession
+) -> dict[str, ClassSectionModel]:
     """
     Create class sections if they don't exist.
 
@@ -352,7 +356,9 @@ async def create_class_sections(db: AsyncSession) -> dict[str, ClassSectionModel
     for class_data in CLASS_SECTIONS:
         # Check if class exists
         result = await db.execute(
-            select(ClassSectionModel).where(ClassSectionModel.name == class_data["name"])
+            select(ClassSectionModel).where(
+                ClassSectionModel.name == class_data["name"]
+            )
         )
         class_section = result.scalar_one_or_none()
 
@@ -482,9 +488,12 @@ async def create_sample_timetable(
 
     Args:
         db: Database session
-        classes_map: Dictionary mapping class names to ClassSectionModel instances
-        subjects_map: Dictionary mapping subject names to SubjectModel instances
-        teachers_map: Dictionary mapping teacher names to TeacherModel instances
+        classes_map: Dictionary mapping class names to ClassSectionModel
+            instances
+        subjects_map: Dictionary mapping subject names to SubjectModel
+            instances
+        teachers_map: Dictionary mapping teacher names to TeacherModel
+            instances
         rooms_map: Dictionary mapping room names to RoomModel instances
     """
     Logger.info("Creating sample timetable...")

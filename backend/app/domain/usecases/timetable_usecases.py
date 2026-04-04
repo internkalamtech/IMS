@@ -7,7 +7,9 @@ This module contains business logic for timetable operations.
 from typing import List
 
 from app.domain.entities.timetable import TimetableDay, TimetablePeriod
-from app.domain.repositories.timetable_repository import TimetableRepositoryInterface
+from app.domain.repositories.timetable_repository import (
+    TimetableRepositoryInterface
+)
 
 
 class GetTimetableForClassUseCase:

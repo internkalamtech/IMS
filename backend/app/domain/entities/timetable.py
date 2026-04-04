@@ -5,7 +5,6 @@ This module defines the domain entities for timetable functionality.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass

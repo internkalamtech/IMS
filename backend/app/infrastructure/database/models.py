@@ -194,9 +194,15 @@ class TeacherModel(Base):
     __tablename__ = "teachers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    employee_id: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    specialization: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False
+    )
+    employee_id: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False
+    )
+    specialization: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
@@ -209,9 +215,12 @@ class TeacherModel(Base):
     )
 
     # Relationships
-    user: Mapped["UserModel"] = relationship("UserModel", backref="teacher_profile")
+    user: Mapped["UserModel"] = relationship(
+        "UserModel", backref="teacher_profile"
+    )
     timetable_periods: Mapped[List["TimetablePeriodModel"]] = relationship(
-        "TimetablePeriodModel", back_populates="teacher"
+        "TimetablePeriodModel",
+        back_populates="teacher"
     )
 
     def __repr__(self) -> str:
@@ -229,7 +238,9 @@ class RoomModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    room_type: Mapped[str] = mapped_column(String(50), nullable=False)  # classroom, lab, etc.
+    room_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # classroom, lab, etc.
     capacity: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -261,15 +272,31 @@ class TimetablePeriodModel(Base):
     __tablename__ = "timetable_periods"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    class_id: Mapped[int] = mapped_column(Integer, ForeignKey("class_sections.id"), nullable=False)
-    subject_id: Mapped[int] = mapped_column(Integer, ForeignKey("subjects.id"), nullable=False)
-    teacher_id: Mapped[int] = mapped_column(Integer, ForeignKey("teachers.id"), nullable=False)
-    room_id: Mapped[int] = mapped_column(Integer, ForeignKey("rooms.id"), nullable=False)
+    class_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("class_sections.id"), nullable=False
+    )
+    subject_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("subjects.id"), nullable=False
+    )
+    teacher_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("teachers.id"), nullable=False
+    )
+    room_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("rooms.id"), nullable=False
+    )
 
-    day_of_week: Mapped[int] = mapped_column(Integer, nullable=False)  # 0=Monday, 6=Sunday
-    start_time: Mapped[str] = mapped_column(String(10), nullable=False)  # HH:MM format
-    end_time: Mapped[str] = mapped_column(String(10), nullable=False)  # HH:MM format
-    period_number: Mapped[int] = mapped_column(Integer, nullable=False)  # 1, 2, 3, etc.
+    day_of_week: Mapped[int] = mapped_column(
+        Integer, nullable=False
+    )  # 0=Monday, 6=Sunday
+    start_time: Mapped[str] = mapped_column(
+        String(10), nullable=False
+    )  # HH:MM format
+    end_time: Mapped[str] = mapped_column(
+        String(10), nullable=False
+    )  # HH:MM format
+    period_number: Mapped[int] = mapped_column(
+        Integer, nullable=False
+    )  # 1, 2, 3, etc.
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
@@ -282,10 +309,16 @@ class TimetablePeriodModel(Base):
     )
 
     # Relationships
-    class_section: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
+    class_section: Mapped["ClassSectionModel"] = relationship(
+        "ClassSectionModel"
+    )
     subject: Mapped["SubjectModel"] = relationship("SubjectModel")
-    teacher: Mapped["TeacherModel"] = relationship("TeacherModel", back_populates="timetable_periods")
-    room: Mapped["RoomModel"] = relationship("RoomModel", back_populates="timetable_periods")
+    teacher: Mapped["TeacherModel"] = relationship(
+        "TeacherModel", back_populates="timetable_periods"
+    )
+    room: Mapped["RoomModel"] = relationship(
+        "RoomModel", back_populates="timetable_periods"
+    )
 
     def __repr__(self) -> str:
         return (
