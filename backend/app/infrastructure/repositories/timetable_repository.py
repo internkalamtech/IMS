@@ -105,3 +105,4 @@ class TimetableRepository:
             )
             for period in periods
         ]
+
