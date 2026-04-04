@@ -6,6 +6,7 @@ from app.infrastructure.database.models import SubjectModel
 
 router = APIRouter()
 
+
 @router.get("/subjects")
 async def get_subjects(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(SubjectModel))
