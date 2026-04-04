@@ -16,18 +16,9 @@ from app.infrastructure.repositories.transport_repository_impl import (
     TransportRepositoryImpl
 )
 
-# Initialize dependencies (in production, use dependency injection)
-transport_repository = TransportRepositoryImpl()
-get_routes_usecase = GetRoutesUseCase(transport_repository)
-get_route_usecase = GetRouteUseCase(transport_repository)
-get_alerts_usecase = GetAlertsUseCase(transport_repository)
-get_expiring_documents_usecase = (
-    GetExpiringDocumentsUseCase(transport_repository)
-)
-get_compliance_status_usecase = (
-    GetComplianceStatusUseCase(transport_repository)
-)
-get_transport_stats_usecase = GetTransportStatsUseCase(transport_repository)
+
+def get_transport_repository() -> TransportRepositoryImpl:
+    return TransportRepositoryImpl()
 
 router = APIRouter(prefix="/transport", tags=["Transport"])
 
@@ -44,6 +35,7 @@ router = APIRouter(prefix="/transport", tags=["Transport"])
 )
 async def get_routes(
     current_user: User = Depends(get_current_user),
+    transport_repository: TransportRepositoryImpl = Depends(get_transport_repository),
 ) -> RouteListResponse:
     """
     Get all transport routes endpoint.
@@ -56,7 +48,7 @@ async def get_routes(
             detail="Access denied. Transport manager role required."
         )
 
-    routes = await get_routes_usecase.execute()
+    routes = await GetRoutesUseCase(transport_repository).execute()
     route_responses = []
     for route in routes:
         route_responses.append(RouteResponse(
@@ -91,6 +83,7 @@ async def get_routes(
 async def get_route(
     route_id: str,
     current_user: User = Depends(get_current_user),
+    transport_repository: TransportRepositoryImpl = Depends(get_transport_repository),
 ) -> RouteResponse:
     """
     Get specific route details endpoint.
@@ -101,7 +94,7 @@ async def get_route(
             detail="Access denied. Transport manager role required."
         )
 
-    route = await get_route_usecase.execute(route_id)
+    route = await GetRouteUseCase(transport_repository).execute(route_id)
     if not route:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -135,6 +128,7 @@ async def get_route(
 )
 async def get_compliance_status(
     current_user: User = Depends(get_current_user),
+    transport_repository: TransportRepositoryImpl = Depends(get_transport_repository),
 ) -> ComplianceStatusResponse:
     """
     Get compliance status overview endpoint.
@@ -145,7 +139,7 @@ async def get_compliance_status(
             detail="Access denied. Transport manager role required."
         )
 
-    compliance_status = await get_compliance_status_usecase.execute()
+    compliance_status = await GetComplianceStatusUseCase(transport_repository).execute()
     return ComplianceStatusResponse(
         valid_documents=compliance_status.valid_documents,
         expiring_soon=compliance_status.expiring_soon,
@@ -166,6 +160,7 @@ async def get_compliance_status(
 async def get_alerts(
     limit: Optional[int] = 10,
     current_user: User = Depends(get_current_user),
+    transport_repository: TransportRepositoryImpl = Depends(get_transport_repository),
 ) -> AlertListResponse:
     """
     Get recent alerts endpoint.
@@ -176,7 +171,7 @@ async def get_alerts(
             detail="Access denied. Transport manager role required."
         )
 
-    alerts = await get_alerts_usecase.execute(limit)
+    alerts = await GetAlertsUseCase(transport_repository).execute(limit)
     alert_responses = []
     for alert in alerts:
         alert_responses.append(AlertResponse(
@@ -207,6 +202,7 @@ async def get_alerts(
 async def get_expiring_documents(
     days: Optional[int] = 30,
     current_user: User = Depends(get_current_user),
+    transport_repository: TransportRepositoryImpl = Depends(get_transport_repository),
 ) -> DocumentExpiryListResponse:
     """
     Get expiring documents endpoint.
@@ -217,7 +213,7 @@ async def get_expiring_documents(
             detail="Access denied. Transport manager role required."
         )
 
-    documents = await get_expiring_documents_usecase.execute(days)
+    documents = await GetExpiringDocumentsUseCase(transport_repository).execute(days)
     document_responses = []
     for doc in documents:
         document_responses.append(DocumentExpiryResponse(
@@ -247,6 +243,7 @@ async def get_expiring_documents(
 )
 async def get_transport_stats(
     current_user: User = Depends(get_current_user),
+    transport_repository: TransportRepositoryImpl = Depends(get_transport_repository),
 ) -> TransportStatsResponse:
     """
     Get comprehensive transport statistics endpoint.
@@ -257,7 +254,7 @@ async def get_transport_stats(
             detail="Access denied. Transport manager role required."
         )
 
-    stats = await get_transport_stats_usecase.execute()
+    stats = await GetTransportStatsUseCase(transport_repository).execute()
     return TransportStatsResponse(
         total_routes=stats.total_routes,
         active_trips=stats.active_trips,

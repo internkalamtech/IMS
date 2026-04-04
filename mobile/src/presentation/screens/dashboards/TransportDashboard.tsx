@@ -6,8 +6,9 @@ import { ThemedText } from '@/presentation/components/ThemedText';
 import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
+import { useTransportDashboard } from '../../hooks/useTransportDashboard';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
     RefreshControl,
     ScrollView,
@@ -17,7 +18,6 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { api } from '@/core/api-client';
 
 // Type definitions for API responses
 interface Route {
@@ -70,6 +70,8 @@ export default function TransportDashboard() {
 
     const quickActions = DASHBOARD_CONFIG.transport?.quickActions || [];
 
+    const { routes, complianceStatus, transportAlerts, expiringDocuments, transportRefreshing, refreshTransportData } = useTransportDashboard();
+
     const getStatValue = (label: string, defaultValue: string = '0') => {
         return dashboardData?.stats?.find((s) => s.label === label)?.value || defaultValue;
     };
@@ -81,35 +83,10 @@ export default function TransportDashboard() {
         { title: 'Total Students', value: getStatValue('Total Students', '245'), icon: 'people-outline', color: '#fff' },
     ];
 
-    // Transport-specific state
-    const [routes, setRoutes] = useState<Route[]>([]);
-    const [complianceStatus, setComplianceStatus] = useState<ComplianceStatus | null>(null);
-    const [transportAlerts, setTransportAlerts] = useState<TransportAlert[]>([]);
-    const [expiringDocuments, setExpiringDocuments] = useState<ExpiringDocument[]>([]);
-
-    // Fetch transport data
-    const fetchTransportData = async () => {
-        try {
-            const [routesRes, complianceRes, alertsRes, documentsRes] = await Promise.all([
-                api.get('/transport/routes'),
-                api.get('/transport/compliance/status'),
-                api.get('/transport/alerts?limit=4'),
-                api.get('/transport/documents/expiring?days=30')
-            ]);
-
-            setRoutes(routesRes.data.routes || []);
-            setComplianceStatus(complianceRes.data);
-            setTransportAlerts(alertsRes.data.alerts || []);
-            setExpiringDocuments(documentsRes.data.documents || []);
-        } catch (error) {
-            console.error('Failed to fetch transport data:', error);
-            // Keep existing fallback data
-        }
+    const refreshingState = refreshing || transportRefreshing;
+    const handleRefresh = async () => {
+        await Promise.allSettled([onRefresh(), refreshTransportData()]);
     };
-
-    useEffect(() => {
-        fetchTransportData();
-    }, []);
 
     interface AlertColors {
         bg: string;
@@ -118,42 +95,44 @@ export default function TransportDashboard() {
         icon: string;
     }
 
+    const getThemeColorWithAlpha = (color: string, alpha: string) => (color.length === 7 ? `${color}${alpha}` : color);
+
     const getAlertColors = (type: TransportAlertType): AlertColors => {
         switch (type) {
             case 'danger':
                 return {
-                    bg: '#fee2e2',
-                    border: '#fca5a5',
-                    text: '#ef4444',
-                    icon: '#ef4444',
+                    bg: getThemeColorWithAlpha(theme.colors.destructive, '14'),
+                    border: theme.colors.destructive,
+                    text: theme.colors.destructiveForeground,
+                    icon: theme.colors.destructive,
                 };
             case 'warning':
                 return {
-                    bg: '#ffedd5',
-                    border: '#fdba74',
-                    text: '#f97316',
-                    icon: '#4b5563',
+                    bg: getThemeColorWithAlpha(theme.colors.primary, '14'),
+                    border: theme.colors.primary,
+                    text: theme.colors.primaryForeground,
+                    icon: theme.colors.primary,
                 };
             case 'maintenance':
                 return {
-                    bg: '#ffedd5',
-                    border: '#fdba74',
-                    text: '#d97706',
-                    icon: '#9ca3af',
+                    bg: getThemeColorWithAlpha(theme.colors.accent, '14'),
+                    border: theme.colors.accent,
+                    text: theme.colors.accentForeground,
+                    icon: theme.colors.accent,
                 };
             case 'alert':
                 return {
-                    bg: '#fef9c3',
-                    border: '#fde047',
-                    text: '#ca8a04',
-                    icon: '#ca8a04',
+                    bg: getThemeColorWithAlpha(theme.colors.secondary, '14'),
+                    border: theme.colors.secondary,
+                    text: theme.colors.secondaryForeground,
+                    icon: theme.colors.secondary,
                 };
             default:
                 return {
                     bg: theme.colors.card,
                     border: theme.colors.border,
-                    text: '#374151',
-                    icon: '#6b7280',
+                    text: theme.colors.foreground,
+                    icon: theme.colors.mutedForeground,
                 };
         }
     };
@@ -225,7 +204,7 @@ export default function TransportDashboard() {
                     </View>
 
                     <View style={styles.routeStatusContainer}>
-                        {routes.slice(0, 2).map((route) => (
+                        {routes.slice(0, 2).map((route: Route) => (
                             <ThemedCard key={route.id} style={styles.routeCard} padding={16}>
                                 <View style={styles.routeHeader}>
                                     <Ionicons name="navigate" size={20} color={theme.colors.primary} />
@@ -305,7 +284,7 @@ export default function TransportDashboard() {
                     </View>
 
                     <View style={styles.alertsContainer}>
-                        {transportAlerts.map((alert) => {
+                        {transportAlerts.map((alert: TransportAlert) => {
                             const colors = getAlertColors(alert.type);
                             const timeAgo = new Date(alert.timestamp).toLocaleString();
                             return (
