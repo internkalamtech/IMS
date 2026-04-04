@@ -18,7 +18,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logger import Logger
 from app.core.password import hash_password
 from app.infrastructure.database.database import AsyncSessionLocal, init_db
-from app.infrastructure.database.models import HomeworkModel, RoleModel, UserModel
+from app.infrastructure.database.models import (
+    HomeworkModel,
+    RoleModel,
+    UserModel,
+)
 
 
 # Demo users configuration

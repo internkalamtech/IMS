@@ -2,11 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
-from app.api.schemas import AcademicSummaryResponse, DashboardResponse, StatItem
+from app.api.schemas import (
+    AcademicSummaryResponse,
+    DashboardResponse,
+    StatItem,
+)
 from app.core.errors import DatabaseError
 from app.core.logger import Logger
 from app.domain.entities.user import User
-from app.domain.usecases.homework_usecases import GetPendingHomeworkCountUseCase
+from app.domain.usecases.homework_usecases import (
+    GetPendingHomeworkCountUseCase,
+)
 from app.infrastructure.database.database import get_db
 from app.infrastructure.repositories.database_homework_repository import (
     DatabaseHomeworkRepository,

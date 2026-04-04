@@ -21,7 +21,8 @@ class HomeworkRepository(ABC):
         """
         Return the count of pending homework assignments for a given child.
 
-        Pending homework includes assignments with status 'pending' or 'overdue'.
+        Pending homework includes assignments with status
+        'pending' or 'overdue'.
 
         Args:
             child_id: Unique identifier of the student (child)
