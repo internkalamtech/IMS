@@ -492,77 +492,328 @@ async def create_sample_timetable(
     # Sample timetable for Class 7-B (Monday to Friday)
     timetable_data = [
         # Monday
-        {"day": 0, "period": 1, "subject": "Mathematics", "teacher": "Mr. Sharma", "room": "Room 101", "start": "09:00", "end": "10:00"},
-        {"day": 0, "period": 2, "subject": "English", "teacher": "Ms. Patel", "room": "Room 102", "start": "10:00", "end": "11:00"},
-        {"day": 0, "period": 3, "subject": "Science", "teacher": "Mr. Kumar", "room": "Lab 201", "start": "11:00", "end": "12:00"},
-        {"day": 0, "period": 4, "subject": "BREAK", "teacher": "Ms. Patel", "room": "Room 102", "start": "12:00", "end": "12:30"},  # Break
-        {"day": 0, "period": 5, "subject": "Social Studies", "teacher": "Ms. Singh", "room": "Room 103", "start": "12:30", "end": "13:30"},
-        {"day": 0, "period": 6, "subject": "Hindi", "teacher": "Mr. Gupta", "room": "Room 104", "start": "13:30", "end": "14:30"},
-        {"day": 0, "period": 7, "subject": "Computer Science", "teacher": "Ms. Reddy", "room": "Lab 202", "start": "14:30", "end": "15:30"},
+        {
+            "day": 0,
+            "period": 1,
+            "subject": "Mathematics",
+            "teacher": "Mr. Sharma",
+            "room": "Room 101",
+            "start": "09:00",
+            "end": "10:00"
+        },
+        {
+            "day": 0,
+            "period": 2,
+            "subject": "English",
+            "teacher": "Ms. Patel",
+            "room": "Room 102",
+            "start": "10:00",
+            "end": "11:00"
+        },
+        {
+            "day": 0,
+            "period": 3,
+            "subject": "Science",
+            "teacher": "Mr. Kumar",
+            "room": "Lab 201",
+            "start": "11:00",
+            "end": "12:00"
+        },
+        {
+            "day": 0,
+            "period": 4,
+            "subject": "BREAK",
+            "teacher": "Ms. Patel",
+            "room": "Room 102",
+            "start": "12:00",
+            "end": "12:30"
+        },  # Break
+        {
+            "day": 0,
+            "period": 5,
+            "subject": "Social Studies",
+            "teacher": "Ms. Singh",
+            "room": "Room 103",
+            "start": "12:30",
+            "end": "13:30"
+        },
+        {
+            "day": 0,
+            "period": 6,
+            "subject": "Hindi",
+            "teacher": "Mr. Gupta",
+            "room": "Room 104",
+            "start": "13:30",
+            "end": "14:30"
+        },
+        {
+            "day": 0,
+            "period": 7,
+            "subject": "Computer Science",
+            "teacher": "Ms. Reddy",
+            "room": "Lab 202",
+            "start": "14:30",
+            "end": "15:30"
+        },
 
         # Tuesday
-        {"day": 1, "period": 1, "subject": "English", "teacher": "Ms. Patel", "room": "Room 102", "start": "09:00", "end": "10:00"},
-        {"day": 1, "period": 2, "subject": "Mathematics", "teacher": "Mr. Sharma", "room": "Room 101", "start": "10:00", "end": "11:00"},
-        {"day": 1, "period": 3, "subject": "Hindi", "teacher": "Mr. Gupta", "room": "Room 104", "start": "11:00", "end": "12:00"},
-        {"day": 1, "period": 4, "subject": "BREAK", "teacher": "Ms. Patel", "room": "Room 102", "start": "12:00", "end": "12:30"},  # Break
-        {"day": 1, "period": 5, "subject": "Science", "teacher": "Mr. Kumar", "room": "Lab 201", "start": "12:30", "end": "13:30"},
-        {"day": 1, "period": 6, "subject": "Social Studies", "teacher": "Ms. Singh", "room": "Room 103", "start": "13:30", "end": "14:30"},
-        {"day": 1, "period": 7, "subject": "Physical Education", "teacher": "Mr. Joshi", "room": "Gym", "start": "14:30", "end": "15:30"},
+        {
+            "day": 1,
+            "period": 1,
+            "subject": "English",
+            "teacher": "Ms. Patel",
+            "room": "Room 102",
+            "start": "09:00",
+            "end": "10:00"
+        },
+        {
+            "day": 1,
+            "period": 2,
+            "subject": "Mathematics",
+            "teacher": "Mr. Sharma",
+            "room": "Room 101",
+            "start": "10:00",
+            "end": "11:00"
+        },
+        {
+            "day": 1,
+            "period": 3,
+            "subject": "Hindi",
+            "teacher": "Mr. Gupta",
+            "room": "Room 104",
+            "start": "11:00",
+            "end": "12:00"
+        },
+        {
+            "day": 1,
+            "period": 4,
+            "subject": "BREAK",
+            "teacher": "Ms. Patel",
+            "room": "Room 102",
+            "start": "12:00",
+            "end": "12:30"
+        },  # Break
+        {
+            "day": 1,
+            "period": 5,
+            "subject": "Science",
+            "teacher": "Mr. Kumar",
+            "room": "Lab 201",
+            "start": "12:30",
+            "end": "13:30"
+        },
+        {
+            "day": 1,
+            "period": 6,
+            "subject": "Social Studies",
+            "teacher": "Ms. Singh",
+            "room": "Room 103",
+            "start": "13:30",
+            "end": "14:30"
+        },
+        {
+            "day": 1,
+            "period": 7,
+            "subject": "Physical Education",
+            "teacher": "Mr. Joshi",
+            "room": "Gym",
+            "start": "14:30",
+            "end": "15:30"
+        },
 
         # Wednesday
-        {"day": 2, "period": 1, "subject": "Science", "teacher": "Mr. Kumar", "room": "Lab 201", "start": "09:00", "end": "10:00"},
-        {"day": 2, "period": 2, "subject": "Social Studies", "teacher": "Ms. Singh", "room": "Room 103", "start": "10:00", "end": "11:00"},
-        {"day": 2, "period": 3, "subject": "Mathematics", "teacher": "Mr. Sharma", "room": "Room 101", "start": "11:00", "end": "12:00"},
-        {"day": 2, "period": 4, "subject": "BREAK", "teacher": "Ms. Patel", "room": "Room 102", "start": "12:00", "end": "12:30"},  # Break
-        {"day": 2, "period": 5, "subject": "English", "teacher": "Ms. Patel", "room": "Room 102", "start": "12:30", "end": "13:30"},
-        {"day": 2, "period": 6, "subject": "Computer Science", "teacher": "Ms. Reddy", "room": "Lab 202", "start": "13:30", "end": "14:30"},
-        {"day": 2, "period": 7, "subject": "Art", "teacher": "Ms. Mehta", "room": "Art Room", "start": "14:30", "end": "15:30"},
+        {
+            "day": 2,
+            "period": 1,
+            "subject": "Science",
+            "teacher": "Mr. Kumar",
+            "room": "Lab 201",
+            "start": "09:00",
+            "end": "10:00"
+        },
+        {
+            "day": 2,
+            "period": 2,
+            "subject": "Social Studies",
+            "teacher": "Ms. Singh",
+            "room": "Room 103",
+            "start": "10:00",
+            "end": "11:00"
+        },
+        {
+            "day": 2,
+            "period": 3,
+            "subject": "Mathematics",
+            "teacher": "Mr. Sharma",
+            "room": "Room 101",
+            "start": "11:00",
+            "end": "12:00"
+        },
+        {
+            "day": 2,
+            "period": 4,
+            "subject": "BREAK",
+            "teacher": "Ms. Patel",
+            "room": "Room 102",
+            "start": "12:00",
+            "end": "12:30"
+        },  # Break
+        {
+            "day": 2,
+            "period": 5,
+            "subject": "English",
+            "teacher": "Ms. Patel",
+            "room": "Room 102",
+            "start": "12:30",
+            "end": "13:30"
+        },
+        {
+            "day": 2,
+            "period": 6,
+            "subject": "Computer Science",
+            "teacher": "Ms. Reddy",
+            "room": "Lab 202",
+            "start": "13:30",
+            "end": "14:30"
+        },
+        {
+            "day": 2,
+            "period": 7,
+            "subject": "Art",
+            "teacher": "Ms. Mehta",
+            "room": "Art Room",
+            "start": "14:30",
+            "end": "15:30"
+        },
 
         # Thursday
-        {"day": 3, "period": 1, "subject": "Social Studies", "teacher": "Ms. Singh", "room": "Room 103", "start": "09:00", "end": "10:00"},
-        {"day": 3, "period": 2, "subject": "Hindi", "teacher": "Mr. Gupta", "room": "Room 104", "start": "10:00", "end": "11:00"},
-        {"day": 3, "period": 3, "subject": "English", "teacher": "Ms. Patel", "room": "Room 102", "start": "11:00", "end": "12:00"},
-        {"day": 3, "period": 4, "subject": "BREAK", "teacher": "Ms. Patel", "room": "Room 102", "start": "12:00", "end": "12:30"},  # Break
-        {"day": 3, "period": 5, "subject": "Mathematics", "teacher": "Mr. Sharma", "room": "Room 101", "start": "12:30", "end": "13:30"},
-        {"day": 3, "period": 6, "subject": "Science", "teacher": "Mr. Kumar", "room": "Lab 201", "start": "13:30", "end": "14:30"},
-        {"day": 3, "period": 7, "subject": "Physical Education", "teacher": "Mr. Joshi", "room": "Gym", "start": "14:30", "end": "15:30"},
+        {
+            "day": 3,
+            "period": 1,
+            "subject": "Social Studies",
+            "teacher": "Ms. Singh",
+            "room": "Room 103",
+            "start": "09:00",
+            "end": "10:00"
+        },
+        {
+            "day": 3,
+            "period": 2,
+            "subject": "Hindi",
+            "teacher": "Mr. Gupta",
+            "room": "Room 104",
+            "start": "10:00",
+            "end": "11:00"
+        },
+        {
+            "day": 3,
+            "period": 3,
+            "subject": "English",
+            "teacher": "Ms. Patel",
+            "room": "Room 102",
+            "start": "11:00",
+            "end": "12:00"
+        },
+        {
+            "day": 3,
+            "period": 4,
+            "subject": "BREAK",
+            "teacher": "Ms. Patel",
+            "room": "Room 102",
+            "start": "12:00",
+            "end": "12:30"
+        },  # Break
+        {
+            "day": 3,
+            "period": 5,
+            "subject": "Mathematics",
+            "teacher": "Mr. Sharma",
+            "room": "Room 101",
+            "start": "12:30",
+            "end": "13:30"
+        },
+        {
+            "day": 3,
+            "period": 6,
+            "subject": "Science",
+            "teacher": "Mr. Kumar",
+            "room": "Lab 201",
+            "start": "13:30",
+            "end": "14:30"
+        },
+        {
+            "day": 3,
+            "period": 7,
+            "subject": "Physical Education",
+            "teacher": "Mr. Joshi",
+            "room": "Gym",
+            "start": "14:30",
+            "end": "15:30"
+        },
 
         # Friday
-        {"day": 4, "period": 1, "subject": "Hindi", "teacher": "Mr. Gupta", "room": "Room 104", "start": "09:00", "end": "10:00"},
-        {"day": 4, "period": 2, "subject": "Computer Science", "teacher": "Ms. Reddy", "room": "Lab 202", "start": "10:00", "end": "11:00"},
-        {"day": 4, "period": 3, "subject": "Social Studies", "teacher": "Ms. Singh", "room": "Room 103", "start": "11:00", "end": "12:00"},
+        {
+            "day": 4,
+            "period": 1,
+            "subject": "Hindi",
+            "teacher": "Mr. Gupta",
+            "room": "Room 104",
+            "start": "09:00",
+            "end": "10:00"
+        },
+        {
+            "day": 4,
+            "period": 2,
+            "subject": "Computer Science",
+            "teacher": "Ms. Reddy",
+            "room": "Lab 202",
+            "start": "10:00",
+            "end": "11:00"
+        },
+        {
+            "day": 4,
+            "period": 3,
+            "subject": "Social Studies",
+            "teacher": "Ms. Singh",
+            "room": "Room 103",
+            "start": "11:00",
+            "end": "12:00"
+        },
         {
             "day": 4,
             "period": 4,
-            "subject": "BREAK", 
-            "teacher": "Ms. Patel", 
+            "subject": "BREAK",
+            "teacher": "Ms. Patel",
             "room": "Room 102",
             "start": "12:00",
-            "end": "12:30"},  # Break
+            "end": "12:30"
+        },  # Break
         {
             "day": 4,
             "period": 5,
-            "subject": "English", 
-            "teacher": "Ms. Patel", 
+            "subject": "English",
+            "teacher": "Ms. Patel",
             "room": "Room 102",
             "start": "12:30",
-            "end": "13:30"},
+            "end": "13:30"
+        },
         {
             "day": 4,
             "period": 6,
             "subject": "Mathematics",
             "teacher": "Mr. Sharma",
-            "room": "Room 101", 
+            "room": "Room 101",
             "start": "13:30",
-            "end": "14:30"},
-        {    
+            "end": "14:30"
+        },
+        {
             "day": 4,
             "period": 7,
             "subject": "Art",
             "teacher": "Ms. Mehta",
             "room": "Art Room",
             "start": "14:30",
-            "end": "15:30",
+            "end": "15:30"
         },
     ]
 
