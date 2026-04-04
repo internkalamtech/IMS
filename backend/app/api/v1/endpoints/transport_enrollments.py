@@ -51,7 +51,9 @@ async def create_student_transport_enrollments(
     response_model=RouteManifestResponse,
     status_code=status.HTTP_200_OK,
     summary="Get students by route",
-    description="Retrieve route-wise student list for driver manifest generation.",
+    description=(
+        "Retrieve route-wise student list for driver manifest generation."
+    ),
 )
 async def get_students_by_route(
     route_id: int,

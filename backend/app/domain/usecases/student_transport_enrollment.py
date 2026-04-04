@@ -13,7 +13,9 @@ class StudentTransportEnrollmentUseCase:
         created_items = []
 
         for item in enrollments:
-            student = await self.repository.get_student_by_id(item["student_id"])
+            student = await self.repository.get_student_by_id(
+                item["student_id"]
+            )
             if not student:
                 raise NotFoundError(
                     f"Student with id {item['student_id']} not found"

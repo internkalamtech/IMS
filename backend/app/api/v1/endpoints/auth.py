@@ -28,7 +28,10 @@ from app.core.errors import (
     NotFoundError,
 )
 from app.core.logger import Logger
-from app.core.security import create_access_token, decode_access_token_ignore_expiry
+from app.core.security import (
+    create_access_token,
+    decode_access_token_ignore_expiry,
+)
 from app.domain.entities.user import User
 from app.domain.usecases.auth_usecases import LoginUseCase
 from app.infrastructure.database.database import get_db
@@ -238,54 +241,63 @@ async def refresh_token(
     try:
         # Decode token without checking expiry
         payload = decode_access_token_ignore_expiry(request.access_token)
-        
+
         if not payload:
             Logger.warning("Token refresh failed: invalid token")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token",
             )
-        
+
         # Extract user_id from token
         user_id = payload.get("sub")
-        
+
         if not user_id:
-            Logger.warning("Token refresh failed: user_id not found in token")
+            Logger.warning(
+                "Token refresh failed: user_id not found in token"
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token payload",
             )
-        
+
         # Verify user still exists
         repository = DatabaseAuthRepository(db)
         try:
             user = await repository.get_user_by_id(user_id)
         except NotFoundError:
-            Logger.warning(f"Token refresh failed: user {user_id} not found")
+            Logger.warning(
+                f"Token refresh failed: user {user_id} not found"
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found",
             )
-        
+
         # Create new access token
         new_access_token = create_access_token(
             data={"sub": user.id, "email": user.email}
         )
-        
+
         expires_in = settings.access_token_expire_minutes * 60
-        
-        Logger.info(f"Token refreshed successfully for user: {user.email}")
-        
+
+        Logger.info(
+            f"Token refreshed successfully for user: {user.email}"
+        )
+
         return TokenRefreshResponse(
             access_token=new_access_token,
             token_type="bearer",
             expires_in=expires_in,
         )
-    
+
     except HTTPException:
         raise
     except Exception as e:
-        Logger.error(f"Unexpected error during token refresh: {str(e)}", exc_info=True)
+        Logger.error(
+            f"Unexpected error during token refresh: {str(e)}",
+            exc_info=True,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while refreshing the token",
