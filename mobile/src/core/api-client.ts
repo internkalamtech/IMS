@@ -1,5 +1,5 @@
 import { StorageService } from '@/data/local/storage';
-import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosHeaders, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { getApiBaseUrl } from './api-config';
 import { AuthError, NetworkError } from './error';
 import { Logger } from './logger';
@@ -13,7 +13,7 @@ export class ApiClient {
     private static instance: ApiClient;
     private axiosInstance: AxiosInstance;
     private isRefreshing = false;
-    private failedQueue: Array<{ resolve: Function; reject: Function }> = [];
+    private failedQueue: { resolve: Function; reject: Function }[] = [];
 
     private constructor() {
         this.axiosInstance = axios.create({
@@ -110,6 +110,7 @@ export class ApiClient {
                             return new Promise((resolve, reject) => {
                                 this.failedQueue.push({ resolve, reject });
                             }).then((token) => {
+                                originalRequest.headers = originalRequest.headers ?? new AxiosHeaders();
                                 originalRequest.headers.Authorization = `Bearer ${token}`;
                                 return this.axiosInstance(originalRequest);
                             }).catch((err) => {
@@ -125,6 +126,7 @@ export class ApiClient {
                             this.isRefreshing = false;
 
                             if (newToken) {
+                                originalRequest.headers = originalRequest.headers ?? new AxiosHeaders();
                                 originalRequest.headers.Authorization = `Bearer ${newToken}`;
                                 this.processQueue(null, newToken);
                                 return this.axiosInstance(originalRequest);
@@ -133,7 +135,7 @@ export class ApiClient {
                                 this.processQueue(authError);
                                 return Promise.reject(authError);
                             }
-                        } catch (refreshError) {
+                        } catch {
                             this.isRefreshing = false;
                             const authError = new AuthError('Session expired');
                             this.processQueue(authError);

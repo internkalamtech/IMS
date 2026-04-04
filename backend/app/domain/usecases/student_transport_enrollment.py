@@ -1,6 +1,6 @@
 """Use cases for student transport enrollment and route manifest queries."""
 
-from app.core.errors import NotFoundError, ValidationError
+from app.core.errors import NotFoundError
 
 
 class StudentTransportEnrollmentUseCase:
@@ -24,9 +24,25 @@ class StudentTransportEnrollmentUseCase:
                 item["route_id"],
             )
             if existing:
-                raise ValidationError(
-                    "Enrollment already exists for this student and route"
+                created_items.append(
+                    {
+                        "id": existing.id,
+                        "student_id": existing.student_id,
+                        "route_id": existing.route_id,
+                        "stop_id": existing.stop_id,
+                        "pickup_time": (
+                            existing.pickup_time.isoformat()
+                            if existing.pickup_time
+                            else None
+                        ),
+                        "dropoff_time": (
+                            existing.dropoff_time.isoformat()
+                            if existing.dropoff_time
+                            else None
+                        ),
+                    }
                 )
+                continue
 
             created = await self.repository.create_enrollment(
                 student_id=item["student_id"],

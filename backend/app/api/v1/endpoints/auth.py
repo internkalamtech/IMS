@@ -21,7 +21,12 @@ from app.api.schemas import (
 )
 
 from app.core.config import settings
-from app.core.errors import AuthenticationError, ValidationError, DatabaseError
+from app.core.errors import (
+    AuthenticationError,
+    ValidationError,
+    DatabaseError,
+    NotFoundError,
+)
 from app.core.logger import Logger
 from app.core.security import create_access_token, decode_access_token_ignore_expiry
 from app.domain.entities.user import User
@@ -201,8 +206,8 @@ async def get_me(
     response_model=TokenRefreshResponse,
     status_code=status.HTTP_200_OK,
     responses={
-        400: {"model": ErrorResponse, "description": "Invalid token"},
         401: {"model": ErrorResponse, "description": "Token validation failed"},
+        500: {"model": ErrorResponse, "description": "Internal server error"},
     },
     summary="Refresh access token",
     description=(
@@ -253,9 +258,9 @@ async def refresh_token(
         
         # Verify user still exists
         repository = DatabaseAuthRepository(db)
-        user = await repository.get_user_by_id(user_id)
-        
-        if not user:
+        try:
+            user = await repository.get_user_by_id(user_id)
+        except NotFoundError:
             Logger.warning(f"Token refresh failed: user {user_id} not found")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

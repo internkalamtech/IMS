@@ -58,7 +58,7 @@ async def update_class_subjects(
 
     result = await usecase.execute(
         request.class_id,
-        [s.dict() for s in request.subjects],
+        [s.model_dump(exclude_none=True) for s in request.subjects],
     )
 
     return UpdateClassSubjectsResponse(**result)
