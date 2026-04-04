@@ -182,3 +182,115 @@ class_subject_link = Table(
         primary_key=True,
     ),
 )
+
+
+class TeacherModel(Base):
+    """
+    Teacher database model.
+
+    Represents teachers who teach subjects.
+    """
+
+    __tablename__ = "teachers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    employee_id: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    specialization: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["UserModel"] = relationship("UserModel", backref="teacher_profile")
+    timetable_periods: Mapped[List["TimetablePeriodModel"]] = relationship(
+        "TimetablePeriodModel", back_populates="teacher"
+    )
+
+    def __repr__(self) -> str:
+        return f"<Teacher(id={self.id}, employee_id='{self.employee_id}')>"
+
+
+class RoomModel(Base):
+    """
+    Room database model.
+
+    Represents classrooms, labs, etc.
+    """
+
+    __tablename__ = "rooms"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    room_type: Mapped[str] = mapped_column(String(50), nullable=False)  # classroom, lab, etc.
+    capacity: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    timetable_periods: Mapped[List["TimetablePeriodModel"]] = relationship(
+        "TimetablePeriodModel", back_populates="room"
+    )
+
+    def __repr__(self) -> str:
+        return f"<Room(id={self.id}, name='{self.name}')>"
+
+
+class TimetablePeriodModel(Base):
+    """
+    Timetable period database model.
+
+    Represents a single period in the timetable.
+    """
+
+    __tablename__ = "timetable_periods"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    class_id: Mapped[int] = mapped_column(Integer, ForeignKey("class_sections.id"), nullable=False)
+    subject_id: Mapped[int] = mapped_column(Integer, ForeignKey("subjects.id"), nullable=False)
+    teacher_id: Mapped[int] = mapped_column(Integer, ForeignKey("teachers.id"), nullable=False)
+    room_id: Mapped[int] = mapped_column(Integer, ForeignKey("rooms.id"), nullable=False)
+
+    day_of_week: Mapped[int] = mapped_column(Integer, nullable=False)  # 0=Monday, 6=Sunday
+    start_time: Mapped[str] = mapped_column(String(10), nullable=False)  # HH:MM format
+    end_time: Mapped[str] = mapped_column(String(10), nullable=False)  # HH:MM format
+    period_number: Mapped[int] = mapped_column(Integer, nullable=False)  # 1, 2, 3, etc.
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    class_section: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
+    subject: Mapped["SubjectModel"] = relationship("SubjectModel")
+    teacher: Mapped["TeacherModel"] = relationship("TeacherModel", back_populates="timetable_periods")
+    room: Mapped["RoomModel"] = relationship("RoomModel", back_populates="timetable_periods")
+
+    def __repr__(self) -> str:
+        return (
+            f"<TimetablePeriod(id={self.id}, "
+            f"class_id={self.class_id}, "
+            f"day={self.day_of_week}, "
+            f"period={self.period_number})>"
+        )
