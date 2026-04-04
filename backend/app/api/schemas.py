@@ -135,6 +135,7 @@ class DashboardResponse(BaseModel):
     stats: list[StatItem]
 
 
+<<<<<<< HEAD
 class SubjectInput(BaseModel):
     """Schema for subject input when updating class subjects."""
 
@@ -233,11 +234,15 @@ class StudentResponse(BaseModel):
     next_due_date: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
+=======
+# Fee Management Schemas
+>>>>>>> 6057939 (feat: implement personal fee status and ledger (#352))
 
 
 class FeeStructureResponse(BaseModel):
     """Response schema for fee structure data."""
 
+<<<<<<< HEAD
     id: int
     student_id: int
     total_fee: float
@@ -293,3 +298,114 @@ class PaymentSummaryResponse(BaseModel):
     total_overdue: float
 
     model_config = {"from_attributes": True}
+=======
+    id: str
+    student_id: str
+    fee_head: str
+    total_amount: float
+    is_mandatory: bool
+    academic_year: str
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "fs-001",
+                    "student_id": "std-123",
+                    "fee_head": "Tuition Fee",
+                    "total_amount": 50000.0,
+                    "is_mandatory": True,
+                    "academic_year": "2024-2025",
+                }
+            ]
+        }
+    }
+
+
+class FeeSummaryResponse(BaseModel):
+    """Response schema for aggregated fee summary."""
+
+    student_id: str
+    total_fee: float
+    paid_amount: float
+    balance_due: float
+    next_due_date: datetime | None = None
+    status_percentage: float = Field(
+        ..., ge=0, le=100, description="Percentage of fees paid (0-100)"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "student_id": "std-123",
+                    "total_fee": 100000.0,
+                    "paid_amount": 50000.0,
+                    "balance_due": 50000.0,
+                    "next_due_date": "2024-05-15T00:00:00",
+                    "status_percentage": 50.0,
+                }
+            ]
+        }
+    }
+
+
+class InstallmentResponse(BaseModel):
+    """Response schema for fee installment data."""
+
+    id: str
+    fee_structure_id: str
+    student_id: str
+    due_date: datetime
+    amount: float
+    status: Literal["Pending", "Paid", "Overdue"]
+    paid_date: datetime | None = None
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "inst-001",
+                    "fee_structure_id": "fs-001",
+                    "student_id": "std-123",
+                    "due_date": "2024-04-15T00:00:00",
+                    "amount": 25000.0,
+                    "status": "Paid",
+                    "paid_date": "2024-04-10T10:30:00",
+                }
+            ]
+        }
+    }
+
+
+class TransactionResponse(BaseModel):
+    """Response schema for transaction/receipt data."""
+
+    id: str
+    student_id: str
+    installment_id: str | None = None
+    amount: float
+    payment_mode: Literal["UPI", "Card", "Cash", "Check", "Online"]
+    transaction_ref: str
+    receipt_number: str
+    created_at: datetime
+    description: str | None = None
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "txn-001",
+                    "student_id": "std-123",
+                    "installment_id": "inst-001",
+                    "amount": 25000.0,
+                    "payment_mode": "Online",
+                    "transaction_ref": "TXN123456789",
+                    "receipt_number": "REC-A1B2C3D4",
+                    "created_at": "2024-04-10T10:30:00",
+                    "description": "Payment for tuition fee",
+                }
+            ]
+        }
+    }
+>>>>>>> 6057939 (feat: implement personal fee status and ledger (#352))
