@@ -131,3 +131,10 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
+
+
+class AcademicSummaryResponse(BaseModel):
+    """Response schema for the academic summary endpoint."""
+
+    child_id: str
+    pending_homework_count: int

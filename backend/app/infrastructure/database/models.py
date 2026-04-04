@@ -10,7 +10,7 @@ Following best practices:
 """
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -20,6 +20,7 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
+    Text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -116,3 +117,40 @@ class RoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+
+
+class HomeworkModel(Base):
+    """
+    Homework database model.
+
+    Represents a homework assignment assigned to a student (child).
+    Used to calculate pending homework counts per child.
+    """
+
+    __tablename__ = "homework"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    child_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    subject: Mapped[str] = mapped_column(String(100), nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="pending",
+        index=True,
+    )  # 'pending', 'submitted', 'overdue'
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Homework(id={self.id}, child_id={self.child_id}, "
+            f"title='{self.title}', status='{self.status}')>"
+        )

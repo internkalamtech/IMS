@@ -57,7 +57,7 @@ export default function ParentDashboard() {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Child Info Card - Partially overlapping */}
+                        {/* Child Info Card - Fully enclosed in blue dashboard */}
                         <View style={styles.childCardContainer}>
                             <ThemedCard style={styles.childCard} padding={20}>
                                 <View style={styles.childHeader}>
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
     },
     banner: {
-        paddingBottom: 80,
+        paddingBottom: 24,
     },
     headerContent: {
         flexDirection: 'row',
@@ -189,11 +189,8 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     childCardContainer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
         paddingHorizontal: 20,
+        paddingBottom: 10,
     },
     childCard: {
         borderRadius: 24,
@@ -248,7 +245,7 @@ const styles = StyleSheet.create({
     mainContent: {
         flex: 1,
         paddingHorizontal: 24,
-        paddingTop: 80, // Offset for the overlapping card
+        paddingTop: 0,
     },
     sectionHeader: {
         flexDirection: 'row',
