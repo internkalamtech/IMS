@@ -240,7 +240,9 @@ async def refresh_token(
     """
     try:
         # Decode token without checking expiry
-        payload = decode_access_token_ignore_expiry(request.access_token)
+        payload = decode_access_token_ignore_expiry(
+            request.access_token
+        )
 
         if not payload:
             Logger.warning("Token refresh failed: invalid token")
