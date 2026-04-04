@@ -8,6 +8,8 @@ Finally, it updates the class's subjects and commits the changes
 to the database.
 """
 
+from app.core.errors import NotFoundError, ValidationError
+
 
 class UpdateClassSubjectsUseCase:
 
@@ -18,11 +20,17 @@ class UpdateClassSubjectsUseCase:
 
     async def execute(self, class_id: int, subjects: list):
 
-        # 1️⃣ Get class
-        class_obj = await self.class_repo.get_by_id(class_id)
+        if not subjects:
+            raise ValidationError("At least one subject is required")
+
+        # 1️⃣ Get class (class_id=0 means use default/first class)
+        if class_id == 0:
+            class_obj = await self.class_repo.get_first()
+        else:
+            class_obj = await self.class_repo.get_by_id(class_id)
 
         if not class_obj:
-            raise Exception("Class not found")
+            raise NotFoundError(f"Class with id {class_id} not found")
 
         subject_entities = []
 
@@ -34,12 +42,15 @@ class UpdateClassSubjectsUseCase:
                 subject_obj = await self.subject_repo.get_by_id(subject["id"])
 
                 if not subject_obj:
-                    raise Exception(
+                    raise NotFoundError(
                         f"Subject with id {subject['id']} not found"
-                        )
+                    )
 
             # If name is provided → find or create
             else:
+                if not subject.get("name"):
+                    raise ValidationError("Subject name is required")
+
                 subject_obj = await self.subject_repo.get_by_name(
                     subject["name"]
                     )
@@ -59,6 +70,6 @@ class UpdateClassSubjectsUseCase:
 
         return {
             "message": "Class subjects updated successfully",
-            "class_id": class_id,
+            "class_id": class_obj.id,
             "subjects_count": len(subject_entities),
         }

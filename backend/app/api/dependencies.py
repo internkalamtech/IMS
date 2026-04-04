@@ -17,11 +17,11 @@ from app.infrastructure.repositories.database_auth_repository import (
 )
 
 # Security scheme for JWT bearer tokens
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """
@@ -36,6 +36,13 @@ async def get_current_user(
     Raises:
         HTTPException: If token is invalid or user not found
     """
+    if credentials is None or not credentials.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     token = credentials.credentials
 
     # Decode token

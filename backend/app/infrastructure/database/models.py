@@ -10,7 +10,7 @@ Best practices followed:
 - Indexes for performance
 """
 
-from datetime import datetime
+from datetime import datetime, time
 from typing import List
 
 from sqlalchemy import (
@@ -21,6 +21,8 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
+    Time,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -162,6 +164,50 @@ class ClassSectionModel(Base):
         secondary="class_subject_link",
         back_populates="classes",
     )
+
+
+class StudentTransportEnrollmentModel(Base):
+    """Mapping between students and their assigned route/stop schedule."""
+
+    __tablename__ = "student_transport_enrollments"
+    __table_args__ = (
+        UniqueConstraint(
+            "student_id",
+            "route_id",
+            name="uq_student_route_enrollment",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    route_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    stop_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    pickup_time: Mapped[time | None] = mapped_column(
+        Time,
+        nullable=True,
+    )
+    dropoff_time: Mapped[time | None] = mapped_column(
+        Time,
+        nullable=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    student: Mapped["UserModel"] = relationship("UserModel")
 
 
 # Association table for many-to-many relationship between

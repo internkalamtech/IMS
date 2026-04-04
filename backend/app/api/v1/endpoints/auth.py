@@ -16,11 +16,14 @@ from app.api.schemas import (
     RoleResponse,
     DemoCredentialsResponse,
     DemoCredential,
+    TokenRefreshRequest,
+    TokenRefreshResponse,
 )
 
+from app.core.config import settings
 from app.core.errors import AuthenticationError, ValidationError, DatabaseError
 from app.core.logger import Logger
-from app.core.security import create_access_token
+from app.core.security import create_access_token, decode_access_token_ignore_expiry
 from app.domain.entities.user import User
 from app.domain.usecases.auth_usecases import LoginUseCase
 from app.infrastructure.database.database import get_db
@@ -191,6 +194,97 @@ async def get_me(
         ],
         avatarUrl=current_user.avatar_url,
     )
+
+
+@router.post(
+    "/refresh",
+    response_model=TokenRefreshResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        400: {"model": ErrorResponse, "description": "Invalid token"},
+        401: {"model": ErrorResponse, "description": "Token validation failed"},
+    },
+    summary="Refresh access token",
+    description=(
+        "Refresh an expired or expiring access token. "
+        "Accepts the current token and returns a new one."
+    ),
+)
+async def refresh_token(
+    request: TokenRefreshRequest,
+    db: AsyncSession = Depends(get_db),
+) -> TokenRefreshResponse:
+    """
+    Refresh token endpoint.
+
+    Accepts an expired or current access token and returns a new one.
+    This allows users to continue using the API without re-logging in.
+
+    Args:
+        request: Token refresh request with the current access token
+        db: Database session (injected)
+
+    Returns:
+        TokenRefreshResponse with new access token and expiry info
+
+    Raises:
+        HTTPException: If token is invalid or user not found
+    """
+    try:
+        # Decode token without checking expiry
+        payload = decode_access_token_ignore_expiry(request.access_token)
+        
+        if not payload:
+            Logger.warning("Token refresh failed: invalid token")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+            )
+        
+        # Extract user_id from token
+        user_id = payload.get("sub")
+        
+        if not user_id:
+            Logger.warning("Token refresh failed: user_id not found in token")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload",
+            )
+        
+        # Verify user still exists
+        repository = DatabaseAuthRepository(db)
+        user = await repository.get_user_by_id(user_id)
+        
+        if not user:
+            Logger.warning(f"Token refresh failed: user {user_id} not found")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+            )
+        
+        # Create new access token
+        new_access_token = create_access_token(
+            data={"sub": user.id, "email": user.email}
+        )
+        
+        expires_in = settings.access_token_expire_minutes * 60
+        
+        Logger.info(f"Token refreshed successfully for user: {user.email}")
+        
+        return TokenRefreshResponse(
+            access_token=new_access_token,
+            token_type="bearer",
+            expires_in=expires_in,
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        Logger.error(f"Unexpected error during token refresh: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while refreshing the token",
+        )
 
 
 @router.get(

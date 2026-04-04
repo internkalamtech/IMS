@@ -18,7 +18,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logger import Logger
 from app.core.password import hash_password
 from app.infrastructure.database.database import AsyncSessionLocal, init_db
-from app.infrastructure.database.models import RoleModel, UserModel
+from app.infrastructure.database.models import (
+    ClassSectionModel,
+    RoleModel,
+    UserModel,
+)
 
 
 # Demo users configuration
@@ -104,6 +108,12 @@ ROLES = [
     },
 ]
 
+CLASS_SECTIONS = [
+    {"name": "Grade 1"},
+    {"name": "Grade 2"},
+    {"name": "Grade 3"},
+]
+
 
 async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     """
@@ -186,6 +196,33 @@ async def create_users(
     await db.commit()
 
 
+async def create_class_sections(db: AsyncSession) -> None:
+    """
+    Create demo class sections if they don't exist.
+
+    Args:
+        db: Database session
+    """
+    Logger.info("Creating class sections...")
+
+    for class_data in CLASS_SECTIONS:
+        result = await db.execute(
+            select(ClassSectionModel).where(
+                ClassSectionModel.name == class_data["name"]
+            )
+        )
+        class_section = result.scalar_one_or_none()
+
+        if not class_section:
+            class_section = ClassSectionModel(**class_data)
+            db.add(class_section)
+            Logger.info(f"Created class section: {class_data['name']}")
+        else:
+            Logger.info(f"Class section already exists: {class_data['name']}")
+
+    await db.commit()
+
+
 async def seed_database() -> None:
     """
     Main function to seed the database.
@@ -194,6 +231,7 @@ async def seed_database() -> None:
     1. Initializes database (creates tables)
     2. Creates roles
     3. Creates demo users
+    4. Creates demo class sections
     """
     try:
         Logger.info("Starting database seeding...")
@@ -209,6 +247,9 @@ async def seed_database() -> None:
 
             # Create users
             await create_users(db, roles_map)
+
+            # Create class sections
+            await create_class_sections(db)
 
         Logger.info("Database seeding completed successfully!")
 

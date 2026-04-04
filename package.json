@@ -6,8 +6,8 @@
     "scripts": {
         "mobile": "cd mobile && npm start",
         "mobile:install": "cd mobile && npm install",
-        "backend": "cd backend && venv\\Scripts\\activate && python run.py",
-        "backend:setup": "cd backend && python -m venv venv && venv\\Scripts\\activate && pip install -r requirements.txt",
+        "backend": "cd backend && .\\venv\\Scripts\\python.exe run.py",
+        "backend:setup": "cd backend && python -m venv venv && .\\venv\\Scripts\\python.exe -m pip install -r requirements.txt",
         "dev": "concurrently \"npm run mobile\" \"npm run backend\"",
         "install:all": "npm run mobile:install && echo Backend dependencies: run 'npm run backend:setup' to create venv and install Python packages",
         "lint:mobile": "cd mobile && npm run lint"

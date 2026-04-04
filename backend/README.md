@@ -51,7 +51,7 @@ python -m venv venv
 3. Activate virtual environment:
 ```bash
 # Windows
-venv\Scripts\activate
+. .\venv\Scripts\Activate.ps1
 
 # Linux/Mac
 source venv/bin/activate
@@ -102,6 +102,12 @@ Start the development server:
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+On Windows, you can also run it directly with the venv Python executable:
+
+```bash
+.\venv\Scripts\python.exe run.py
 ```
 
 The API will be available at:

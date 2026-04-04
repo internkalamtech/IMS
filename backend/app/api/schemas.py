@@ -4,6 +4,8 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
+from datetime import time
+
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Literal, Optional
 
@@ -93,6 +95,44 @@ class LoginResponse(BaseModel):
     }
 
 
+class TokenRefreshRequest(BaseModel):
+    """Request schema for token refresh endpoint."""
+
+    access_token: str = Field(
+        ..., description="The current or expired access token to refresh"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {"access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}
+            ]
+        }
+    }
+
+
+class TokenRefreshResponse(BaseModel):
+    """Response schema for token refresh endpoint."""
+
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int = Field(
+        ..., description="Token expiration time in seconds"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "token_type": "bearer",
+                    "expires_in": 1800,
+                }
+            ]
+        }
+    }
+
+
 class ErrorResponse(BaseModel):
     """Response schema for errors."""
 
@@ -139,9 +179,101 @@ class SubjectInput(BaseModel):
     id: Optional[int] = None
     name: Optional[str] = None
 
+    model_config = {
+        "json_schema_extra": {
+            "example": {"name": "Mathematics"}
+        }
+    }
+
 
 class UpdateClassSubjectsRequest(BaseModel):
     """Request schema for updating class subjects."""
 
-    class_id: int
+    class_id: int = Field(
+        ...,
+        ge=0,
+        description=(
+            "Class section ID. Use 0 to automatically target the default "
+            "(first available) class section."
+        ),
+        examples=[0],
+    )
     subjects: List[SubjectInput]
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "class_id": 0,
+                "subjects": [{"name": "Math"}, {"name": "Science"}],
+            }
+        }
+    }
+
+
+class UpdateClassSubjectsResponse(BaseModel):
+    """Response schema for updating class subjects."""
+
+    message: str
+    class_id: int
+    subjects_count: int
+
+
+class StudentTransportEnrollmentCreate(BaseModel):
+    """Single student transport enrollment payload."""
+
+    student_id: int = Field(..., alias="studentId", gt=0)
+    route_id: int = Field(..., alias="routeId", gt=0)
+    stop_id: int = Field(..., alias="stopId", gt=0)
+    pickup_time: Optional[time] = Field(default=None, alias="pickupTime")
+    dropoff_time: Optional[time] = Field(default=None, alias="dropoffTime")
+
+    model_config = {"populate_by_name": True}
+
+
+class CreateStudentTransportEnrollmentsRequest(BaseModel):
+    """Request schema for bulk student transport enrollment creation."""
+
+    enrollments: List[StudentTransportEnrollmentCreate]
+
+
+class StudentTransportEnrollmentItem(BaseModel):
+    """Created enrollment response item."""
+
+    id: int
+    student_id: int = Field(..., alias="studentId")
+    route_id: int = Field(..., alias="routeId")
+    stop_id: int = Field(..., alias="stopId")
+    pickup_time: Optional[str] = Field(default=None, alias="pickupTime")
+    dropoff_time: Optional[str] = Field(default=None, alias="dropoffTime")
+
+    model_config = {"populate_by_name": True}
+
+
+class CreateStudentTransportEnrollmentsResponse(BaseModel):
+    """Response schema for enrollment creation endpoint."""
+
+    message: str
+    count: int
+    enrollments: List[StudentTransportEnrollmentItem]
+
+
+class RouteManifestStudentItem(BaseModel):
+    """Student manifest item for a specific route."""
+
+    student_id: int = Field(..., alias="studentId")
+    student_name: str = Field(..., alias="studentName")
+    stop_id: int = Field(..., alias="stopId")
+    pickup_time: Optional[str] = Field(default=None, alias="pickupTime")
+    dropoff_time: Optional[str] = Field(default=None, alias="dropoffTime")
+
+    model_config = {"populate_by_name": True}
+
+
+class RouteManifestResponse(BaseModel):
+    """Route manifest response schema."""
+
+    route_id: int = Field(..., alias="routeId")
+    total_students: int = Field(..., alias="totalStudents")
+    students: List[RouteManifestStudentItem]
+
+    model_config = {"populate_by_name": True}

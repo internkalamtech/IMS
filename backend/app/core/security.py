@@ -58,3 +58,27 @@ def decode_access_token(token: str) -> dict[str, Any] | None:
         return payload
     except JWTError:
         return None
+
+
+def decode_access_token_ignore_expiry(token: str) -> dict[str, Any] | None:
+    """
+    Decode a JWT access token without checking expiry.
+    
+    This is useful for refresh token operations where you want to
+    allow expired tokens to be refreshed.
+
+    Args:
+        token: JWT token string to decode
+
+    Returns:
+        Decoded token payload if valid, None otherwise
+        (expiry is ignored)
+    """
+    try:
+        payload = jwt.decode(
+            token, settings.secret_key, algorithms=[settings.algorithm],
+            options={"verify_exp": False}
+        )
+        return payload
+    except JWTError:
+        return None

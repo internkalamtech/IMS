@@ -46,7 +46,33 @@ export class AuthRepositoryImpl implements AuthRepository {
     }
 
     async getCurrentUser(): Promise<User | null> {
-        return await StorageService.getItem<User>(USER_STORAGE_KEY);
+        try {
+            const token = await StorageService.getItem<string>(TOKEN_STORAGE_KEY);
+
+            if (!token) {
+                await StorageService.removeItem(USER_STORAGE_KEY);
+                return null;
+            }
+
+            const response = await api.get('/auth/me');
+            const user = response.data;
+
+            const domainUser: User = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                avatarUrl: user.avatarUrl,
+            };
+
+            await StorageService.setItem(USER_STORAGE_KEY, domainUser);
+            return domainUser;
+        } catch (error) {
+            Logger.warn('Stored session is invalid or expired; clearing auth state');
+            await StorageService.removeItem(USER_STORAGE_KEY);
+            await StorageService.removeItem(TOKEN_STORAGE_KEY);
+            return null;
+        }
     }
 
     async getDemoCredentials(): Promise<DemoCredential[]> {
@@ -74,6 +100,31 @@ export class AuthRepositoryImpl implements AuthRepository {
             ];
         }
     }
+
+    async refreshToken(): Promise<string | null> {
+        try {
+            const token = await StorageService.getItem<string>(TOKEN_STORAGE_KEY);
+
+            if (!token) {
+                Logger.warn('No token available to refresh');
+                return null;
+            }
+
+            const response = await api.post('/auth/refresh', { access_token: token });
+            const { access_token } = response.data;
+
+            await StorageService.setItem(TOKEN_STORAGE_KEY, access_token);
+            Logger.info('Token refreshed successfully');
+            return access_token;
+        } catch (error: any) {
+            Logger.error('Token refresh failed', error);
+            // Clear auth state on refresh failure
+            await StorageService.removeItem(USER_STORAGE_KEY);
+            await StorageService.removeItem(TOKEN_STORAGE_KEY);
+            return null;
+        }
+    }
 }
+
 
 

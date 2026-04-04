@@ -17,16 +17,36 @@ from app.infrastructure.repositories.subject_repository import (
 from app.domain.usecases.update_class_subjects import (
     UpdateClassSubjectsUseCase,
 )
-from app.api.schemas import UpdateClassSubjectsRequest
+from app.api.schemas import (
+    UpdateClassSubjectsRequest,
+    UpdateClassSubjectsResponse,
+)
 
 router = APIRouter()
 
 
-@router.post("/class/subjects")
+@router.post(
+    "/class/subjects",
+    response_model=UpdateClassSubjectsResponse,
+    summary="Update class subjects",
+    description="Assign one or more subjects to an existing class section.",
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "class_id": 0,
+                        "subjects": [{"name": "Math"}, {"name": "Science"}],
+                    }
+                }
+            }
+        }
+    },
+)
 async def update_class_subjects(
     request: UpdateClassSubjectsRequest,
     db: AsyncSession = Depends(get_db),
-):
+) -> UpdateClassSubjectsResponse:
     class_repo = ClassRepository(db)
     subject_repo = SubjectRepository(db)
 
@@ -41,4 +61,4 @@ async def update_class_subjects(
         [s.dict() for s in request.subjects],
     )
 
-    return result
+    return UpdateClassSubjectsResponse(**result)
