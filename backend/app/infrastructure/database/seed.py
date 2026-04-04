@@ -531,10 +531,39 @@ async def create_sample_timetable(
         {"day": 4, "period": 1, "subject": "Hindi", "teacher": "Mr. Gupta", "room": "Room 104", "start": "09:00", "end": "10:00"},
         {"day": 4, "period": 2, "subject": "Computer Science", "teacher": "Ms. Reddy", "room": "Lab 202", "start": "10:00", "end": "11:00"},
         {"day": 4, "period": 3, "subject": "Social Studies", "teacher": "Ms. Singh", "room": "Room 103", "start": "11:00", "end": "12:00"},
-        {"day": 4, "period": 4, "subject": "BREAK", "teacher": "Ms. Patel", "room": "Room 102", "start": "12:00", "end": "12:30"},  # Break
-        {"day": 4, "period": 5, "subject": "English", "teacher": "Ms. Patel", "room": "Room 102", "start": "12:30", "end": "13:30"},
-        {"day": 4, "period": 6, "subject": "Mathematics", "teacher": "Mr. Sharma", "room": "Room 101", "start": "13:30", "end": "14:30"},
-        {"day": 4, "period": 7, "subject": "Art", "teacher": "Ms. Mehta", "room": "Art Room", "start": "14:30", "end": "15:30"},
+        {
+            "day": 4,
+            "period": 4,
+            "subject": "BREAK", 
+            "teacher": "Ms. Patel", 
+            "room": "Room 102",
+            "start": "12:00",
+            "end": "12:30"},  # Break
+        {
+            "day": 4,
+            "period": 5,
+            "subject": "English", 
+            "teacher": "Ms. Patel", 
+            "room": "Room 102",
+            "start": "12:30",
+            "end": "13:30"},
+        {
+            "day": 4,
+            "period": 6,
+            "subject": "Mathematics",
+            "teacher": "Mr. Sharma",
+            "room": "Room 101", 
+            "start": "13:30",
+            "end": "14:30"},
+        {    
+            "day": 4,
+            "period": 7,
+            "subject": "Art",
+            "teacher": "Ms. Mehta",
+            "room": "Art Room",
+            "start": "14:30",
+            "end": "15:30",
+        },
     ]
 
     class_7b = classes_map.get("Class 7-B")
@@ -621,10 +650,8 @@ async def seed_database() -> None:
             # Create rooms
             rooms_map = await create_rooms(db)
 
-            # Create teachersawait create_sample_timetable(
-            await create_sample_timetable(
-               db, classes_map, subjects_map, teachers_map, rooms_map
-            )
+            # Create teachers
+            teachers_map = await create_teachers(db, roles_map)
 
             # Create sample timetable
             await create_sample_timetable(
