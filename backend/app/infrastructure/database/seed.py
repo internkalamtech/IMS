@@ -621,8 +621,10 @@ async def seed_database() -> None:
             # Create rooms
             rooms_map = await create_rooms(db)
 
-            # Create teachers
-            teachers_map = await create_teachers(db, roles_map)
+            # Create teachersawait create_sample_timetable(
+            await create_sample_timetable(
+               db, classes_map, subjects_map, teachers_map, rooms_map
+            )
 
             # Create sample timetable
             await create_sample_timetable(
