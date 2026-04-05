@@ -10,19 +10,22 @@ export default function TabLayout() {
             screenOptions={{
                 headerShown: false,
                 tabBarActiveTintColor: theme.colors.primary,
-                tabBarInactiveTintColor: '#8E8E93',
+                tabBarInactiveTintColor: '#A0A0A0',
                 tabBarStyle: {
                     backgroundColor: theme.colors.card,
                     borderTopColor: theme.colors.border,
                     elevation: 0,
                     shadowOpacity: 0,
-                    height: 60,
-                    paddingBottom: 10,
+                    height: 65,
+                    paddingBottom: 5,
+                    paddingTop: 5,
                 },
                 tabBarLabelStyle: {
-                    fontSize: 12,
-                    fontWeight: '500',
-                }
+                    fontSize: 11,
+                    fontWeight: '600',
+                    textAlign: 'center',
+                },
+                tabBarLabelPosition: 'below-icon', // ✅ forces text below icon
             }}
         >
             <Tabs.Screen
@@ -30,7 +33,11 @@ export default function TabLayout() {
                 options={{
                     title: 'Home',
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
+                        <Ionicons
+                            name={focused ? 'home' : 'home-outline'}
+                            size={26}
+                            color={color}
+                        />
                     ),
                 }}
             />
@@ -39,7 +46,24 @@ export default function TabLayout() {
                 options={{
                     title: 'Alerts',
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={color} />
+                        <Ionicons
+                            name={focused ? 'notifications' : 'notifications-outline'}
+                            size={26}
+                            color={color}
+                        />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="homework"
+                options={{
+                    title: 'Homework',
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons
+                            name={focused ? 'book' : 'book-outline'}
+                            size={26}
+                            color={color}
+                        />
                     ),
                 }}
             />
@@ -48,7 +72,11 @@ export default function TabLayout() {
                 options={{
                     title: 'Profile',
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
+                        <Ionicons
+                            name={focused ? 'person' : 'person-outline'}
+                            size={26}
+                            color={color}
+                        />
                     ),
                 }}
             />
