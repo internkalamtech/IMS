@@ -6,7 +6,6 @@ Implementations are provided in the infrastructure layer.
 """
 
 from abc import ABC, abstractmethod
-from app.core.errors import NotFoundError
 from app.domain.entities.user import User
 
 
