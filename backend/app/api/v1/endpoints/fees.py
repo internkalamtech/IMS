@@ -89,7 +89,9 @@ async def list_fee_structures(
     )
 
     if class_name:
-        query = query.where(ClassSectionModel.name.ilike(f"%{_escape_like(class_name)}%"))
+        query = query.where(
+            ClassSectionModel.name.ilike(f"%{_escape_like(class_name)}%", escape="\\")
+        )
 
     result = await db.execute(query)
     structures = result.scalars().all()

@@ -165,7 +165,7 @@ class FeeStructureCreate(BaseModel):
     academic_year: str = Field(..., min_length=1, max_length=20)
     items: List[FeeItemCreate] = Field(..., min_length=1)
     installments: List[InstallmentPlanCreate] = Field(default_factory=list)
-    total_amount: float = 0.0
+    total_amount: float = Field(0.0, exclude=True)
 
     @model_validator(mode="after")
     def calculate_total(self) -> "FeeStructureCreate":
@@ -181,7 +181,7 @@ class FeeStructureUpdate(BaseModel):
     academic_year: Optional[str] = Field(None, min_length=1, max_length=20)
     items: Optional[List[FeeItemCreate]] = None
     installments: Optional[List[InstallmentPlanCreate]] = None
-    total_amount: float = 0.0
+    total_amount: float = Field(0.0, exclude=True)
 
     @model_validator(mode="after")
     def calculate_total(self) -> "FeeStructureUpdate":
@@ -219,7 +219,7 @@ class FeeStructureResponse(BaseModel):
     class_name: Optional[str] = None
     academic_year: str
     total_amount: float
-    items: List[FeeItemResponse] = []
-    installments: List[InstallmentPlanResponse] = []
+    items: List[FeeItemResponse] = Field(default_factory=list)
+    installments: List[InstallmentPlanResponse] = Field(default_factory=list)
 
     model_config = {"from_attributes": True}
