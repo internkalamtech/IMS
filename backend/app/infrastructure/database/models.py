@@ -10,15 +10,17 @@ Best practices followed:
 - Indexes for performance
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import List
 
 from sqlalchemy import (
     Boolean,
     Column,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
+    Numeric,
     String,
     Table,
 )
@@ -62,19 +64,13 @@ class UserModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
-        )
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-        )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-        )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -91,11 +87,7 @@ class UserModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<User(id={self.id}, "
-            f"email='{self.email}', "
-            f"name='{self.name}')>"
-        )
+        return f"<User(id={self.id}, " f"email='{self.email}', " f"name='{self.name}')>"
 
 
 class RoleModel(Base):
@@ -109,9 +101,7 @@ class RoleModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    name: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-        )
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
 
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
@@ -162,6 +152,96 @@ class ClassSectionModel(Base):
         secondary="class_subject_link",
         back_populates="classes",
     )
+    fee_structures: Mapped[List["FeeStructureModel"]] = relationship(
+        "FeeStructureModel", back_populates="class_section"
+    )
+
+
+class FeeStructureModel(Base):
+    """
+    Fee structure database model.
+
+    Represents the fee structure header for a class and academic year.
+    """
+
+    __tablename__ = "fee_structures"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    class_id: Mapped[int] = mapped_column(
+        ForeignKey("class_sections.id", ondelete="CASCADE"), nullable=False
+    )
+    academic_year: Mapped[str] = mapped_column(String(20), nullable=False)
+    total_amount: Mapped[float] = mapped_column(Numeric(10, 2), default=0.0)
+
+    # Relationships
+    class_section: Mapped["ClassSectionModel"] = relationship(
+        "ClassSectionModel", back_populates="fee_structures"
+    )
+    items: Mapped[List["FeeItemModel"]] = relationship(
+        "FeeItemModel", back_populates="structure", cascade="all, delete-orphan"
+    )
+    installments: Mapped[List["InstallmentPlanModel"]] = relationship(
+        "InstallmentPlanModel", back_populates="structure", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<FeeStructure(id={self.id}, "
+            f"class_id={self.class_id}, "
+            f"academic_year='{self.academic_year}')>"
+        )
+
+
+class FeeItemModel(Base):
+    """
+    Fee item database model.
+
+    Represents individual fee heads (e.g., Tuition, Lab, Transport).
+    """
+
+    __tablename__ = "fee_items"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    structure_id: Mapped[int] = mapped_column(
+        ForeignKey("fee_structures.id", ondelete="CASCADE"), nullable=False
+    )
+    head_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+
+    structure: Mapped["FeeStructureModel"] = relationship(
+        "FeeStructureModel", back_populates="items"
+    )
+
+    def __repr__(self) -> str:
+        return f"<FeeItem(id={self.id}, head_name='{self.head_name}', amount={self.amount})>"
+
+
+class InstallmentPlanModel(Base):
+    """
+    Installment plan database model.
+
+    Represents payment due dates and amounts for a fee structure.
+    """
+
+    __tablename__ = "fee_installments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    structure_id: Mapped[int] = mapped_column(
+        ForeignKey("fee_structures.id", ondelete="CASCADE"), nullable=False
+    )
+    due_date: Mapped[date] = mapped_column(Date, nullable=False)
+    amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+
+    structure: Mapped["FeeStructureModel"] = relationship(
+        "FeeStructureModel", back_populates="installments"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<InstallmentPlan(id={self.id}, "
+            f"due_date={self.due_date}, "
+            f"amount={self.amount})>"
+        )
 
 
 # Association table for many-to-many relationship between
