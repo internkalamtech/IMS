@@ -17,4 +17,6 @@ router.include_router(health.router)
 router.include_router(dashboard.router)
 from app.api import payments
 
-router.include_router(payments.router, prefix="/payments", tags=["Payments"])
+router.include_router(
+    payments.router, prefix="/payments", tags=["Payments"]
+)
