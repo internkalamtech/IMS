@@ -11,6 +11,7 @@ Best practices followed:
 """
 
 from datetime import date, datetime
+from decimal import Decimal
 from typing import List
 
 from sqlalchemy import (
@@ -208,8 +209,8 @@ class FeeStructureModel(Base):
     academic_year: Mapped[str] = mapped_column(
         String(20), nullable=False
     )
-    total_amount: Mapped[float] = mapped_column(
-        Numeric(10, 2), default=0.0
+    total_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0.00")
     )
 
     # Relationships
@@ -252,7 +253,7 @@ class FeeItemModel(Base):
         nullable=False,
     )
     head_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
     structure: Mapped["FeeStructureModel"] = relationship(
         "FeeStructureModel", back_populates="items"
@@ -283,7 +284,7 @@ class InstallmentPlanModel(Base):
         nullable=False,
     )
     due_date: Mapped[date] = mapped_column(Date, nullable=False)
-    amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
     structure: Mapped["FeeStructureModel"] = relationship(
         "FeeStructureModel", back_populates="installments"
