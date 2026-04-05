@@ -16,11 +16,21 @@ type RetryRequestConfig = InternalAxiosRequestConfig & {
 export class ApiClient {
     private static instance: ApiClient;
     private axiosInstance: AxiosInstance;
+    private refreshAxiosInstance: AxiosInstance;
     private isRefreshing = false;
     private failedQueue: { resolve: Function; reject: Function }[] = [];
 
     private constructor() {
         this.axiosInstance = axios.create({
+            baseURL: API_URL,
+            timeout: TIMEOUT,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        // Dedicated instance for token refresh calls so auth refresh never loops through this client's interceptors.
+        this.refreshAxiosInstance = axios.create({
             baseURL: API_URL,
             timeout: TIMEOUT,
             headers: {
@@ -59,6 +69,30 @@ export class ApiClient {
         return normalizedHeaders;
     }
 
+    private isAuthEndpoint(url?: string): boolean {
+        if (!url) {
+            return false;
+        }
+
+        const normalizedUrl = url.toLowerCase();
+        return normalizedUrl.includes('/auth/login') || normalizedUrl.includes('/auth/refresh');
+    }
+
+    private hasAuthorizationHeader(config: RetryRequestConfig): boolean {
+        if (!config.headers) {
+            return false;
+        }
+
+        if (config.headers instanceof AxiosHeaders) {
+            return Boolean(config.headers.get('Authorization'));
+        }
+
+        const authHeader = (config.headers as Record<string, unknown>).Authorization
+            ?? (config.headers as Record<string, unknown>).authorization;
+
+        return typeof authHeader === 'string' ? authHeader.trim().length > 0 : Boolean(authHeader);
+    }
+
     private async refreshAccessToken(): Promise<string | null> {
         try {
             const token = await StorageService.getItem<string>('auth_token');
@@ -67,10 +101,9 @@ export class ApiClient {
                 return null;
             }
 
-            const response = await axios.post(
-                `${API_URL}/auth/refresh`,
+            const response = await this.refreshAxiosInstance.post(
+                '/auth/refresh',
                 { access_token: token },
-                { timeout: TIMEOUT }
             );
 
             const { access_token } = response.data;
@@ -91,7 +124,7 @@ export class ApiClient {
             async (config: InternalAxiosRequestConfig) => {
                 const token = await StorageService.getItem<string>('auth_token');
                 if (token) {
-                    config.headers.Authorization = `Bearer ${token}`;
+                    this.ensureHeaders(config as RetryRequestConfig).set('Authorization', `Bearer ${token}`);
                 }
                 Logger.debug(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
                 return config;
@@ -124,7 +157,19 @@ export class ApiClient {
                     
                     // Handle 401 with token refresh retry
                     if (status === 401 && !originalRequest._retry) {
+                        const isAuthRequest = this.isAuthEndpoint(originalRequest.url);
+                        const hasAuthHeader = this.hasAuthorizationHeader(originalRequest);
+                        const storedToken = isAuthRequest
+                            ? null
+                            : await StorageService.getItem<string>('auth_token');
+                        const canRefresh = !isAuthRequest && (hasAuthHeader || Boolean(storedToken));
+
+                        if (!canRefresh) {
+                            return Promise.reject(new NetworkError(`Request failed with status ${status}`, status));
+                        }
+
                         if (this.isRefreshing) {
+                            originalRequest._retry = true;
                             return new Promise((resolve, reject) => {
                                 this.failedQueue.push({ resolve, reject });
                             }).then((token) => {
