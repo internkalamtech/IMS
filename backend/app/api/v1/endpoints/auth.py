@@ -210,7 +210,10 @@ async def get_me(
     response_model=TokenRefreshResponse,
     status_code=status.HTTP_200_OK,
     responses={
-        401: {"model": ErrorResponse, "description": "Token validation failed"},
+                401: {
+            "model": ErrorResponse,
+            "description": "Token validation failed"
+        },
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
     summary="Refresh access token",
