@@ -13,6 +13,7 @@ Following Clean Architecture principles:
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.errors import (
     AuthenticationError,
@@ -62,7 +63,9 @@ class DatabaseAuthRepository(AuthRepository):
 
             # Query user by email (with roles eagerly loaded)
             result = await self.db.execute(
-                select(UserModel).where(UserModel.email == email.lower())
+                select(UserModel)
+                .options(selectinload(UserModel.roles))
+                .where(UserModel.email == email.lower())
             )
             user_model = result.unique().scalar_one_or_none()
 
@@ -118,7 +121,9 @@ class DatabaseAuthRepository(AuthRepository):
         """
         try:
             result = await self.db.execute(
-                select(UserModel).where(UserModel.id == int(user_id))
+                select(UserModel)
+                .options(selectinload(UserModel.roles))
+                .where(UserModel.id == int(user_id))
             )
             user_model = result.unique().scalar_one_or_none()
 
@@ -128,8 +133,6 @@ class DatabaseAuthRepository(AuthRepository):
             return self._to_domain_entity(user_model)
 
         except Exception as e:
-            from app.core.errors import NotFoundError
-
             if isinstance(e, NotFoundError):
                 raise
             Logger.error(f"Database error getting user: {e}", exc_info=True)
@@ -147,7 +150,9 @@ class DatabaseAuthRepository(AuthRepository):
         """
         try:
             result = await self.db.execute(
-                select(UserModel).where(UserModel.email == email.lower())
+                select(UserModel)
+                .options(selectinload(UserModel.roles))
+                .where(UserModel.email == email.lower())
             )
             user_model = result.unique().scalar_one_or_none()
 
@@ -175,7 +180,9 @@ class DatabaseAuthRepository(AuthRepository):
         """
         try:
             result = await self.db.execute(
-                select(UserModel).where(UserModel.email.like(pattern))
+                select(UserModel)
+                .options(selectinload(UserModel.roles))
+                .where(UserModel.email.like(pattern))
             )
             user_models = result.scalars().unique().all()
 

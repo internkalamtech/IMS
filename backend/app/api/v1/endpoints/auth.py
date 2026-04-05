@@ -22,7 +22,7 @@ from app.core.errors import AuthenticationError, ValidationError, DatabaseError
 from app.core.logger import Logger
 from app.core.security import create_access_token
 from app.domain.entities.user import User
-from app.domain.usecases.auth_usecases import LoginUseCase
+from app.domain.usecases.auth_usecases import GetDemoUsersUseCase, LoginUseCase
 from app.infrastructure.database.database import get_db
 from app.infrastructure.repositories.database_auth_repository import (
     DatabaseAuthRepository,
@@ -213,8 +213,6 @@ async def get_demo_credentials(
     Users are fetched from the database based on the email domain @myuser.com.
     """
     try:
-        from app.domain.usecases.auth_usecases import GetDemoUsersUseCase
-
         repository = DatabaseAuthRepository(db)
         use_case = GetDemoUsersUseCase(repository)
         users = await use_case.execute("%@myuser.com")

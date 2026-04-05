@@ -17,6 +17,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     String,
@@ -182,3 +183,68 @@ class_subject_link = Table(
         primary_key=True,
     ),
 )
+
+
+class FeeStructure(Base):
+    """
+    Fee structure database model.
+
+    Represents the fee amount per class/grade.
+    """
+
+    __tablename__ = "fee_structures"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_class: Mapped[str] = mapped_column(
+        String(100), unique=True, nullable=False
+    )
+    fee_amount: Mapped[float] = mapped_column(Float, nullable=False)
+
+    def __repr__(self) -> str:
+        return (
+            f"<FeeStructure(id={self.id}, "
+            f"class='{self.student_class}', "
+            f"amount={self.fee_amount})>"
+        )
+
+
+class Payment(Base):
+    """
+    Payment database model.
+
+    Records individual payment transactions made by students.
+    """
+
+    __tablename__ = "payments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    student_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    student_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    roll_number: Mapped[str] = mapped_column(String(50), nullable=False)
+    student_class: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+
+    payment_mode: Mapped[str] = mapped_column(String(50), nullable=False)
+    reference_number: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
+
+    receipt_number: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False
+    )
+
+    status: Mapped[str] = mapped_column(String(20), default="Paid")
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Payment(id={self.id}, "
+            f"student='{self.student_name}', "
+            f"amount={self.amount}, "
+            f"status='{self.status}')>"
+        )
