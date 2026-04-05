@@ -31,6 +31,7 @@ from app.core.logger import Logger
 from app.core.security import (
     create_access_token,
     decode_access_token_ignore_expiry,
+    is_token_within_refresh_window,
 )
 from app.domain.entities.user import User
 from app.domain.usecases.auth_usecases import LoginUseCase
@@ -214,8 +215,8 @@ async def get_me(
     },
     summary="Refresh access token",
     description=(
-        "Refresh an expired or expiring access token. "
-        "Accepts the current token and returns a new one."
+        "Refresh an access token that is close to expiry or recently expired "
+        "within the configured refresh window."
     ),
 )
 async def refresh_token(
@@ -225,8 +226,8 @@ async def refresh_token(
     """
     Refresh token endpoint.
 
-    Accepts an expired or current access token and returns a new one.
-    This allows users to continue using the API without re-logging in.
+    Accepts an access token that is close to expiry or recently expired,
+    and returns a new one.
 
     Args:
         request: Token refresh request with the current access token
@@ -249,6 +250,15 @@ async def refresh_token(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token",
+            )
+
+        if not is_token_within_refresh_window(payload):
+            Logger.warning(
+                "Token refresh failed: token outside refresh window"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token is not eligible for refresh",
             )
 
         # Extract user_id from token

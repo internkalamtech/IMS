@@ -99,7 +99,11 @@ class TokenRefreshRequest(BaseModel):
     """Request schema for token refresh endpoint."""
 
     access_token: str = Field(
-        ..., description="The current or expired access token to refresh"
+        ...,
+        description=(
+            "An access token that is expiring soon or recently expired "
+            "within the configured refresh window"
+        ),
     )
 
     model_config = {

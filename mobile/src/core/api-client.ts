@@ -9,6 +9,10 @@ import { Logger } from './logger';
 const API_URL = getApiBaseUrl();
 const TIMEOUT = 10000;
 
+type RetryRequestConfig = InternalAxiosRequestConfig & {
+    _retry?: boolean;
+};
+
 export class ApiClient {
     private static instance: ApiClient;
     private axiosInstance: AxiosInstance;
@@ -43,6 +47,16 @@ export class ApiClient {
             }
         });
         this.failedQueue = [];
+    }
+
+    private ensureHeaders(config: RetryRequestConfig): AxiosHeaders {
+        if (config.headers instanceof AxiosHeaders) {
+            return config.headers;
+        }
+
+        const normalizedHeaders = AxiosHeaders.from(config.headers ?? {});
+        config.headers = normalizedHeaders;
+        return normalizedHeaders;
     }
 
     private async refreshAccessToken(): Promise<string | null> {
@@ -96,11 +110,15 @@ export class ApiClient {
                 return response;
             },
             async (error: AxiosError) => {
-                const originalRequest = error.config as any;
+                const originalRequest = error.config as RetryRequestConfig | undefined;
 
                 Logger.error('[API Response Error]', error);
 
                 if (error.response) {
+                    if (!originalRequest) {
+                        return Promise.reject(error);
+                    }
+
                     // Server responded with a status code outside of 2xx
                     const status = error.response.status;
                     
@@ -110,8 +128,7 @@ export class ApiClient {
                             return new Promise((resolve, reject) => {
                                 this.failedQueue.push({ resolve, reject });
                             }).then((token) => {
-                                originalRequest.headers = originalRequest.headers ?? new AxiosHeaders();
-                                originalRequest.headers.Authorization = `Bearer ${token}`;
+                                this.ensureHeaders(originalRequest).set('Authorization', `Bearer ${token}`);
                                 return this.axiosInstance(originalRequest);
                             }).catch((err) => {
                                 return Promise.reject(err);
@@ -126,8 +143,7 @@ export class ApiClient {
                             this.isRefreshing = false;
 
                             if (newToken) {
-                                originalRequest.headers = originalRequest.headers ?? new AxiosHeaders();
-                                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                                this.ensureHeaders(originalRequest).set('Authorization', `Bearer ${newToken}`);
                                 this.processQueue(null, newToken);
                                 return this.axiosInstance(originalRequest);
                             } else {

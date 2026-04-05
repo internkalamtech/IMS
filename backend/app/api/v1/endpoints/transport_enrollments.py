@@ -3,11 +3,13 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies import require_roles
 from app.api.schemas import (
     CreateStudentTransportEnrollmentsRequest,
     CreateStudentTransportEnrollmentsResponse,
     RouteManifestResponse,
 )
+from app.domain.entities.user import User
 from app.domain.usecases.student_transport_enrollment import (
     StudentTransportEnrollmentUseCase,
 )
@@ -23,6 +25,10 @@ router = APIRouter(prefix="/transport", tags=["Transport"])
     "/enrollments",
     response_model=CreateStudentTransportEnrollmentsResponse,
     status_code=status.HTTP_201_CREATED,
+    responses={
+        401: {"description": "Authentication required"},
+        403: {"description": "Insufficient permissions"},
+    },
     summary="Create student transport enrollments",
     description=(
         "Create one or more records linking studentId to stopId and routeId "
@@ -31,6 +37,7 @@ router = APIRouter(prefix="/transport", tags=["Transport"])
 )
 async def create_student_transport_enrollments(
     request: CreateStudentTransportEnrollmentsRequest,
+    _current_user: User = Depends(require_roles("admin", "transport")),
     db: AsyncSession = Depends(get_db),
 ) -> CreateStudentTransportEnrollmentsResponse:
     repository = StudentTransportRepository(db)

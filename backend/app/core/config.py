@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     secret_key: str = "dev-secret-key-change-in-production"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+    access_token_refresh_window_minutes: int = 5
 
     # CORS - stored as string in env, parsed to list
     cors_origins: Union[str, list[str]] = (

@@ -82,3 +82,36 @@ def decode_access_token_ignore_expiry(token: str) -> dict[str, Any] | None:
         return payload
     except JWTError:
         return None
+
+
+def is_token_within_refresh_window(payload: dict[str, Any]) -> bool:
+    """
+    Check whether a token is eligible for refresh based on its exp claim.
+
+    Refresh is only allowed when current time is within
+    +/- access_token_refresh_window_minutes around token expiry.
+
+    Args:
+        payload: Decoded JWT payload
+
+    Returns:
+        True if token is within the refresh window, False otherwise
+    """
+    exp = payload.get("exp")
+    if exp is None:
+        return False
+
+    if isinstance(exp, datetime):
+        exp_dt = exp
+    elif isinstance(exp, (int, float)):
+        exp_dt = datetime.fromtimestamp(exp, tz=timezone.utc)
+    else:
+        return False
+
+    if exp_dt.tzinfo is None:
+        exp_dt = exp_dt.replace(tzinfo=timezone.utc)
+
+    now = datetime.now(timezone.utc)
+    window = timedelta(minutes=settings.access_token_refresh_window_minutes)
+
+    return (exp_dt - window) <= now <= (exp_dt + window)

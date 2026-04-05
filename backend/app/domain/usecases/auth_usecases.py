@@ -5,6 +5,7 @@ Use cases encapsulate business rules and orchestrate the flow of data
 between entities and repositories.
 """
 
+from app.core.errors import NotFoundError
 from app.domain.entities.user import User
 from app.domain.repositories.auth_repository import AuthRepository
 
@@ -86,10 +87,10 @@ class GetCurrentUserUseCase:
         Raises:
             ValueError: If user not found
         """
-        user = await self.auth_repository.get_user_by_id(user_id)
-        if not user:
+        try:
+            return await self.auth_repository.get_user_by_id(user_id)
+        except NotFoundError:
             raise ValueError("User not found")
-        return user
 
 
 class GetDemoUsersUseCase:

@@ -6,6 +6,7 @@ Implementations are provided in the infrastructure layer.
 """
 
 from abc import ABC, abstractmethod
+from app.core.errors import NotFoundError
 from app.domain.entities.user import User
 
 
@@ -36,7 +37,7 @@ class AuthRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str) -> User | None:
+    async def get_user_by_id(self, user_id: str) -> User:
         """
         Retrieve a user by their ID.
 
@@ -44,7 +45,10 @@ class AuthRepository(ABC):
             user_id: Unique identifier of the user
 
         Returns:
-            User entity if found, None otherwise
+            User entity if found
+
+        Raises:
+            NotFoundError: If user is not found
         """
         pass
 
