@@ -4,8 +4,10 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
-from pydantic import BaseModel, EmailStr, Field
+from datetime import datetime
 from typing import Literal
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class LoginRequest(BaseModel):
@@ -19,11 +21,7 @@ class LoginRequest(BaseModel):
     )
 
     model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {"email": "admin@myuser.com", "password": "admin123"}
-            ]
-        }
+        "json_schema_extra": {"examples": [{"email": "admin@myuser.com", "password": "admin123"}]}
     }
 
 
@@ -97,9 +95,7 @@ class LoginResponse(BaseModel):
                         "name": "Admin User",
                         "email": "admin@example.com",
                         "role": "admin",
-                        "avatarUrl": (
-                            "https://i.pravatar.cc/150?u=admin"
-                        ),
+                        "avatarUrl": ("https://i.pravatar.cc/150?u=admin"),
                     },
                     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                     "token_type": "bearer",
@@ -114,9 +110,7 @@ class ErrorResponse(BaseModel):
 
     detail: str
 
-    model_config = {
-        "json_schema_extra": {"examples": [{"detail": "Error message"}]}
-    }
+    model_config = {"json_schema_extra": {"examples": [{"detail": "Error message"}]}}
 
 
 class DemoCredential(BaseModel):
@@ -147,3 +141,66 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
+
+
+# ---------------------------------------------------------------------------
+# Payment schemas
+# ---------------------------------------------------------------------------
+
+
+class PaymentCreate(BaseModel):
+    """Request schema for creating a payment transaction."""
+
+    student_id: int = Field(..., gt=0, description="ID of the student")
+    amount: float = Field(..., gt=0, description="Payment amount")
+    payment_method: str = Field(..., min_length=1, description="Payment method (e.g., cash, card)")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "student_id": 1,
+                    "amount": 500.0,
+                    "payment_method": "cash",
+                }
+            ]
+        }
+    }
+
+
+class PaymentResponse(BaseModel):
+    """Response schema for a payment transaction."""
+
+    id: str
+    student_id: int
+    amount: float
+    payment_method: str
+    payment_date: datetime
+
+
+class LedgerEntryResponse(BaseModel):
+    """Response schema for a single student ledger entry."""
+
+    id: str
+    student_id: int
+    debit: float
+    credit: float
+    balance: float
+    description: str
+    transaction_date: datetime
+
+
+class StudentLedgerResponse(BaseModel):
+    """Response schema for a student's full ledger."""
+
+    student_id: int
+    transactions: list[LedgerEntryResponse]
+
+
+class FeeDashboardResponse(BaseModel):
+    """Response schema for the fee dashboard analytics."""
+
+    total_collected: float
+    total_pending: float
+    students_paid: int
+    students_pending: int

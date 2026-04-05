@@ -59,23 +59,13 @@ class UserModel(Base):
     and associated roles.
     """
 
-    __tablename__ = "users.id"
+    __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, index=True
-    )
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
-    )
-    password_hash: Mapped[str] = mapped_column(
-        String(255), nullable=False
-    )
-    name: Mapped[str] = mapped_column(
-        String(255), nullable=False
-    )
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -97,9 +87,7 @@ class UserModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
-        )
+        return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
 
 
 class RoleModel(Base):
@@ -119,9 +107,7 @@ class RoleModel(Base):
         nullable=False,
         index=True,
     )
-    description: Mapped[str | None] = mapped_column(
-        String(255), nullable=True
-    )
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Relationships
     users: Mapped[List["UserModel"]] = relationship(
@@ -131,15 +117,56 @@ class RoleModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<Role(id={self.id}, name='{self.name}')>"
-        )
+        return f"<Role(id={self.id}, name='{self.name}')>"
 
 
-class Payment(Base):
+class PaymentModel(Base):
+    """
+    Payment database model.
+
+    Represents a fee payment transaction made by a student.
+    """
+
     __tablename__ = "payments"
 
-    id = Column(Integer, primary_key=True)
-    student_id = Column(Integer)
-    amount = Column(Float, nullable=False)
-    payment_method = Column(String, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+    payment_method: Mapped[str] = mapped_column(String(100), nullable=False)
+    payment_date: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+
+    def __repr__(self) -> str:
+        return f"<Payment(id={self.id}, student_id={self.student_id}, " f"amount={self.amount})>"
+
+
+class StudentLedgerModel(Base):
+    """
+    Student ledger database model.
+
+    Represents a line in the student fee ledger, tracking debits,
+    credits, and the running balance.
+    """
+
+    __tablename__ = "student_ledger"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    debit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    credit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    balance: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    description: Mapped[str] = mapped_column(String(500), nullable=False)
+    transaction_date: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<StudentLedger(id={self.id}, student_id={self.student_id}, "
+            f"balance={self.balance})>"
+        )
