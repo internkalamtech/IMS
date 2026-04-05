@@ -8,22 +8,6 @@ jobs:
   backend-build:
     name: Backend Tests
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_USER: postgres
-          POSTGRES_DB: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
     defaults:
       run:
         working-directory: ./backend
@@ -40,16 +24,6 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
-
-      - name: Wait for Postgres service
-        run: |
-          for i in {1..30}; do
-            pg_isready -h localhost -p 5432 -U postgres && echo "Postgres ready" && exit 0
-            echo "Waiting for Postgres... ($i/30)"
-            sleep 2
-          done
-          echo "Postgres not reachable after timeout"
-          exit 1
           
       - name: Run tests
         run: pytest tests/

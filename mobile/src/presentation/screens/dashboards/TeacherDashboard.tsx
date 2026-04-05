@@ -15,7 +15,7 @@ const { width } = Dimensions.get('window');
 
 export default function TeacherDashboard() {
     const { logout, user } = useAuth();
-    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
+    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
 
     const quickActions = DASHBOARD_CONFIG.teacher.quickActions;

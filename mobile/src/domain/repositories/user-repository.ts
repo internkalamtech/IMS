@@ -14,5 +14,5 @@ export interface DashboardData {
 }
 
 export interface UserRepository {
-    getDashboardData(role: string, childId?: string): Promise<DashboardData>;
+    getDashboardData(role: string): Promise<DashboardData>;
 }
