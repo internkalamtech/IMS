@@ -131,3 +131,9 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
+from pydantic import BaseModel
+
+
+class UserCreate(BaseModel):
+    name: str
+    email: str

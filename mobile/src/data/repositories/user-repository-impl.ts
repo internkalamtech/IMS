@@ -1,6 +1,6 @@
 import { api } from '@/core/api-client';
 import { Logger } from '@/core/logger';
-import { DashboardData, UserRepository } from '@/domain/repositories/user-repository';
+import { CreateUserInput, DashboardData, UserRepository } from '@/domain/repositories/user-repository';
 
 export class UserRepositoryImpl implements UserRepository {
     async getDashboardData(role: string): Promise<DashboardData> {
@@ -18,6 +18,16 @@ export class UserRepositoryImpl implements UserRepository {
                     { label: "Backend", value: "Unreachable" },
                 ]
             };
+        }
+    }
+
+    async createUser(userData: CreateUserInput): Promise<void> {
+        try {
+            await api.post('/users', userData);
+            Logger.info('User created successfully', userData.email);
+        } catch (error) {
+            Logger.error('Failed to create user', error);
+            throw error;
         }
     }
 }

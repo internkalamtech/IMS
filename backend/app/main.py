@@ -80,13 +80,14 @@ async def general_exception_handler(request: Request, exc: Exception):
 # Request logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    """Log all HTTP requests."""
-    Logger.info(f"{request.method} {request.url.path}")
-    response = await call_next(request)
-    Logger.info(
-        f"{request.method} {request.url.path} - {response.status_code}"
-    )
-    return response
+    try:
+        Logger.info(f"{request.method} {request.url.path}")
+        response = await call_next(request)
+        Logger.info(f"{request.method} {request.url.path} - {response.status_code}")
+        return response
+    except Exception as e:
+        Logger.error(f"Middleware error: {e}")
+        raise
 
 
 # Configure CORS

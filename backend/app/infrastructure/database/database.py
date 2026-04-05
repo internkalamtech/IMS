@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import (
 
 from app.core.config import settings
 from app.infrastructure.database.models import Base
-
+from app.infrastructure.database import models
 
 # Create async engine with connection pooling
 engine = create_async_engine(
@@ -78,6 +78,7 @@ async def init_db() -> None:
     In production, use Alembic migrations instead.
     """
     async with engine.begin() as conn:
+        print("REGISTERED TABLES:", Base.metadata.tables.keys())
         await conn.run_sync(Base.metadata.create_all)
 
 

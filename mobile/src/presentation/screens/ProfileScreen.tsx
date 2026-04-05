@@ -1,77 +1,100 @@
 import { useTheme } from '@/core/theme/ThemeContext';
 import { ThemedText } from '@/presentation/components/ThemedText';
 import { ThemedView } from '@/presentation/components/ThemedView';
-import { useAuth } from '@/presentation/hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function ProfileScreen() {
-    const { user, logout } = useAuth();
-    const { theme, setThemeType, themeType } = useTheme();
+const TABS = ['Overview', 'Exams', 'Attendance', 'Conduct'];
 
-    const themeOptions = [
-        { id: 'light', label: 'Light', icon: 'sunny-outline' },
-        { id: 'dark', label: 'Dark', icon: 'moon-outline' },
-        { id: 'system', label: 'System', icon: 'settings-outline' },
-    ] as const;
+export default function StudentProfileScreen() {
+    const { theme } = useTheme();
+    const [activeTab, setActiveTab] = useState('Overview');
+
+    const renderContent = () => {
+        switch (activeTab) {
+            case 'Overview':
+                return (
+                    <View style={styles.cardRow}>
+                        <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                            <Ionicons name="trophy-outline" size={22} color={theme.colors.primary} />
+                            <ThemedText style={styles.cardValue}>12</ThemedText>
+                            <ThemedText style={styles.cardLabel}>Current Rank</ThemedText>
+                        </View>
+
+                        <View style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                            <Ionicons name="checkmark-done-outline" size={22} color={theme.colors.primary} />
+                            <ThemedText style={styles.cardValue}>92%</ThemedText>
+                            <ThemedText style={styles.cardLabel}>Attendance</ThemedText>
+                        </View>
+                    </View>
+                );
+
+            default:
+                return (
+                    <ThemedText style={{ textAlign: 'center', marginTop: 20 }}>
+                        {activeTab} data coming soon
+                    </ThemedText>
+                );
+        }
+    };
 
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
+                
+                {/* HEADER */}
                 <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
-                    <ThemedText type="title">Profile</ThemedText>
+                    <ThemedText type="title">Student Profile</ThemedText>
                 </View>
 
                 <ScrollView contentContainerStyle={styles.content}>
-                    {/* User Info */}
-                    <View style={styles.userCard}>
+
+                    {/* PROFILE CARD */}
+                    <View style={styles.profileCard}>
                         <View style={[styles.avatar, { backgroundColor: theme.colors.primary + '20' }]}>
-                            <ThemedText style={{ color: theme.colors.primary, fontSize: 32, fontWeight: '700' }}>
-                                {user?.name?.[0]?.toUpperCase() || 'U'}
+                            <ThemedText style={{ color: theme.colors.primary, fontSize: 28, fontWeight: '700' }}>
+                                J
                             </ThemedText>
                         </View>
-                        <View style={styles.userInfo}>
-                            <ThemedText type="subtitle">{user?.name}</ThemedText>
-                            <ThemedText lightColor="#666">{user?.email}</ThemedText>
-                            <View style={[styles.roleBadge, { backgroundColor: theme.colors.primary }]}>
-                                <ThemedText style={styles.roleText}>{user?.role?.toUpperCase()}</ThemedText>
-                            </View>
+
+                        <View style={styles.profileInfo}>
+                            <ThemedText type="subtitle">Mahi Fareeha</ThemedText>
+                            <ThemedText lightColor="#666">Roll No: 23CS101</ThemedText>
+                            <ThemedText lightColor="#666">Parent: +91 9876543210</ThemedText>
+                             <ThemedText lightColor="#666">Email:mahifareeha123@gmail.com</ThemedText>
                         </View>
                     </View>
 
-                    {/* Theme Settings */}
-                    <ThemedText style={styles.sectionTitle} type="subtitle">Appearance</ThemedText>
-                    <View style={[styles.settingsCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                        {themeOptions.map((option, index) => (
+                    {/* TABS */}
+                    <View style={[styles.tabsContainer, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                        {TABS.map((tab) => (
                             <TouchableOpacity
-                                key={option.id}
+                                key={tab}
                                 style={[
-                                    styles.optionItem,
-                                    index !== themeOptions.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border },
-                                    themeType === option.id && { backgroundColor: theme.colors.primary + '10' }
+                                    styles.tab,
+                                    activeTab === tab && { backgroundColor: theme.colors.primary + '20' }
                                 ]}
-                                onPress={() => setThemeType(option.id)}
+                                onPress={() => setActiveTab(tab)}
                             >
-                                <View style={styles.optionLeft}>
-                                    <Ionicons name={option.icon as any} size={22} color={themeType === option.id ? theme.colors.primary : theme.colors.foreground} />
-                                    <ThemedText style={[styles.optionLabel, themeType === option.id && { color: theme.colors.primary, fontWeight: '600' }]}>
-                                        {option.label}
-                                    </ThemedText>
-                                </View>
-                                {themeType === option.id && (
-                                    <Ionicons name="checkmark" size={20} color={theme.colors.primary} />
-                                )}
+                                <ThemedText
+                                    style={[
+                                        styles.tabText,
+                                        activeTab === tab && { color: theme.colors.primary, fontWeight: '600' }
+                                    ]}
+                                >
+                                    {tab}
+                                </ThemedText>
                             </TouchableOpacity>
                         ))}
                     </View>
 
-                    {/* Actions */}
-                    <TouchableOpacity style={[styles.logoutButton, { borderColor: theme.colors.destructive }]} onPress={logout}>
-                        <Ionicons name="log-out-outline" size={20} color={theme.colors.destructive} />
-                        <ThemedText style={{ color: theme.colors.destructive, marginLeft: 8, fontWeight: '600' }}>Logout</ThemedText>
-                    </TouchableOpacity>
+                    {/* CONTENT */}
+                    <View style={styles.section}>
+                        {renderContent()}
+                    </View>
+
                 </ScrollView>
             </SafeAreaView>
         </ThemedView>
@@ -93,65 +116,66 @@ const styles = StyleSheet.create({
     content: {
         padding: 20,
     },
-    userCard: {
+
+    profileCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 32,
+        marginBottom: 24,
     },
     avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+        width: 70,
+        height: 70,
+        borderRadius: 35,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 20,
+        marginRight: 16,
     },
-    userInfo: {
+    profileInfo: {
         flex: 1,
     },
-    roleBadge: {
-        alignSelf: 'flex-start',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 20,
+
+    tabsContainer: {
+        flexDirection: 'row',
+        borderRadius: 16,
+        borderWidth: 1,
+        padding: 6,
+        marginBottom: 20,
+        justifyContent: 'space-between',
+    },
+    tab: {
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderRadius: 12,
+    },
+    tabText: {
+        fontSize: 14,
+    },
+
+    section: {
+        marginTop: 10,
+    },
+
+    cardRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    card: {
+        flex: 1,
+        borderRadius: 16,
+        borderWidth: 1,
+        padding: 16,
+        alignItems: 'center',
+        marginHorizontal: 5,
+    },
+    cardValue: {
+        fontSize: 20,
+        fontWeight: '700',
         marginTop: 8,
     },
-    roleText: {
-        color: '#fff',
-        fontSize: 10,
-        fontWeight: '700',
-    },
-    sectionTitle: {
-        marginBottom: 16,
-        fontSize: 18,
-    },
-    settingsCard: {
-        borderRadius: 16,
-        borderWidth: 1,
-        overflow: 'hidden',
-        marginBottom: 32,
-    },
-    optionItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 16,
-    },
-    optionLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    optionLabel: {
-        marginLeft: 12,
-        fontSize: 16,
-    },
-    logoutButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 16,
-        borderRadius: 16,
-        borderWidth: 1,
-        marginTop: 20,
+    cardLabel: {
+        fontSize: 12,
+        marginTop: 4,
+        opacity: 0.7,
     },
 });
