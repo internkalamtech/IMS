@@ -1,18 +1,17 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.database.database import AsyncSessionLocal
+from app.infrastructure.database.database import AsyncSessionLocal, init_db, close_db
 
+
+@pytest.fixture(scope="session", autouse=True)
+async def setup_database():
+    """Create all tables before running tests and close engine after."""
+    await init_db()
+    yield
+    await close_db()
 
 @pytest.fixture(scope="function")
 async def db() -> AsyncSession:
-    session = AsyncSessionLocal()
-    trans = await session.begin()
-    try:
+    async with AsyncSessionLocal() as session:
         yield session
-    finally:
-        try:
-            await trans.rollback()
-        except Exception:
-            pass  # Test already committed/closed the transaction
-        await session.close()
