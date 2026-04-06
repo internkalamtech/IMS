@@ -54,10 +54,10 @@ export default function TeacherDashboard() {
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
                             <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Hello, {user?.name?.split(' ')[0] || 'Teacher'} 👋
                                 </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
+                                <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Your academic day at a glance
                                 </ThemedText>
                             </View>
@@ -75,8 +75,12 @@ export default function TeacherDashboard() {
                                     <Ionicons name="people" size={24} color={theme.colors.primaryForeground} />
                                 </View>
                                 <View>
-                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Total Students', '42')}</ThemedText>
-                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">My Students</ThemedText>
+                                    <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        {getStatValue('Total Students', '42')}
+                                    </ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        My Students
+                                    </ThemedText>
                                 </View>
                             </View>
                             <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
@@ -84,8 +88,12 @@ export default function TeacherDashboard() {
                                     <Ionicons name="time" size={24} color={theme.colors.primaryForeground} />
                                 </View>
                                 <View>
-                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Today\'s Classes', '5')}</ThemedText>
-                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">Classes Today</ThemedText>
+                                    <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        {getStatValue('Today\'s Classes', '5')}
+                                    </ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        Classes Today
+                                    </ThemedText>
                                 </View>
                             </View>
                         </View>

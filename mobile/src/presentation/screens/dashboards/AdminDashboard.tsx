@@ -38,10 +38,11 @@ return (
                 <SafeAreaView edges={['top']}>
                     <View style={styles.headerContent}>
                         <View>
-                            <ThemedText style={styles.userName} type="title" color="primaryForeground">
-                                {user?.name || 'Admin'}
+                            <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                    {user?.name || 'Admin'}
                             </ThemedText>
-                            <ThemedText style={styles.subtitle} color="primaryForeground">
+                            <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground}
+                             darkColor={theme.colors.primaryForeground}>
                                 Institute Management Overview
                             </ThemedText>
                         </View>
@@ -58,8 +59,10 @@ return (
                                         <Ionicons name={stat.icon as any} size={24} color={theme.colors.primaryForeground} />
                                     </View>
                                     <View>
-                                        <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{stat.value}</ThemedText>
-                                        <ThemedText style={styles.bannerStatTitle} color="primaryForeground">{stat.title}</ThemedText>
+                                        <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>{stat.value}</ThemedText>
+                                        <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                            {stat.title}
+                                        </ThemedText>
                                     </View>
                                 </View>
                             ))}
@@ -80,7 +83,7 @@ return (
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
                         <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-                            <ThemedText style={styles.badgeText} color="primaryForeground">3 new</ThemedText>
+                            <ThemedText style={styles.badgeText} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >3 new</ThemedText>
                         </View>
                     </View>
                     <ThemedCard style={styles.updatesCard} padding={0}>

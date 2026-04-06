@@ -36,10 +36,10 @@ export default function StudentDashboard() {
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
                             <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Hi, {user?.name?.split(' ')[0] || 'Student'} 👋
                                 </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
+                                <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Ready to learn something new today?
                                 </ThemedText>
                             </View>
@@ -55,8 +55,12 @@ export default function StudentDashboard() {
                                     <Ionicons name="trending-up" size={24} color={theme.colors.primaryForeground} />
                                 </View>
                                 <View>
-                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Attendance', '92%')}</ThemedText>
-                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">Attendance</ThemedText>
+                                    <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        {getStatValue('Attendance', '92%')}
+                                    </ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        Attendance
+                                    </ThemedText>
                                 </View>
                             </View>
                             <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
@@ -64,8 +68,12 @@ export default function StudentDashboard() {
                                     <Ionicons name="star" size={24} color={theme.colors.primaryForeground} />
                                 </View>
                                 <View>
-                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Avg Score', '8.5')}</ThemedText>
-                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">Avg Score</ThemedText>
+                                    <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        {getStatValue('Avg Score', '8.5')}
+                                    </ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        Avg Score
+                                    </ThemedText>
                                 </View>
                             </View>
                         </View>
