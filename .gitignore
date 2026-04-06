@@ -94,3 +94,13 @@ backend/*.sqlite3
 
 # OS
 Thumbs.db
+
+# Logs (never commit these!)
+logs/
+*.log
+
+# Git merge artifacts (never commit these!)
+*.remote
+
+# Root-level temp text file dumps
+/*.txt

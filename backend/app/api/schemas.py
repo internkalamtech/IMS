@@ -4,8 +4,8 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
-from pydantic import BaseModel, EmailStr, Field
-from typing import List, Literal, Optional
+from pydantic import BaseModel, EmailStr
+from typing import Literal, Optional
 
 
 class LoginRequest(BaseModel):
@@ -144,28 +144,3 @@ class DashboardResponse(BaseModel):
     selected_child_id: str | None = None
 
 
-class SubjectInput(BaseModel):
-    """Schema for subject input when updating class subjects."""
-
-    id: Optional[int] = None
-    name: Optional[str] = None
-
-
-class UpdateClassSubjectsRequest(BaseModel):
-    """Request schema for updating class subjects."""
-
-    class_id: int
-    subjects: List[SubjectInput]
-
-
-class ContactSubmitRequest(BaseModel):
-    """Request schema for submitting name and email."""
-
-    name: str = Field(..., min_length=1, description="Contact name")
-    email: EmailStr = Field(..., description="Contact email")
-
-
-class ContactSubmitResponse(BaseModel):
-    """Response schema for contact submission."""
-
-    message: str = "Contact submitted successfully"

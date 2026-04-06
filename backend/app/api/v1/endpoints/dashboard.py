@@ -4,8 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies import get_current_user
 from app.api.schemas import (
     ChildSummary,
-    ContactSubmitRequest,
-    ContactSubmitResponse,
     DashboardResponse,
     StatItem,
 )
@@ -16,12 +14,10 @@ from app.infrastructure.database.models import (
     UserModel,
     parent_child_link,
 )
-from app.infrastructure.repositories.database_contact_repository import (
-    DatabaseContactRepository,
-)
 from sqlalchemy import select
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+
 
 
 @router.get(
@@ -193,26 +189,3 @@ async def get_dashboard_stats(
         selected_child_id=selected_child_id,
     )
 
-
-@router.post(
-    "/contacts",
-    response_model=ContactSubmitResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Submit contact (name and email)",
-    description=(
-        "Submit a contact with name and email. "
-        "Saved to database. Requires authentication."
-    ),
-)
-async def submit_contact(
-    body: ContactSubmitRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> ContactSubmitResponse:
-    """
-    Submit contact information (name and email).
-    Persists the data to the database and returns a success response.
-    """
-    repository = DatabaseContactRepository(db)
-    await repository.create(name=body.name, email=body.email)
-    return ContactSubmitResponse(message="Contact submitted successfully")
