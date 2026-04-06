@@ -9,7 +9,7 @@ import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Modal, TextInput, Button, RefreshControl, ScrollView, StatusBar, TouchableOpacity, View, StyleSheet } from "react-native";
+import { RefreshControl, ScrollView, StatusBar, TouchableOpacity, View, StyleSheet } from "react-native";
 export default function AdminDashboard() {
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
@@ -27,7 +27,7 @@ export default function AdminDashboard() {
     ];
 return (
     <ThemedView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={theme.colors.primary} />
+            <StatusBar barStyle={ theme.dark ? "light-content" : "dark-content" } backgroundColor={theme.colors.background} />
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}

@@ -18,22 +18,9 @@ export function ThemedText({
     // Simplified color priority:
     // 1. Explicit light/dark color props
     // 2. Default based on type
-    let selectedColor: string | undefined;
-
-    // Second priority: explicit light/dark colors
-    if (!selectedColor) {
-        selectedColor = isDark ? darkColor : lightColor;
-    }
-
-    // Third priority: type-based defaults
-    if (!selectedColor) {
-        if (type === 'link') {
-            selectedColor = theme.colors.primary;
-        } else {
-            selectedColor = theme.colors.foreground;
-        }
-    }
-
+     const selectedColor =
+    (isDark ? darkColor : lightColor) ??
+    (type === 'link' ? theme.colors.primary : theme.colors.foreground);
     return (
         <Text
             style={[
