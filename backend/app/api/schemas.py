@@ -5,7 +5,7 @@ These schemas define the shape of data for API endpoints.
 """
 
 from pydantic import BaseModel, EmailStr, Field
-from typing import Literal, Optional
+from typing import Literal, Optional, List
 
 
 class LoginRequest(BaseModel):
@@ -144,3 +144,15 @@ class DashboardResponse(BaseModel):
     selected_child_id: str | None = None
 
 
+class SubjectInput(BaseModel):
+    """Schema for subject input when updating class subjects."""
+
+    id: Optional[int] = None
+    name: Optional[str] = None
+
+
+class UpdateClassSubjectsRequest(BaseModel):
+    """Request schema for updating class subjects."""
+
+    class_id: int
+    subjects: List[SubjectInput]
