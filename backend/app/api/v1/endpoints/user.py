@@ -5,6 +5,7 @@ from app.infrastructure.database.models import UserModel
 from app.api.schemas import UserCreate
 router = APIRouter()
 
+
 @router.post("/users")
 async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db)):
     user = UserModel(
