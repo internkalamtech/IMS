@@ -11,5 +11,8 @@ async def db() -> AsyncSession:
     try:
         yield session
     finally:
-        await trans.rollback()
+        try:
+            await trans.rollback()
+        except Exception:
+            pass  # Test already committed/closed the transaction
         await session.close()
