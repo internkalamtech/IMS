@@ -6,30 +6,13 @@ import { AuthProvider } from '../presentation/context/AuthContext';
 import { useAuth } from '../presentation/hooks/useAuth';
 import { useEffect } from 'react';
 
-function RootNavigation() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.replace('/'); // 👈 login screen (adjust if needed)
-      } else {
-        router.replace('/(tabs)'); // 👈 main app
-      }
-    }
-  }, [user, loading]);
-
-  return <Stack screenOptions={{ headerShown: false }} />;
-}
-
 export default function RootLayout() {
   return (
     <AuthProvider>
       <ThemeProvider>
         <SafeAreaProvider>
           <StatusBar style="auto" />
-          <RootNavigation />
+           <Stack screenOptions={{ headerShown: false }} />
         </SafeAreaProvider>
       </ThemeProvider>
     </AuthProvider>

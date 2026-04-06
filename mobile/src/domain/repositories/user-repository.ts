@@ -6,5 +6,4 @@ export interface DashboardData {
 
 export interface UserRepository {
     getDashboardData(role: string): Promise<DashboardData>;
-    createUser(name: string, email: string): Promise<any>;
 }

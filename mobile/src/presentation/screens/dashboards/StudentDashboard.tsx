@@ -10,15 +10,12 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-
 const { width } = Dimensions.get('window');
 
 export default function StudentDashboard() {
-    const router = useRouter();
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
-    const { theme } = useTheme();
+    const { theme, isDark } = useTheme();
 
     const quickActions = DASHBOARD_CONFIG.student.quickActions;
 
@@ -28,11 +25,11 @@ export default function StudentDashboard() {
 
     return (
         <ThemedView style={styles.container}>
-            <StatusBar barStyle="light-content" />
+            <StatusBar barStyle="light-content" backgroundColor={theme.colors.primary} />
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primaryForeground} />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
             >
                 {/* Blue Banner Header */}
                 <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
@@ -82,14 +79,7 @@ export default function StudentDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Academic Zone</ThemedText>
                     </View>
 
-                     <QuickActionGrid
-                     actions={quickActions}
-                     onActionPress={(action) => {
-                     if (action.route) {
-                          router.push(action.route as any);
-                              }
-                          }}
-                          />
+                     <QuickActionGrid actions={quickActions} />
                     {/* Notice Board */}
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Notice Board</ThemedText>
@@ -100,8 +90,8 @@ export default function StudentDashboard() {
                                 styles.updateItem,
                                 index !== 1 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
                             ]}>
-                                <View style={[styles.updateIcon, { backgroundColor: '#f59e0b15' }]}>
-                                    <Ionicons name="notifications" size={20} color="#f59e0b" />
+                                <View style={[styles.updateIcon, { backgroundColor: theme.colors.accent }]}>
+                                    <Ionicons name="notifications" size={20} color={theme.colors.primary} />
                                 </View>
                                 <View style={styles.updateContent}>
                                     <ThemedText style={styles.updateTitle} type="defaultSemiBold">Science Fair Registration</ThemedText>
@@ -143,11 +133,9 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
     },
     userName: {
-        fontSize: 26,
-        fontWeight: '700',
+        marginBottom: 4,
     },
     subtitle: {
-        fontSize: 15,
         marginTop: 4,
     },
     logoutIcon: {
@@ -175,11 +163,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     bannerStatValue: {
-        fontSize: 20,
-        fontWeight: '700',
+        marginBottom: 4,
     },
     bannerStatTitle: {
-        fontSize: 11,
+        marginTop: 4,
     },
     mainContent: {
         flex: 1,
@@ -195,8 +182,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     sectionTitle: {
-        fontSize: 18,
-        fontWeight: '700',
+        marginBottom: 4,
     },
     quickActionsGrid: {
         flexDirection: 'row',
@@ -218,9 +204,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     quickActionLabel: {
-        fontSize: 12,
         textAlign: 'center',
-        fontWeight: '500',
     },
     updatesCard: {
         borderRadius: 24,
@@ -244,14 +228,12 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     updateTitle: {
-        fontSize: 15,
         marginBottom: 2,
     },
     updateSubtitle: {
-        fontSize: 13,
+        marginBottom: 4,
     },
     viewLink: {
-        fontSize: 12,
         fontWeight: '600',
     },
 });

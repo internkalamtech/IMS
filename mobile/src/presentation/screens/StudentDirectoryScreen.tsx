@@ -71,7 +71,7 @@ export default function StudentDirectory() {
       <Image source={{ uri: item.avatar }} style={styles.avatar} />
 
       <View style={{ flex: 1 }}>
-        <Text style={[styles.name, { color: theme.colors.text }]}>
+        <Text style={[styles.name, { color: theme.colors.foreground }]}>
           {item.name}
         </Text>
 
@@ -99,7 +99,7 @@ export default function StudentDirectory() {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       
       {/* HEADER */}
-      <Text style={[styles.header, { color: theme.colors.text }]}>
+      <Text style={[styles.header, { color: theme.colors.foreground }]}>
         Students
       </Text>
 
