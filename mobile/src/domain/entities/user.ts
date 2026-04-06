@@ -4,6 +4,6 @@ export interface User {
     id: string;
     name: string;
     email: string;
-    role: 'admin' | 'student' | 'teacher' | 'parent';
+    role: 'admin' | 'student' | 'teacher' | 'parent' | 'driver';
     avatarUrl?: string;
 }
