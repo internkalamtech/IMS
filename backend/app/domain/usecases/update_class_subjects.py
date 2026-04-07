@@ -53,12 +53,12 @@ class UpdateClassSubjectsUseCase:
 
                 subject_obj = await self.subject_repo.get_by_name(
                     subject["name"]
-                    )
+                )
 
                 if not subject_obj:
                     subject_obj = await self.subject_repo.create(
                         subject["name"]
-                        )
+                    )
 
             subject_entities.append(subject_obj)
 
