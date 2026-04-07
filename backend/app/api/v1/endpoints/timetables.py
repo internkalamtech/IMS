@@ -6,6 +6,7 @@ router = APIRouter()
 # Temporary in-memory storage
 timetables = []
 
+
 # Timetable model
 class TimetableCreate(BaseModel):
     classId: int
@@ -16,7 +17,7 @@ class TimetableCreate(BaseModel):
     room: str
     startTime: str
     endTime: str
-    type: str = "PERIOD"   # PERIOD / BREAK / FREE PERIOD
+    type: str = "PERIOD"  # PERIOD / BREAK / FREE PERIOD
 
 
 # Create timetable
@@ -34,7 +35,7 @@ def create_timetable(payload: TimetableCreate):
         "startTime": payload.startTime,
         "endTime": payload.endTime,
         "type": payload.type,
-        "isDeleted": False
+        "isDeleted": False,
     }
 
     timetables.append(new_timetable)

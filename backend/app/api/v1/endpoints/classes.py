@@ -6,17 +6,19 @@ router = APIRouter()
 # Temporary storage (until database is connected)
 classes = []
 
+
 class ClassCreate(BaseModel):
     name: str
     section: str
     academicPeriodId: int
-    
+
     # Optional teacher field
     teacher: str = ""
 
     # Optional subject field
     subject: str = ""
     totalStudents: int = 0
+
 
 # ---------------------------
 # CREATE CLASS
@@ -33,8 +35,7 @@ def create_class(payload: ClassCreate):
             and not cls["isDeleted"]
         ):
             raise HTTPException(
-                status_code=400,
-                detail="Class already exists for this academic year"
+                status_code=400, detail="Class already exists for this academic year"
             )
 
     new_class = {
@@ -42,13 +43,13 @@ def create_class(payload: ClassCreate):
         "name": payload.name,
         "section": payload.section,
         "academicPeriodId": payload.academicPeriodId,
-         # Optional teacher field
-        "teacher":payload.teacher,
+        # Optional teacher field
+        "teacher": payload.teacher,
         # Optional subject field
         "subject": payload.subject,
         "totalStudents": payload.totalStudents,
-        "isDeleted": False
-        }
+        "isDeleted": False,
+    }
 
     classes.append(new_class)
 
@@ -65,6 +66,8 @@ def get_classes():
     active_classes = [cls for cls in classes if not cls["isDeleted"]]
 
     return active_classes
+
+
 # ---------------------------
 # UPDATE CLASS
 # ---------------------------
@@ -74,15 +77,14 @@ def update_class(class_id: int, payload: ClassCreate):
     # Check duplicate name + section excluding current class
     for cls in classes:
         if (
-            cls["id"] != class_id and
-            cls["name"] == payload.name and
-            cls["section"] == payload.section and
-            cls["academicPeriodId"] == payload.academicPeriodId and
-            not cls["isDeleted"]
+            cls["id"] != class_id
+            and cls["name"] == payload.name
+            and cls["section"] == payload.section
+            and cls["academicPeriodId"] == payload.academicPeriodId
+            and not cls["isDeleted"]
         ):
             raise HTTPException(
-                status_code=400,
-                detail="Another class with same Name and Section exists"
+                status_code=400, detail="Another class with same Name and Section exists"
             )
 
     # Find class and update values
@@ -106,10 +108,8 @@ def update_class(class_id: int, payload: ClassCreate):
             return cls
 
     # If class not found
-    raise HTTPException(
-        status_code=404,
-        detail="Class not found"
-    )
+    raise HTTPException(status_code=404, detail="Class not found")
+
 
 # ---------------------------
 # DELETE CLASS (SOFT DELETE)
@@ -124,8 +124,7 @@ def delete_class(class_id: int):
             # Example check for enrolled students
             if cls["totalStudents"] > 0:
                 raise HTTPException(
-                    status_code=409,
-                    detail="Cannot delete class with active students"
+                    status_code=409, detail="Cannot delete class with active students"
                 )
 
             else:
