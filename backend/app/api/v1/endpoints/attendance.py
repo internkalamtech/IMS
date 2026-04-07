@@ -44,6 +44,16 @@ router = APIRouter(tags=["Attendance"])
 
 def _lr_to_schema(lr) -> LeaveHistoryItem:
     """Convert a LeaveRequestModel ORM object to a LeaveHistoryItem schema."""
+    # Safely read relationship names — they may not be loaded
+    try:
+        reviewed_by_name = lr.reviewed_by.name if lr.reviewed_by else None
+    except Exception:
+        reviewed_by_name = None
+    try:
+        submitted_by_name = lr.submitted_by.name if lr.submitted_by else None
+    except Exception:
+        submitted_by_name = None
+
     return LeaveHistoryItem(
         id=str(lr.id),
         dateRange=f"{lr.start_date.strftime('%b %d')} – {lr.end_date.strftime('%b %d')}",
@@ -52,8 +62,8 @@ def _lr_to_schema(lr) -> LeaveHistoryItem:
         status=lr.status,
         appliedDate=lr.applied_date.strftime("%b %d, %Y"),
         teacherNote=lr.teacher_note,
-        reviewedBy=lr.reviewed_by.name if lr.reviewed_by else None,
-        submittedBy=lr.submitted_by.name if lr.submitted_by else None,
+        reviewedBy=reviewed_by_name,
+        submittedBy=submitted_by_name,
     )
 
 

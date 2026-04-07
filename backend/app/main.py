@@ -90,8 +90,8 @@ async def log_requests(request: Request, call_next):
 # In production, restrict to the configured cors_origins list.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.debug else settings.cors_origins,
-    allow_credentials=False if settings.debug else True,  # credentials not compatible with wildcard
+    allow_origin_regex=r"https?://.*",
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
