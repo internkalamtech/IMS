@@ -23,5 +23,4 @@ def require_roles(*allowed_roles: str):
             )
 
         return current_user
-
     return _require_roles
