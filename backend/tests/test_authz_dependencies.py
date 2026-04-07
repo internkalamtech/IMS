@@ -1,7 +1,7 @@
 import pytest
 from fastapi import HTTPException
 
-from app.api.dependencies import require_roles
+from app.api.authz import require_roles
 from app.domain.entities.user import Role, User, UserRole
 
 def _make_user(

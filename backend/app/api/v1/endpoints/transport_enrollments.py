@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies import require_roles
+from app.api.authz import require_roles
 from app.api.schemas import (
     CreateStudentTransportEnrollmentsRequest,
     CreateStudentTransportEnrollmentsResponse,
