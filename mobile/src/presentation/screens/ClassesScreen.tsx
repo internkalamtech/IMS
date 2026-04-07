@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, Modal, TextInput,StyleSheet } from 'react-native';
+import { View, Text, FlatList, Button, Modal, TextInput,StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { UserRepositoryImpl } from '@/data/repositories/user-repository-impl';
 import { GetClassesUseCase } from '@/domain/usecases/get-classes-usecase';
 import { ClassData } from '@/domain/repositories/user-repository';
 import { api } from '@/core/api-client';
-import { Alert } from 'react-native';
-import { TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 // Dropdown picker for academic year selection
 import { Picker } from '@react-native-picker/picker';
@@ -85,7 +83,7 @@ export default function ClassesScreen() {
                 : 'Class created successfully'
         );
 
-        // Close modal
+        /* Close modal */
         setModalVisible(false);
 
         // Clear form fields
@@ -144,11 +142,6 @@ export default function ClassesScreen() {
             );
         }
     };
-    // Maps backend academicPeriodId to readable academic year
-    const academicYearMap: Record<number, string> = {
-        1: '2025-2026',
-        2: '2026-2027',
-    };
 
     // Generate academic years dynamically
     const academicYears = Array.from({ length: 20 }, (_, index) => {
@@ -186,7 +179,7 @@ export default function ClassesScreen() {
     return (
         <SafeAreaView style={{ flex: 1 }}>
         <View style={{ padding: 20 }}>
-            // Top header section with title + add button aligned nicely
+           { /* Top header section with title + add button aligned nicely*/}
         <View
             style={{
                 flexDirection: 'row',
@@ -227,11 +220,10 @@ export default function ClassesScreen() {
             <Picker.Item label="Sort by Class Name" value="name" />
             <Picker.Item label="Sort by Academic Year" value="year" />
         </Picker>
-            // FlatList with 2-column grid layout
+            {/* FlatList with 2-column grid layout */}
         <FlatList
             data={filteredClasses}
 
-            // Two cards per row
             numColumns={2}
 
             keyExtractor={(item: any) => item.id.toString()}

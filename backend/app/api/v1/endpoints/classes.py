@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, status
-from typing import Optional
 from pydantic import BaseModel
 
 router = APIRouter()

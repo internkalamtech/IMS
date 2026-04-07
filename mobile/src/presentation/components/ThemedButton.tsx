@@ -18,7 +18,7 @@ export function ThemedButton({
     disabled,
     ...rest
 }: ThemedButtonProps) {
-    const { theme, isDark } = useTheme();
+    const { theme } = useTheme();
 
     let backgroundColor = theme.colors.primary;
     let textColor = theme.colors.primaryForeground;

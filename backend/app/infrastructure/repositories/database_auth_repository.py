@@ -14,6 +14,7 @@ Following Clean Architecture principles:
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 from app.core.errors import (
     AuthenticationError,
     DatabaseError,
@@ -24,6 +25,7 @@ from app.core.password import verify_password
 from app.domain.entities.user import Role, User
 from app.domain.repositories.auth_repository import AuthRepository
 from app.infrastructure.database.models import UserModel
+
 
 
 class DatabaseAuthRepository(AuthRepository):
@@ -128,8 +130,7 @@ class DatabaseAuthRepository(AuthRepository):
             return self._to_domain_entity(user_model)
 
         except Exception as e:
-            from app.core.errors import NotFoundError
-
+            
             if isinstance(e, NotFoundError):
                 raise
             Logger.error(f"Database error getting user: {e}", exc_info=True)
