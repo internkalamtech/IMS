@@ -2,11 +2,6 @@
 SQLAlchemy database models for the IMS application.
 
 These models represent the database schema using SQLAlchemy ORM.
-Following best practices:
-- Declarative base for model definition
-- Proper relationships and foreign keys
-- Timestamps for audit trail
-- Indexes for performance
 """
 
 from datetime import datetime
@@ -20,18 +15,19 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
+    Text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
     """Base class for all database models."""
-
     pass
 
 
-# Association table for many-to-many relationship
-# between users and roles
+# =========================
+# 🔗 USER-ROLE ASSOCIATION
+# =========================
 user_roles = Table(
     "user_roles",
     Base.metadata,
@@ -50,14 +46,10 @@ user_roles = Table(
 )
 
 
+# =========================
+# 👤 USER MODEL
+# =========================
 class UserModel(Base):
-    """
-    User database model.
-
-    Represents a user in the system with authentication credentials
-    and associated roles.
-    """
-
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -79,7 +71,6 @@ class UserModel(Base):
         nullable=False,
     )
 
-    # Relationships
     roles: Mapped[List["RoleModel"]] = relationship(
         "RoleModel",
         secondary=user_roles,
@@ -88,19 +79,13 @@ class UserModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
-        )
+        return f"<User(id={self.id}, email='{self.email}')>"
 
 
+# =========================
+# 🎭 ROLE MODEL
+# =========================
 class RoleModel(Base):
-    """
-    Role database model.
-
-    Represents a role that can be assigned to users.
-    Examples: admin, teacher, student, parent, transport, driver
-    """
-
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -109,10 +94,39 @@ class RoleModel(Base):
     )
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    # Relationships
     users: Mapped[List["UserModel"]] = relationship(
         "UserModel", secondary=user_roles, back_populates="roles"
     )
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+
+
+# =========================
+# 📚 HOMEWORK MODEL
+# =========================
+class HomeworkModel(Base):
+    __tablename__ = "homeworks"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
+
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(Text)
+
+    subject: Mapped[str] = mapped_column(String(100))
+    className: Mapped[str] = mapped_column(String(50))
+
+    dueDate: Mapped[str] = mapped_column(String(50))
+
+    assignType: Mapped[str] = mapped_column(String(20))  # ALL / INDIVIDUAL
+
+    students: Mapped[str] = mapped_column(Text)  # comma-separated
+
+    teacherId: Mapped[str] = mapped_column(String(255))
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+    def __repr__(self) -> str:
+        return f"<Homework(id={self.id}, title='{self.title}')>"

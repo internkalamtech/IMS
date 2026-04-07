@@ -121,3 +121,24 @@ class GetDemoUsersUseCase:
         return await self.auth_repository.get_users_by_email_pattern(
             email_pattern
         )
+
+
+class CreateUserUseCase:
+    """
+    Use case for creating a new user.
+    """
+
+    def __init__(self, auth_repository: AuthRepository):
+        self.auth_repository = auth_repository
+
+    async def execute(self, name: str, email: str, password: str) -> User:
+        if not name or not name.strip():
+            raise ValueError("Name is required")
+
+        if not email or "@" not in email:
+            raise ValueError("Valid email is required")
+
+        if not password or len(password) < 6:
+            raise ValueError("Password must be at least 6 characters")
+
+        return await self.auth_repository.create_user(name, email, password)
