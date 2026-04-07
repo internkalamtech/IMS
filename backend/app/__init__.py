@@ -7,9 +7,9 @@ __all__ = ["app"]
 
 
 def __getattr__(name: str):
-	"""Lazily expose `app` to keep import side effects deferred."""
-	if name == "app":
-		from app.main import app as fastapi_app
+    """Lazily expose `app` to keep import side effects deferred."""
+    if name == "app":
+        from app.main import app as fastapi_app
 
-		return fastapi_app
-	raise AttributeError(f"module 'app' has no attribute {name!r}")
+        return fastapi_app
+    raise AttributeError(f"module 'app' has no attribute {name!r}")
