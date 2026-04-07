@@ -1,6 +1,6 @@
 import { StorageService } from '@/data/local/storage';
 import axios, { AxiosError, AxiosHeaders, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { getApiBaseUrl } from './api-config';
+import { getApiBaseUrl, isTokenRefreshEnabled } from './api-config';
 import { AuthError, NetworkError } from './error';
 import { Logger } from './logger';
 
@@ -8,6 +8,7 @@ import { Logger } from './logger';
 // Default configuration
 const API_URL = getApiBaseUrl();
 const TIMEOUT = 10000;
+const TOKEN_REFRESH_ENABLED = isTokenRefreshEnabled();
 
 type RetryRequestConfig = InternalAxiosRequestConfig & {
     _retry?: boolean;
@@ -16,21 +17,11 @@ type RetryRequestConfig = InternalAxiosRequestConfig & {
 export class ApiClient {
     private static instance: ApiClient;
     private axiosInstance: AxiosInstance;
-    private refreshAxiosInstance: AxiosInstance;
     private isRefreshing = false;
     private failedQueue: { resolve: Function; reject: Function }[] = [];
 
     private constructor() {
         this.axiosInstance = axios.create({
-            baseURL: API_URL,
-            timeout: TIMEOUT,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        // Dedicated instance for token refresh calls so auth refresh never loops through this client's interceptors.
-        this.refreshAxiosInstance = axios.create({
             baseURL: API_URL,
             timeout: TIMEOUT,
             headers: {
@@ -94,6 +85,13 @@ export class ApiClient {
     }
 
     private async refreshAccessToken(): Promise<string | null> {
+        if (!TOKEN_REFRESH_ENABLED) {
+            Logger.warn('Token refresh is disabled by config (EXPO_PUBLIC_ENABLE_TOKEN_REFRESH=false)');
+            await StorageService.removeItem('auth_token');
+            await StorageService.removeItem('current_user');
+            return null;
+        }
+
         try {
             const token = await StorageService.getItem<string>('auth_token');
             if (!token) {
@@ -101,17 +99,23 @@ export class ApiClient {
                 return null;
             }
 
-            const response = await this.refreshAxiosInstance.post(
-                '/auth/refresh',
+            const response = await axios.post(
+                `${API_URL}/auth/refresh`,
                 { access_token: token },
+                {
+                    timeout: TIMEOUT,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                },
             );
 
             const { access_token } = response.data;
             await StorageService.setItem('auth_token', access_token);
             Logger.info('Token refreshed successfully');
             return access_token;
-        } catch (error) {
-            Logger.error('Token refresh failed', error);
+        } catch (refreshError) {
+            Logger.error('Token refresh failed', refreshError);
             await StorageService.removeItem('auth_token');
             await StorageService.removeItem('current_user');
             return null;
@@ -162,10 +166,17 @@ export class ApiClient {
                         const storedToken = isAuthRequest
                             ? null
                             : await StorageService.getItem<string>('auth_token');
-                        const canRefresh = !isAuthRequest && (hasAuthHeader || Boolean(storedToken));
+                        const canRefresh = TOKEN_REFRESH_ENABLED
+                            && !isAuthRequest
+                            && (hasAuthHeader || Boolean(storedToken));
 
                         if (!canRefresh) {
-                            return Promise.reject(new NetworkError(`Request failed with status ${status}`, status));
+                            if (isAuthRequest) {
+                                return Promise.reject(error);
+                            }
+                            await StorageService.removeItem('auth_token');
+                            await StorageService.removeItem('current_user');
+                            return Promise.reject(new AuthError(`Request failed with status ${status}`));
                         }
 
                         if (this.isRefreshing) {

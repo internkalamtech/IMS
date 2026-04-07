@@ -121,27 +121,10 @@ export class AuthRepositoryImpl implements AuthRepository {
     }
 
     async refreshToken(): Promise<string | null> {
-        try {
-            const token = await StorageService.getItem<string>(TOKEN_STORAGE_KEY);
-
-            if (!token) {
-                Logger.warn('No token available to refresh');
-                return null;
-            }
-
-            const response = await api.post('/auth/refresh', { access_token: token });
-            const { access_token } = response.data;
-
-            await StorageService.setItem(TOKEN_STORAGE_KEY, access_token);
-            Logger.info('Token refreshed successfully');
-            return access_token;
-        } catch (error: any) {
-            Logger.error('Token refresh failed', error);
-            // Clear auth state on refresh failure
-            await StorageService.removeItem(USER_STORAGE_KEY);
-            await StorageService.removeItem(TOKEN_STORAGE_KEY);
-            return null;
-        }
+        Logger.warn('refreshToken called but backend /auth/refresh endpoint is not implemented');
+        await StorageService.removeItem(USER_STORAGE_KEY);
+        await StorageService.removeItem(TOKEN_STORAGE_KEY);
+        return null;
     }
 }
 
