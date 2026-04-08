@@ -6,6 +6,7 @@ These schemas define the shape of data for API endpoints.
 
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Literal, Optional
+from datetime import datetime
 
 
 class LoginRequest(BaseModel):
@@ -145,3 +146,38 @@ class UpdateClassSubjectsRequest(BaseModel):
 
     class_id: int
     subjects: List[SubjectInput]
+
+
+class DocumentBase(BaseModel):
+    """Base schema for Document."""
+    title: str
+    branch: Optional[str] = None
+    scope: Optional[str] = None
+    expiry_date: datetime
+
+
+class DocumentCreate(DocumentBase):
+    """Schema for creating a document."""
+    pass
+
+
+class DocumentUpdate(BaseModel):
+    """Schema for updating a document."""
+    title: Optional[str] = None
+    branch: Optional[str] = None
+    scope: Optional[str] = None
+    expiry_date: Optional[datetime] = None
+
+
+class DocumentResponse(DocumentBase):
+    """Schema for document response, including computed fields."""
+    id: int
+    original_filename: str
+    content_type: str
+    upload_date: datetime
+    uploaded_by_id: Optional[int] = None
+    
+    days_left: int
+    status: Literal["Valid", "Expiring-Soon", "Expired"]
+
+    model_config = {"from_attributes": True}

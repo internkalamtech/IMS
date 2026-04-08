@@ -21,6 +21,7 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
+    Date,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -182,3 +183,40 @@ class_subject_link = Table(
         primary_key=True,
     ),
 )
+
+
+class DocumentModel(Base):
+    """
+    Compliance Document database model.
+
+    Represents an uploaded document with metadata for expiry tracking.
+    """
+
+    __tablename__ = "compliance_documents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    file_path: Mapped[str] = mapped_column(String(512), nullable=False)
+    content_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    
+    # Metadata for filtering
+    branch: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
+    scope: Mapped[str | None] = mapped_column(String(50), nullable=True, index=True)  # e.g., 'branch', 'organizational'
+    
+    # Expiry tracking
+    upload_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    expiry_date: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
+    
+    # Relations
+    uploaded_by_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    
+    uploaded_by: Mapped["UserModel"] = relationship(
+        "UserModel", foreign_keys=[uploaded_by_id]
+    )
+
+    def __repr__(self) -> str:
+        return f"<Document(id={self.id}, title='{self.title}')>"
