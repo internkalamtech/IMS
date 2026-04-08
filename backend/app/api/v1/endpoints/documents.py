@@ -19,7 +19,9 @@ from app.api.dependencies import get_current_user
 from app.api.schemas import DocumentResponse
 from app.domain.entities.user import User
 from app.infrastructure.database.database import get_db
-from app.infrastructure.repositories.document_repository import DocumentRepository
+from app.infrastructure.repositories.document_repository import (
+    DocumentRepository,
+)
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -28,12 +30,15 @@ os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 
 def calculate_status_and_days_left(expiry_date: datetime) -> tuple[str, int]:
-    """Helper to calculate Document status and days left based on expiry_date."""
+    """Helper to calculate document status and
+    days left based on expiry_date."""
     now = datetime.utcnow()
-    # Normalize to date (ignore time for accurate days left)
     today = now.date()
-    # Handle expiry_date which could be a datetime or date in models, but here we enforce taking .date() if possible
-    expiry = expiry_date.date() if isinstance(expiry_date, datetime) else expiry_date
+    expiry = (
+        expiry_date.date()
+        if isinstance(expiry_date, datetime)
+        else expiry_date
+    )
     delta = (expiry - today).days
 
     if delta < 0:
@@ -44,7 +49,11 @@ def calculate_status_and_days_left(expiry_date: datetime) -> tuple[str, int]:
         return "Valid", delta
 
 
-@router.post("/", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=DocumentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def upload_document(
     title: str = Form(...),
     expiry_date: datetime = Form(...),
@@ -54,26 +63,30 @@ async def upload_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Upload a new compliance document with metadata.
-    """
+    """Upload a new compliance document with metadata."""
     if not file.filename:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="No filename provided"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No filename provided",
         )
-    
-    # Secure filename and unique path
-    safe_filename = f"{current_user.id}_{datetime.utcnow().timestamp()}_{file.filename.replace(' ', '_')}"
-    file_path = os.path.join(UPLOAD_DIRECTORY, safe_filename)
-    
+
+    safe_filename = (
+        f"{current_user.id}_{datetime.utcnow().timestamp()}_"
+        f"{file.filename.replace(' ', '_')}"
+    )
+    file_path = os.path.join(
+        UPLOAD_DIRECTORY,
+        safe_filename,
+    )
+
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-        
+
     try:
         user_id = int(current_user.id)
     except ValueError:
         user_id = None
-        
+
     doc_data = {
         "title": title,
         "original_filename": file.filename,
@@ -83,17 +96,18 @@ async def upload_document(
         "scope": scope,
         "expiry_date": expiry_date,
         "uploaded_by_id": user_id,
-        "upload_date": datetime.utcnow()
+        "upload_date": datetime.utcnow(),
     }
-    
+
     repo = DocumentRepository(db)
     document = await repo.create(doc_data)
     await db.commit()
     await db.refresh(document)
-    
-    doc_status, days_left = calculate_status_and_days_left(document.expiry_date)
-    
-    # Convert SQLAlchemy model to response schema
+
+    doc_status, days_left = (
+        calculate_status_and_days_left(document.expiry_date)
+    )
+
     response_data = {
         "id": document.id,
         "title": document.title,
@@ -105,9 +119,9 @@ async def upload_document(
         "upload_date": document.upload_date,
         "uploaded_by_id": document.uploaded_by_id,
         "days_left": days_left,
-        "status": doc_status
+        "status": doc_status,
     }
-    
+
     return response_data
 
 
@@ -119,11 +133,12 @@ async def list_documents(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Retrieve filtered lists of documents based on branch or organizational scope.
+    Retrieve filtered lists of documents based on branch
+    or organizational scope.
     """
     repo = DocumentRepository(db)
     documents = await repo.list_documents(branch, scope)
-    
+
     response_list = []
     for doc in documents:
         doc_status, days_left = calculate_status_and_days_left(doc.expiry_date)
@@ -138,9 +153,9 @@ async def list_documents(
             "upload_date": doc.upload_date,
             "uploaded_by_id": doc.uploaded_by_id,
             "days_left": days_left,
-            "status": doc_status
+            "status": doc_status,
         })
-        
+
     return response_list
 
 
@@ -150,20 +165,24 @@ async def download_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Retrieve and download stored document files securely.
-    """
+    """Retrieve and download stored document files securely."""
     repo = DocumentRepository(db)
     document = await repo.get_by_id(document_id)
-    
+
     if not document:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
-        
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
     if not os.path.exists(document.file_path):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document file missing from server")
-        
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document file missing from server",
+        )
+
     return FileResponse(
-        path=document.file_path, 
-        media_type=document.content_type, 
-        filename=document.original_filename
+        path=document.file_path,
+        media_type=document.content_type,
+        filename=document.original_filename,
     )

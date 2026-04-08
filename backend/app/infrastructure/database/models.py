@@ -21,7 +21,6 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
-    Date,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -64,18 +63,25 @@ class UserModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
     email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
-        )
+        String(255),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
     is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-        )
+        Boolean,
+        default=True,
+        nullable=False,
+    )
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-        )
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -195,25 +201,39 @@ class DocumentModel(Base):
     __tablename__ = "compliance_documents"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    
+
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     file_path: Mapped[str] = mapped_column(String(512), nullable=False)
     content_type: Mapped[str] = mapped_column(String(100), nullable=False)
-    
+
     # Metadata for filtering
-    branch: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
-    scope: Mapped[str | None] = mapped_column(String(50), nullable=True, index=True)  # e.g., 'branch', 'organizational'
-    
+    branch: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, index=True
+    )
+    scope: Mapped[str | None] = mapped_column(
+        String(50), nullable=True, index=True
+    )  # e.g., 'branch', 'organizational'
+
     # Expiry tracking
-    upload_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
-    expiry_date: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
-    
+    upload_date: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+    expiry_date: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        index=True,
+    )
+
     # Relations
     uploaded_by_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
     )
-    
+
     uploaded_by: Mapped["UserModel"] = relationship(
         "UserModel", foreign_keys=[uploaded_by_id]
     )

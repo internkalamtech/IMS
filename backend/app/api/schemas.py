@@ -176,7 +176,7 @@ class DocumentResponse(DocumentBase):
     content_type: str
     upload_date: datetime
     uploaded_by_id: Optional[int] = None
-    
+
     days_left: int
     status: Literal["Valid", "Expiring-Soon", "Expired"]
 
