@@ -63,19 +63,13 @@ class UserModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
-        )
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-        )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-        )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -92,11 +86,7 @@ class UserModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<User(id={self.id}, "
-            f"email='{self.email}', "
-            f"name='{self.name}')>"
-        )
+        return f"<User(id={self.id}, " f"email='{self.email}', " f"name='{self.name}')>"
 
 
 class RoleModel(Base):
@@ -110,9 +100,7 @@ class RoleModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    name: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-        )
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
 
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
@@ -197,16 +185,10 @@ class StudentModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    roll_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    roll_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     class_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    next_due_date: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
+    next_due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -220,11 +202,7 @@ class StudentModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<Student(id={self.id}, "
-            f"name='{self.name}', "
-            f"roll='{self.roll_number}')>"
-        )
+        return f"<Student(id={self.id}, " f"name='{self.name}', " f"roll='{self.roll_number}')>"
 
 
 class FeeStructureModel(Base):
@@ -243,15 +221,9 @@ class FeeStructureModel(Base):
     )
     total_fee: Mapped[float] = mapped_column(Float, nullable=False)
     amount_paid: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
-    fee_type: Mapped[str] = mapped_column(
-        String(100), nullable=False, default="Tuition"
-    )
-    academic_year: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="2024-25"
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
+    fee_type: Mapped[str] = mapped_column(String(100), nullable=False, default="Tuition")
+    academic_year: Mapped[str] = mapped_column(String(20), nullable=False, default="2024-25")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -260,9 +232,7 @@ class FeeStructureModel(Base):
     )
 
     # Relationships
-    student: Mapped["StudentModel"] = relationship(
-        "StudentModel", back_populates="fee_structures"
-    )
+    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="fee_structures")
     payments: Mapped[List["PaymentModel"]] = relationship(
         "PaymentModel",
         back_populates="fee_structure",
@@ -293,23 +263,17 @@ class PaymentModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True
     )
     fee_structure_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("fee_structures.id", ondelete="CASCADE"),
         nullable=False,
     )
-    receipt_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    receipt_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     amount: Mapped[float] = mapped_column(Float, nullable=False)
-    payment_mode: Mapped[str] = mapped_column(
-        String(20), nullable=False
-    )  # Cash, UPI, Card
-    reference_number: Mapped[str | None] = mapped_column(
-        String(100), nullable=True
-    )
+    payment_mode: Mapped[str] = mapped_column(String(20), nullable=False)  # Cash, UPI, Card
+    reference_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
     status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="Paid"
     )  # Paid, Partial, Pending, Failed, Overdue
@@ -317,9 +281,7 @@ class PaymentModel(Base):
     payment_date: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -353,7 +315,7 @@ class StudentLedgerModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True
     )
     debit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     credit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)

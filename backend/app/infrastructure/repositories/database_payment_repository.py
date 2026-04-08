@@ -187,9 +187,7 @@ class DatabasePaymentRepository(PaymentRepository):
             Logger.error(f"Error listing students: {exc}")
             raise DatabaseError("Failed to list students.") from exc
 
-    async def _latest_payment_status(
-        self, student_id: int
-    ) -> Optional[str]:
+    async def _latest_payment_status(self, student_id: int) -> Optional[str]:
         """Return the most recent payment status for a student."""
         result = await self.db.execute(
             select(PaymentModel.status)
@@ -218,20 +216,14 @@ class DatabasePaymentRepository(PaymentRepository):
                 model.next_due_date = next_due_date
                 await self.db.flush()
         except Exception as exc:
-            Logger.error(
-                f"Error updating next_due_date for student {student_id}: {exc}"
-            )
-            raise DatabaseError(
-                "Failed to update student next due date."
-            ) from exc
+            Logger.error(f"Error updating next_due_date for student {student_id}: {exc}")
+            raise DatabaseError("Failed to update student next due date.") from exc
 
     # ------------------------------------------------------------------ #
     # Fee structure operations
     # ------------------------------------------------------------------ #
 
-    async def get_fee_structure_by_id(
-        self, fee_structure_id: int
-    ) -> Optional[FeeStructure]:
+    async def get_fee_structure_by_id(self, fee_structure_id: int) -> Optional[FeeStructure]:
         """
         Retrieve a fee structure by ID.
 
@@ -243,16 +235,12 @@ class DatabasePaymentRepository(PaymentRepository):
         """
         try:
             result = await self.db.execute(
-                select(FeeStructureModel).where(
-                    FeeStructureModel.id == fee_structure_id
-                )
+                select(FeeStructureModel).where(FeeStructureModel.id == fee_structure_id)
             )
             model = result.scalar_one_or_none()
             return self._fee_structure_to_entity(model) if model else None
         except Exception as exc:
-            Logger.error(
-                f"Error fetching fee structure {fee_structure_id}: {exc}"
-            )
+            Logger.error(f"Error fetching fee structure {fee_structure_id}: {exc}")
             raise DatabaseError("Failed to retrieve fee structure.") from exc
 
     async def update_fee_structure_paid(
@@ -270,24 +258,18 @@ class DatabasePaymentRepository(PaymentRepository):
         """
         try:
             result = await self.db.execute(
-                select(FeeStructureModel).where(
-                    FeeStructureModel.id == fee_structure_id
-                )
+                select(FeeStructureModel).where(FeeStructureModel.id == fee_structure_id)
             )
             model = result.scalar_one_or_none()
             if model is None:
-                raise DatabaseError(
-                    f"Fee structure {fee_structure_id} not found."
-                )
+                raise DatabaseError(f"Fee structure {fee_structure_id} not found.")
             model.amount_paid = model.amount_paid + additional_amount
             await self.db.flush()
             return self._fee_structure_to_entity(model)
         except DatabaseError:
             raise
         except Exception as exc:
-            Logger.error(
-                f"Error updating fee structure {fee_structure_id}: {exc}"
-            )
+            Logger.error(f"Error updating fee structure {fee_structure_id}: {exc}")
             raise DatabaseError("Failed to update fee structure.") from exc
 
     # ------------------------------------------------------------------ #
@@ -385,18 +367,14 @@ class DatabasePaymentRepository(PaymentRepository):
             List of Payment entities
         """
         try:
-            query = select(PaymentModel).order_by(
-                PaymentModel.payment_date.desc()
-            )
+            query = select(PaymentModel).order_by(PaymentModel.payment_date.desc())
             if student_id is not None:
                 query = query.where(PaymentModel.student_id == student_id)
             if status:
                 query = query.where(PaymentModel.status == status)
             query = query.offset(skip).limit(limit)
             result = await self.db.execute(query)
-            return [
-                self._payment_to_entity(m) for m in result.scalars().all()
-            ]
+            return [self._payment_to_entity(m) for m in result.scalars().all()]
         except Exception as exc:
             Logger.error(f"Error listing payments: {exc}")
             raise DatabaseError("Failed to list payments.") from exc
@@ -418,9 +396,7 @@ class DatabasePaymentRepository(PaymentRepository):
 
             # Total collected = sum of all fee structure amount_paid values
             total_collected_result = await self.db.execute(
-                select(
-                    func.coalesce(func.sum(FeeStructureModel.amount_paid), 0)
-                )
+                select(func.coalesce(func.sum(FeeStructureModel.amount_paid), 0))
             )
             total_collected: float = total_collected_result.scalar() or 0.0
 
@@ -428,9 +404,7 @@ class DatabasePaymentRepository(PaymentRepository):
             overdue_result = await self.db.execute(
                 select(
                     func.coalesce(
-                        func.sum(
-                            FeeStructureModel.total_fee - FeeStructureModel.amount_paid
-                        ),
+                        func.sum(FeeStructureModel.total_fee - FeeStructureModel.amount_paid),
                         0,
                     )
                 )
@@ -469,18 +443,12 @@ class DatabasePaymentRepository(PaymentRepository):
         """
         try:
             result = await self.db.execute(
-                select(PaymentModel.id).where(
-                    PaymentModel.receipt_number == receipt_number
-                )
+                select(PaymentModel.id).where(PaymentModel.receipt_number == receipt_number)
             )
             return result.scalar_one_or_none() is not None
         except Exception as exc:
-            Logger.error(
-                f"Error checking receipt number existence: {exc}"
-            )
-            raise DatabaseError(
-                "Failed to check receipt number."
-            ) from exc
+            Logger.error(f"Error checking receipt number existence: {exc}")
+            raise DatabaseError("Failed to check receipt number.") from exc
 
     # ------------------------------------------------------------------ #
     # Ledger operations
@@ -493,10 +461,12 @@ class DatabasePaymentRepository(PaymentRepository):
         payment_method: str,
     ) -> Payment:
         """
-        Record a simplified payment transaction and update the student ledger.
+        Record a ledger-only payment for a student.
 
-        Creates a payment record and appends a credit entry to the
-        student's ledger with the updated running balance.
+        Writes directly to the ``student_ledger`` table without creating
+        a ``PaymentModel`` row, since ledger payments are not tied to a
+        specific fee structure (which is required by the payments table).
+        A credit entry is appended and the running balance is updated.
 
         Args:
             student_id: ID of the student making the payment
@@ -504,7 +474,7 @@ class DatabasePaymentRepository(PaymentRepository):
             payment_method: Payment method used (e.g., cash, card)
 
         Returns:
-            Created Payment entity
+            A Payment entity synthesised from the new ledger entry
 
         Raises:
             DatabaseError: If the database operation fails
@@ -514,22 +484,7 @@ class DatabasePaymentRepository(PaymentRepository):
                 f"Creating ledger payment for student_id={student_id}, "
                 f"amount={amount}, method={payment_method}"
             )
-
-            # NO_FEE_STRUCTURE sentinel: ledger-only payments are not tied to a
-            # specific fee structure record.
-            _NO_FEE_STRUCTURE_ID = 0
-
-            payment_model = PaymentModel(
-                student_id=student_id,
-                fee_structure_id=_NO_FEE_STRUCTURE_ID,
-                receipt_number=f"LGR-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}",
-                amount=amount,
-                payment_mode=payment_method,
-                status="Paid",
-                payment_date=datetime.utcnow(),
-            )
-            self.db.add(payment_model)
-            await self.db.flush()
+            now = datetime.utcnow()
 
             # Compute running balance (lock last row for concurrency safety)
             result = await self.db.execute(
@@ -553,23 +508,26 @@ class DatabasePaymentRepository(PaymentRepository):
                 credit=amount,
                 balance=new_balance,
                 description=f"Payment via {payment_method}",
-                transaction_date=payment_model.payment_date,
+                transaction_date=now,
             )
             self.db.add(ledger_entry)
             await self.db.flush()
 
             Logger.info(
-                f"Ledger payment created: id={payment_model.id}, student_id={student_id}"
+                f"Ledger payment created: ledger_entry.id={ledger_entry.id}, "
+                f"student_id={student_id}"
             )
+            # Return a Payment entity synthesised from the ledger entry so
+            # callers receive a consistent domain object.
             return Payment(
-                id=payment_model.id,
-                student_id=payment_model.student_id,
-                fee_structure_id=payment_model.fee_structure_id,
-                receipt_number=payment_model.receipt_number,
-                amount=payment_model.amount,
-                payment_mode=payment_model.payment_mode,  # type: ignore[arg-type]
-                status=payment_model.status,  # type: ignore[arg-type]
-                payment_date=payment_model.payment_date,
+                id=ledger_entry.id,
+                student_id=ledger_entry.student_id,
+                fee_structure_id=0,
+                receipt_number=f"LGR-{now.strftime('%Y%m%d%H%M%S%f')}",
+                amount=amount,
+                payment_mode=payment_method,  # type: ignore[arg-type]
+                status="Paid",  # type: ignore[arg-type]
+                payment_date=now,
             )
         except Exception as exc:
             Logger.error(f"Error creating ledger payment: {exc}", exc_info=True)
@@ -592,7 +550,7 @@ class DatabasePaymentRepository(PaymentRepository):
             result = await self.db.execute(
                 select(StudentLedgerModel)
                 .where(StudentLedgerModel.student_id == student_id)
-                .order_by(StudentLedgerModel.transaction_date.asc())
+                .order_by(StudentLedgerModel.transaction_date.asc(), StudentLedgerModel.id.asc())
             )
             entries = result.scalars().all()
             return [

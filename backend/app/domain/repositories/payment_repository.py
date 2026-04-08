@@ -85,9 +85,7 @@ class PaymentRepository(ABC):
     # ------------------------------------------------------------------ #
 
     @abstractmethod
-    async def get_fee_structure_by_id(
-        self, fee_structure_id: int
-    ) -> Optional[FeeStructure]:
+    async def get_fee_structure_by_id(self, fee_structure_id: int) -> Optional[FeeStructure]:
         """
         Retrieve a fee structure by its ID.
 

@@ -20,10 +20,10 @@ from app.domain.entities.payment import (
 )
 from app.domain.repositories.payment_repository import PaymentRepository
 
-
 # ------------------------------------------------------------------ #
 # Helpers
 # ------------------------------------------------------------------ #
+
 
 def _generate_receipt_number() -> str:
     """
@@ -43,6 +43,7 @@ def _generate_receipt_number() -> str:
 # ------------------------------------------------------------------ #
 # Use cases
 # ------------------------------------------------------------------ #
+
 
 class RecordPaymentUseCase:
     """
@@ -111,13 +112,9 @@ class RecordPaymentUseCase:
             raise NotFoundError(f"Student with id {student_id} not found.")
 
         # 3. Verify fee structure exists and belongs to the given student
-        fee_structure = await self.repository.get_fee_structure_by_id(
-            fee_structure_id
-        )
+        fee_structure = await self.repository.get_fee_structure_by_id(fee_structure_id)
         if fee_structure is None:
-            raise NotFoundError(
-                f"Fee structure with id {fee_structure_id} not found."
-            )
+            raise NotFoundError(f"Fee structure with id {fee_structure_id} not found.")
         if fee_structure.student_id != student_id:
             raise ValidationError(
                 f"Fee structure {fee_structure_id} does not belong to student {student_id}."
@@ -383,14 +380,14 @@ class CreatePaymentUseCase:
             Created Payment entity
 
         Raises:
-            ValueError: If amount is not positive or required fields are missing
+            ValidationError: If amount is not positive or required fields are missing
         """
         if student_id <= 0:
-            raise ValueError("Student ID must be a positive integer")
+            raise ValidationError("Student ID must be a positive integer.")
         if amount <= 0:
-            raise ValueError("Payment amount must be greater than zero")
+            raise ValidationError("Payment amount must be greater than zero.")
         if not payment_method or not payment_method.strip():
-            raise ValueError("Payment method is required")
+            raise ValidationError("Payment method is required.")
         return await self.payment_repository.create_ledger_payment(
             student_id=student_id,
             amount=amount,
@@ -417,10 +414,10 @@ class GetStudentLedgerUseCase:
             List of LedgerEntry entities
 
         Raises:
-            ValueError: If student_id is invalid
+            ValidationError: If student_id is invalid
         """
         if student_id <= 0:
-            raise ValueError("Student ID must be a positive integer")
+            raise ValidationError("Student ID must be a positive integer.")
         return await self.payment_repository.get_student_ledger(student_id)
 
 

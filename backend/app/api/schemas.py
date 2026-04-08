@@ -14,14 +14,10 @@ class LoginRequest(BaseModel):
     """Request schema for login endpoint."""
 
     email: EmailStr
-    password: str = Field(
-        ..., min_length=6, description="User password (minimum 6 characters)"
-        )
+    password: str = Field(..., min_length=6, description="User password (minimum 6 characters)")
 
     model_config = {
-        "json_schema_extra": {
-            "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
-            }
+        "json_schema_extra": {"examples": [{"email": "admin@myuser.com", "password": "admin123"}]}
     }
 
 
@@ -29,9 +25,7 @@ class RoleResponse(BaseModel):
     """Response schema for role data."""
 
     id: str
-    name: Literal[
-        "admin", "teacher", "student", "parent", "transport", "driver"
-        ]
+    name: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     description: str | None = None
 
 
@@ -41,9 +35,7 @@ class UserResponse(BaseModel):
     id: str
     name: str
     email: str
-    role: Literal[
-        "admin", "teacher", "student", "parent", "transport", "driver"
-        ]
+    role: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -100,9 +92,7 @@ class ErrorResponse(BaseModel):
 
     detail: str
 
-    model_config = {
-        "json_schema_extra": {"examples": [{"detail": "Error message"}]}
-        }
+    model_config = {"json_schema_extra": {"examples": [{"detail": "Error message"}]}}
 
 
 class DemoCredential(BaseModel):
@@ -167,18 +157,10 @@ class PaymentCreate(BaseModel):
       ``"UPI"`` or ``"Card"``; it remains optional for ``"Cash"``.
     """
 
-    student_id: int = Field(
-        ..., description="ID of the student making the payment"
-    )
-    fee_structure_id: int = Field(
-        ..., description="ID of the fee structure being paid against"
-    )
-    amount: float = Field(
-        ..., gt=0, description="Payment amount (must be > 0)"
-    )
-    payment_mode: PaymentMode = Field(
-        ..., description="Mode of payment: Cash, UPI, or Card"
-    )
+    student_id: int = Field(..., description="ID of the student making the payment")
+    fee_structure_id: int = Field(..., description="ID of the fee structure being paid against")
+    amount: float = Field(..., gt=0, description="Payment amount (must be > 0)")
+    payment_mode: PaymentMode = Field(..., description="Mode of payment: Cash, UPI, or Card")
     reference_number: Optional[str] = Field(
         None,
         description=(
@@ -186,9 +168,7 @@ class PaymentCreate(BaseModel):
             "Required for UPI and Card payments, optional for Cash."
         ),
     )
-    remarks: Optional[str] = Field(
-        None, max_length=500, description="Optional remarks or notes"
-    )
+    remarks: Optional[str] = Field(None, max_length=500, description="Optional remarks or notes")
 
     model_config = {
         "json_schema_extra": {
@@ -217,9 +197,7 @@ class PaymentCreate(BaseModel):
         if self.payment_mode in ("UPI", "Card") and not (
             self.reference_number and self.reference_number.strip()
         ):
-            raise ValueError(
-                f"reference_number is required for {self.payment_mode} payments."
-            )
+            raise ValueError(f"reference_number is required for {self.payment_mode} payments.")
         return self
 
 
@@ -298,6 +276,28 @@ class PaymentSummaryResponse(BaseModel):
 # ------------------------------------------------------------------ #
 # Ledger / dashboard schemas (Clean Architecture payments module)
 # ------------------------------------------------------------------ #
+
+
+class LedgerPaymentCreate(BaseModel):
+    """Request schema for creating a ledger-only payment transaction."""
+
+    student_id: int = Field(..., gt=0, description="ID of the student (students table)")
+    amount: float = Field(..., gt=0, description="Payment amount")
+    payment_method: str = Field(
+        ..., min_length=1, description="Payment method (e.g., Cash, UPI, Card)"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "student_id": 1,
+                    "amount": 500.0,
+                    "payment_method": "Cash",
+                }
+            ]
+        }
+    }
 
 
 class LedgerEntryResponse(BaseModel):
