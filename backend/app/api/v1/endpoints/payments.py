@@ -588,8 +588,14 @@ async def create_ledger_payment(
             amount=payment.amount,
             payment_method=payment.payment_method,
         )
-    except ValidationError:
-        raise
+    except ValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=exc.message)
+    except DatabaseError as exc:
+        Logger.error(f"Database error while creating ledger payment: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while recording the payment.",
+        )
 
     Logger.info(f"Ledger payment recorded: id={result.id}, student_id={result.student_id}")
     return PaymentResponse(
@@ -630,8 +636,14 @@ async def get_student_ledger(
 
     try:
         entries = await use_case.execute(student_id=student_id)
-    except ValidationError:
-        raise
+    except ValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=exc.message)
+    except DatabaseError as exc:
+        Logger.error(f"Database error while fetching ledger for student {student_id}: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while retrieving the student ledger.",
+        )
 
     return StudentLedgerResponse(
         student_id=student_id,
