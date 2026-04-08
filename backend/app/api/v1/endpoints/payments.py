@@ -16,7 +16,7 @@ from app.api.schemas import (
     StudentLedgerResponse,
     LedgerEntryResponse,
 )
-from app.core.errors import DatabaseError, ValidationError
+from app.core.errors import ValidationError
 from app.core.logger import Logger
 from app.domain.usecases.payment_usecases import (
     CreatePaymentUseCase,

@@ -75,12 +75,16 @@ class DatabasePaymentRepository(PaymentRepository):
             self.db.add(payment_model)
             await self.db.flush()
 
-            # Compute running balance for the ledger
+            # Compute running balance for the ledger (lock row for concurrency safety)
             result = await self.db.execute(
                 select(StudentLedgerModel)
                 .where(StudentLedgerModel.student_id == student_id)
-                .order_by(StudentLedgerModel.transaction_date.desc())
+                .order_by(
+                    StudentLedgerModel.transaction_date.desc(),
+                    StudentLedgerModel.id.desc(),
+                )
                 .limit(1)
+                .with_for_update()
             )
             last_entry = result.scalar_one_or_none()
             previous_balance = last_entry.balance if last_entry else 0.0
@@ -155,18 +159,41 @@ class DatabasePaymentRepository(PaymentRepository):
             )
             students_paid: int = paid_result.scalar_one()
 
-            # Students with a positive outstanding balance (debit > credit)
+            # Latest ledger row per student, using id as a deterministic tie-breaker
+            latest_ledger_subquery = (
+                select(
+                    StudentLedgerModel.student_id.label("student_id"),
+                    StudentLedgerModel.balance.label("balance"),
+                    func.row_number()
+                    .over(
+                        partition_by=StudentLedgerModel.student_id,
+                        order_by=(
+                            StudentLedgerModel.transaction_date.desc(),
+                            StudentLedgerModel.id.desc(),
+                        ),
+                    )
+                    .label("row_num"),
+                )
+            ).subquery()
+
+            # Students whose latest ledger balance is still positive
             pending_result = await self.db.execute(
-                select(func.count(func.distinct(StudentLedgerModel.student_id))).where(
-                    StudentLedgerModel.balance > 0
+                select(func.count())
+                .select_from(latest_ledger_subquery)
+                .where(
+                    latest_ledger_subquery.c.row_num == 1,
+                    latest_ledger_subquery.c.balance > 0,
                 )
             )
             students_pending: int = pending_result.scalar_one()
 
-            # Total pending from outstanding balances
+            # Total pending from latest outstanding balances only
             pending_amount_result = await self.db.execute(
-                select(func.coalesce(func.sum(StudentLedgerModel.balance), 0.0)).where(
-                    StudentLedgerModel.balance > 0
+                select(func.coalesce(func.sum(latest_ledger_subquery.c.balance), 0.0))
+                .select_from(latest_ledger_subquery)
+                .where(
+                    latest_ledger_subquery.c.row_num == 1,
+                    latest_ledger_subquery.c.balance > 0,
                 )
             )
             total_pending: float = pending_amount_result.scalar_one()

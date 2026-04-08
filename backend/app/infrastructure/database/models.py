@@ -130,7 +130,9 @@ class PaymentModel(Base):
     __tablename__ = "payments"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    student_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     amount: Mapped[float] = mapped_column(Float, nullable=False)
     payment_method: Mapped[str] = mapped_column(String(100), nullable=False)
     payment_date: Mapped[datetime] = mapped_column(
@@ -154,7 +156,9 @@ class StudentLedgerModel(Base):
     __tablename__ = "student_ledger"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    student_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     debit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     credit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     balance: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)

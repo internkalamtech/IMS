@@ -45,16 +45,16 @@ cd backend
 
 2. Create virtual environment:
 ```bash
-python -m venv venv
+python -m venv .venv
 ```
 
 3. Activate virtual environment:
 ```bash
 # Windows
-venv\Scripts\activate
+.venv\Scripts\activate
 
 # Linux/Mac
-source venv/bin/activate
+source .venv/bin/activate
 ```
 
 4. Install dependencies:
