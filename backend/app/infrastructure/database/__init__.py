@@ -3,9 +3,11 @@
 from app.infrastructure.database.database import close_db, get_db, init_db
 from app.infrastructure.database.models import (
     Base,
+    ClassSectionModel,
     FeeStructure,
     Payment,
     RoleModel,
+    SubjectModel,
     UserModel,
 )
 
@@ -16,6 +18,8 @@ __all__ = [
     "Base",
     "UserModel",
     "RoleModel",
+    "SubjectModel",
+    "ClassSectionModel",
     "FeeStructure",
     "Payment",
 ]
