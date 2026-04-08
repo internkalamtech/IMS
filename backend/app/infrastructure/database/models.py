@@ -127,24 +127,6 @@ class RoleModel(Base):
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
 
-
-<<<<<<< HEAD
-class NoticeModel(Base):
-    """Represents a notice posted by admin."""
-
-    __tablename__ = "notices"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-    content: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-
-    def __repr__(self) -> str:
-        return f"<Notice(id={self.id}, title='{self.title}')>"
-
-=======
 class SubjectModel(Base):
     """
     Subject database model.
@@ -363,4 +345,4 @@ class PaymentModel(Base):
             f"amount={self.amount}, "
             f"status='{self.status}')>"
         )
->>>>>>> 6542ad1ac7e635533a360f60d6a01f006268cea1
+
