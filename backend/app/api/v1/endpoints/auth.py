@@ -31,8 +31,7 @@ from app.infrastructure.repositories.database_auth_repository import (
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@router.post(
-    "/login",
+@router.post( "/login",
     response_model=LoginResponse,
     status_code=status.HTTP_200_OK,
     responses={
