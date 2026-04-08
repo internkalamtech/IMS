@@ -14,7 +14,7 @@ from app.api.schemas import (
     FeeStructureResponse,
     FeeStructureUpdate,
 )
-from app.core.errors import ValidationError
+from app.core.errors import NotFoundError, ValidationError
 from app.core.logger import Logger
 from app.domain.usecases.payment_usecases import (
     CreateFeeStructureUseCase,
@@ -169,7 +169,7 @@ async def update_fee_structure(
 
 @router.get(
     "/class/{class_id}/academic-year/{academic_year}",
-    response_model=FeeStructureResponse | None,
+    response_model=FeeStructureResponse,
     status_code=status.HTTP_200_OK,
     summary="Get fee structure by class and academic year",
     description="Retrieve a fee structure for a specific class and academic year.",
@@ -178,7 +178,7 @@ async def get_fee_structure_by_class_and_year(
     class_id: int = Path(..., gt=0, description="ID of the class"),
     academic_year: str = Path(..., min_length=1, description="Academic year"),
     db: AsyncSession = Depends(get_db),
-) -> FeeStructureResponse | None:
+) -> FeeStructureResponse:
     """
     Get fee structure by class and academic year endpoint.
 
@@ -196,7 +196,7 @@ async def get_fee_structure_by_class_and_year(
         raise ValidationError(str(e))
 
     if not result:
-        return None
+        raise NotFoundError("Fee structure not found")
 
     return FeeStructureResponse(
         id=result.id,
@@ -287,7 +287,7 @@ async def get_fee_structures_by_class(
 
 @router.get(
     "/{fee_structure_id}",
-    response_model=FeeStructureResponse | None,
+    response_model=FeeStructureResponse,
     status_code=status.HTTP_200_OK,
     summary="Get fee structure by ID",
     description="Retrieve a fee structure by its unique identifier.",
@@ -295,7 +295,7 @@ async def get_fee_structures_by_class(
 async def get_fee_structure_by_id(
     fee_structure_id: str = Path(..., description="ID of the fee structure"),
     db: AsyncSession = Depends(get_db),
-) -> FeeStructureResponse | None:
+) -> FeeStructureResponse:
     """
     Get fee structure by ID endpoint.
 
@@ -310,7 +310,7 @@ async def get_fee_structure_by_id(
         raise ValidationError(str(e))
 
     if not result:
-        return None
+        raise NotFoundError("Fee structure not found")
 
     return FeeStructureResponse(
         id=result.id,

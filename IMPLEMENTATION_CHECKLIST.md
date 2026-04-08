@@ -216,7 +216,7 @@
 ## 📋 VALIDATION CHECKLIST
 
 ### Before Running
-- [ ] Python 3.10+ installed
+- [ ] Python 3.12+ installed
 - [ ] PostgreSQL database configured
 - [ ] FastAPI dependencies installed
 - [ ] Environment variables (.env) configured

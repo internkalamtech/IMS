@@ -4,7 +4,7 @@
 
 ### Create Fee Structure
 ```
-POST /v1/finances/fee-structures/
+POST /api/v1/finances/fee-structures/
 Status: 201 Created
 Response: FeeStructureResponse
 ```
@@ -12,28 +12,28 @@ Response: FeeStructureResponse
 ### Retrieve Fee Structure
 ```
 # By ID
-GET /v1/finances/fee-structures/{fee_structure_id}
+GET /api/v1/finances/fee-structures/{fee_structure_id}
 
 # By Class and Academic Year
-GET /v1/finances/fee-structures/class/{class_id}/academic-year/{academic_year}
+GET /api/v1/finances/fee-structures/class/{class_id}/academic-year/{academic_year}
 
 # All structures for a class
-GET /v1/finances/fee-structures/class/{class_id}
+GET /api/v1/finances/fee-structures/class/{class_id}
 
 Status: 200 OK
-Response: FeeStructureResponse | FeeStructureResponse[] | null
+Response: FeeStructureResponse | FeeStructureResponse[]
 ```
 
 ### Update Fee Structure
 ```
-PUT /v1/finances/fee-structures/{fee_structure_id}
+PUT /api/v1/finances/fee-structures/{fee_structure_id}
 Status: 200 OK
 Response: FeeStructureResponse
 ```
 
 ### Delete Fee Structure
 ```
-DELETE /v1/finances/fee-structures/{fee_structure_id}
+DELETE /api/v1/finances/fee-structures/{fee_structure_id}
 Status: 204 No Content
 ```
 
@@ -136,7 +136,7 @@ Status: 204 No Content
 ### 400 Bad Request
 ```json
 {
-  "detail": "Payment amount must be greater than zero"
+  "detail": "Total fee must be greater than zero"
 }
 ```
 

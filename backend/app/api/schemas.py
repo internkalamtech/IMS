@@ -5,7 +5,7 @@ These schemas define the shape of data for API endpoints.
 """
 
 from datetime import datetime
-from typing import Literal
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -144,6 +144,25 @@ class DashboardResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Class-subject schemas
+# ---------------------------------------------------------------------------
+
+
+class SubjectInput(BaseModel):
+    """Schema for subject input when updating class subjects."""
+
+    id: Optional[int] = None
+    name: Optional[str] = None
+
+
+class UpdateClassSubjectsRequest(BaseModel):
+    """Request schema for updating class subjects."""
+
+    class_id: int
+    subjects: List[SubjectInput]
+
+
+# ---------------------------------------------------------------------------
 # Payment schemas
 # ---------------------------------------------------------------------------
 
@@ -246,9 +265,7 @@ class FeeHeadResponse(BaseModel):
 class InstallmentCreate(BaseModel):
     """Request schema for creating an installment."""
 
-    installment_number: int = Field(
-        ..., gt=0, description="Sequential number of the installment"
-    )
+    installment_number: int = Field(..., gt=0, description="Sequential number of the installment")
     due_date: datetime = Field(..., description="Due date for the installment")
     amount: float = Field(..., gt=0, description="Amount for this installment")
     description: str | None = Field(None, description="Description of the installment")
@@ -281,13 +298,9 @@ class FeeStructureCreate(BaseModel):
     """Request schema for creating a fee structure."""
 
     class_id: int = Field(..., gt=0, description="ID of the class")
-    academic_year: str = Field(
-        ..., min_length=1, description="Academic year (e.g., 2024-2025)"
-    )
+    academic_year: str = Field(..., min_length=1, description="Academic year (e.g., 2024-2025)")
     total_fee: float = Field(..., gt=0, description="Total fee amount")
-    fee_heads: list[FeeHeadCreate] = Field(
-        ..., min_items=1, description="List of fee heads"
-    )
+    fee_heads: list[FeeHeadCreate] = Field(..., min_items=1, description="List of fee heads")
     installments: list[InstallmentCreate] = Field(
         ..., min_items=1, description="List of installments"
     )
@@ -344,9 +357,7 @@ class FeeStructureUpdate(BaseModel):
 
     total_fee: float | None = Field(None, gt=0, description="Total fee amount")
     fee_heads: list[FeeHeadCreate] | None = Field(None, description="List of fee heads")
-    installments: list[InstallmentCreate] | None = Field(
-        None, description="List of installments"
-    )
+    installments: list[InstallmentCreate] | None = Field(None, description="List of installments")
 
     model_config = {
         "json_schema_extra": {

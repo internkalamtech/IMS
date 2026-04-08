@@ -120,6 +120,63 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
+class SubjectModel(Base):
+    """
+    Subject database model.
+
+    Represents subjects like Math, Science, English, etc.
+    """
+
+    __tablename__ = "subjects"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+
+    classes: Mapped[List["ClassSectionModel"]] = relationship(
+        "ClassSectionModel",
+        secondary="class_subject_link",
+        back_populates="subjects",
+    )
+
+
+class ClassSectionModel(Base):
+    """
+    Class section database model.
+
+    Represents classes like Grade 1, Grade 2, etc.
+    """
+
+    __tablename__ = "class_sections"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    subjects: Mapped[List["SubjectModel"]] = relationship(
+        "SubjectModel",
+        secondary="class_subject_link",
+        back_populates="classes",
+    )
+
+
+# Association table for many-to-many relationship between ClassSection and Subject
+class_subject_link = Table(
+    "class_subject_link",
+    Base.metadata,
+    Column(
+        "class_id",
+        Integer,
+        ForeignKey("class_sections.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "subject_id",
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+
 class PaymentModel(Base):
     """
     Payment database model.
