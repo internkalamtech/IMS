@@ -10,7 +10,9 @@ from datetime import datetime
 from typing import List, Optional
 
 from app.domain.entities.payment import (
+    FeeDashboard,
     FeeStructure,
+    LedgerEntry,
     Payment,
     PaymentStatus,
     PaymentSummary,
@@ -203,5 +205,52 @@ class PaymentRepository(ABC):
 
         Returns:
             True if the receipt number exists, False otherwise
+        """
+        pass
+
+    # ------------------------------------------------------------------ #
+    # Ledger operations
+    # ------------------------------------------------------------------ #
+
+    @abstractmethod
+    async def create_ledger_payment(
+        self,
+        student_id: int,
+        amount: float,
+        payment_method: str,
+    ) -> Payment:
+        """
+        Record a simplified payment transaction and update the student ledger.
+
+        Args:
+            student_id: ID of the student making the payment
+            amount: Payment amount
+            payment_method: Payment method used (e.g., cash, card)
+
+        Returns:
+            Created Payment entity
+        """
+        pass
+
+    @abstractmethod
+    async def get_student_ledger(self, student_id: int) -> List[LedgerEntry]:
+        """
+        Retrieve the full fee ledger for a student.
+
+        Args:
+            student_id: ID of the student
+
+        Returns:
+            List of LedgerEntry entities ordered by date
+        """
+        pass
+
+    @abstractmethod
+    async def get_fee_dashboard(self) -> FeeDashboard:
+        """
+        Retrieve aggregated fee collection statistics.
+
+        Returns:
+            FeeDashboard entity with summary statistics
         """
         pass

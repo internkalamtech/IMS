@@ -8,6 +8,7 @@ from app.infrastructure.database.models import (
     StudentModel,
     FeeStructureModel,
     PaymentModel,
+    StudentLedgerModel,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "StudentModel",
     "FeeStructureModel",
     "PaymentModel",
+    "StudentLedgerModel",
 ]

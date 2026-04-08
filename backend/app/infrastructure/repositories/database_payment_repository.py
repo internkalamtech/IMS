@@ -14,7 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import DatabaseError
 from app.core.logger import Logger
 from app.domain.entities.payment import (
+    FeeDashboard,
     FeeStructure,
+    LedgerEntry,
     Payment,
     PaymentStatus,
     PaymentSummary,
@@ -24,6 +26,7 @@ from app.domain.repositories.payment_repository import PaymentRepository
 from app.infrastructure.database.models import (
     FeeStructureModel,
     PaymentModel,
+    StudentLedgerModel,
     StudentModel,
 )
 
@@ -478,3 +481,199 @@ class DatabasePaymentRepository(PaymentRepository):
             raise DatabaseError(
                 "Failed to check receipt number."
             ) from exc
+
+    # ------------------------------------------------------------------ #
+    # Ledger operations
+    # ------------------------------------------------------------------ #
+
+    async def create_ledger_payment(
+        self,
+        student_id: int,
+        amount: float,
+        payment_method: str,
+    ) -> Payment:
+        """
+        Record a simplified payment transaction and update the student ledger.
+
+        Creates a payment record and appends a credit entry to the
+        student's ledger with the updated running balance.
+
+        Args:
+            student_id: ID of the student making the payment
+            amount: Payment amount
+            payment_method: Payment method used (e.g., cash, card)
+
+        Returns:
+            Created Payment entity
+
+        Raises:
+            DatabaseError: If the database operation fails
+        """
+        try:
+            Logger.info(
+                f"Creating ledger payment for student_id={student_id}, "
+                f"amount={amount}, method={payment_method}"
+            )
+
+            payment_model = PaymentModel(
+                student_id=student_id,
+                fee_structure_id=0,
+                receipt_number=f"LGR-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}",
+                amount=amount,
+                payment_mode=payment_method,
+                status="Paid",
+                payment_date=datetime.utcnow(),
+            )
+            self.db.add(payment_model)
+            await self.db.flush()
+
+            # Compute running balance (lock last row for concurrency safety)
+            result = await self.db.execute(
+                select(StudentLedgerModel)
+                .where(StudentLedgerModel.student_id == student_id)
+                .order_by(
+                    StudentLedgerModel.transaction_date.desc(),
+                    StudentLedgerModel.id.desc(),
+                )
+                .limit(1)
+                .with_for_update()
+            )
+            last_entry = result.scalar_one_or_none()
+            previous_balance = last_entry.balance if last_entry else 0.0
+            new_balance = previous_balance - amount  # credit reduces balance
+
+            ledger_entry = StudentLedgerModel(
+                student_id=student_id,
+                debit=0.0,
+                credit=amount,
+                balance=new_balance,
+                description=f"Payment via {payment_method}",
+                transaction_date=payment_model.payment_date,
+            )
+            self.db.add(ledger_entry)
+            await self.db.flush()
+
+            Logger.info(
+                f"Ledger payment created: id={payment_model.id}, student_id={student_id}"
+            )
+            return Payment(
+                id=payment_model.id,
+                student_id=payment_model.student_id,
+                fee_structure_id=payment_model.fee_structure_id,
+                receipt_number=payment_model.receipt_number,
+                amount=payment_model.amount,
+                payment_mode=payment_model.payment_mode,  # type: ignore[arg-type]
+                status=payment_model.status,  # type: ignore[arg-type]
+                payment_date=payment_model.payment_date,
+            )
+        except Exception as exc:
+            Logger.error(f"Error creating ledger payment: {exc}", exc_info=True)
+            raise DatabaseError("Failed to create ledger payment.") from exc
+
+    async def get_student_ledger(self, student_id: int) -> List[LedgerEntry]:
+        """
+        Retrieve the full fee ledger for a student, ordered by date.
+
+        Args:
+            student_id: ID of the student
+
+        Returns:
+            List of LedgerEntry entities
+
+        Raises:
+            DatabaseError: If the database operation fails
+        """
+        try:
+            result = await self.db.execute(
+                select(StudentLedgerModel)
+                .where(StudentLedgerModel.student_id == student_id)
+                .order_by(StudentLedgerModel.transaction_date.asc())
+            )
+            entries = result.scalars().all()
+            return [
+                LedgerEntry(
+                    id=str(e.id),
+                    student_id=e.student_id,
+                    debit=e.debit,
+                    credit=e.credit,
+                    balance=e.balance,
+                    description=e.description,
+                    transaction_date=e.transaction_date,
+                )
+                for e in entries
+            ]
+        except Exception as exc:
+            Logger.error(f"Error fetching student ledger: {exc}", exc_info=True)
+            raise DatabaseError("Failed to fetch student ledger.") from exc
+
+    async def get_fee_dashboard(self) -> FeeDashboard:
+        """
+        Retrieve aggregated fee collection statistics.
+
+        Returns:
+            FeeDashboard entity with summary statistics
+
+        Raises:
+            DatabaseError: If the database operation fails
+        """
+        try:
+            # Total amount collected from payment records
+            collected_result = await self.db.execute(
+                select(func.coalesce(func.sum(PaymentModel.amount), 0.0))
+            )
+            total_collected: float = collected_result.scalar_one()
+
+            # Students who have made at least one payment
+            paid_result = await self.db.execute(
+                select(func.count(func.distinct(PaymentModel.student_id)))
+            )
+            students_paid: int = paid_result.scalar_one()
+
+            # Latest ledger row per student (deterministic tie-breaker: id desc)
+            latest_ledger_subquery = (
+                select(
+                    StudentLedgerModel.student_id.label("student_id"),
+                    StudentLedgerModel.balance.label("balance"),
+                    func.row_number()
+                    .over(
+                        partition_by=StudentLedgerModel.student_id,
+                        order_by=(
+                            StudentLedgerModel.transaction_date.desc(),
+                            StudentLedgerModel.id.desc(),
+                        ),
+                    )
+                    .label("row_num"),
+                )
+            ).subquery()
+
+            # Students whose latest ledger balance is still positive
+            pending_result = await self.db.execute(
+                select(func.count())
+                .select_from(latest_ledger_subquery)
+                .where(
+                    latest_ledger_subquery.c.row_num == 1,
+                    latest_ledger_subquery.c.balance > 0,
+                )
+            )
+            students_pending: int = pending_result.scalar_one()
+
+            # Total pending from latest outstanding balances only
+            pending_amount_result = await self.db.execute(
+                select(func.coalesce(func.sum(latest_ledger_subquery.c.balance), 0.0))
+                .select_from(latest_ledger_subquery)
+                .where(
+                    latest_ledger_subquery.c.row_num == 1,
+                    latest_ledger_subquery.c.balance > 0,
+                )
+            )
+            total_pending: float = pending_amount_result.scalar_one()
+
+            return FeeDashboard(
+                total_collected=total_collected,
+                total_pending=total_pending,
+                students_paid=students_paid,
+                students_pending=students_pending,
+            )
+        except Exception as exc:
+            Logger.error(f"Error fetching fee dashboard: {exc}", exc_info=True)
+            raise DatabaseError("Failed to fetch fee dashboard.") from exc

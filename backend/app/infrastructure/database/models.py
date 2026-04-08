@@ -218,9 +218,6 @@ class StudentModel(Base):
     fee_structures: Mapped[List["FeeStructureModel"]] = relationship(
         "FeeStructureModel", back_populates="student", cascade="all, delete-orphan"
     )
-    payments: Mapped[List["PaymentModel"]] = relationship(
-        "PaymentModel", back_populates="student", cascade="all, delete-orphan"
-    )
 
     def __repr__(self) -> str:
         return (
@@ -296,7 +293,7 @@ class PaymentModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     fee_structure_id: Mapped[int] = mapped_column(
         Integer,
@@ -331,9 +328,6 @@ class PaymentModel(Base):
     )
 
     # Relationships
-    student: Mapped["StudentModel"] = relationship(
-        "StudentModel", back_populates="payments"
-    )
     fee_structure: Mapped["FeeStructureModel"] = relationship(
         "FeeStructureModel", back_populates="payments"
     )
@@ -344,4 +338,35 @@ class PaymentModel(Base):
             f"receipt='{self.receipt_number}', "
             f"amount={self.amount}, "
             f"status='{self.status}')>"
+        )
+
+
+class StudentLedgerModel(Base):
+    """
+    Student ledger database model.
+
+    Represents a line in the student fee ledger, tracking debits,
+    credits, and the running balance.
+    """
+
+    __tablename__ = "student_ledger"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    debit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    credit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    balance: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    description: Mapped[str] = mapped_column(String(500), nullable=False)
+    transaction_date: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<StudentLedger(id={self.id}, student_id={self.student_id}, "
+            f"balance={self.balance})>"
         )

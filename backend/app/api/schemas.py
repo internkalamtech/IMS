@@ -293,3 +293,36 @@ class PaymentSummaryResponse(BaseModel):
     total_overdue: float
 
     model_config = {"from_attributes": True}
+
+
+# ------------------------------------------------------------------ #
+# Ledger / dashboard schemas (Clean Architecture payments module)
+# ------------------------------------------------------------------ #
+
+
+class LedgerEntryResponse(BaseModel):
+    """Response schema for a single student ledger entry."""
+
+    id: str
+    student_id: int
+    debit: float
+    credit: float
+    balance: float
+    description: str
+    transaction_date: datetime
+
+
+class StudentLedgerResponse(BaseModel):
+    """Response schema for a student's full ledger."""
+
+    student_id: int
+    transactions: list[LedgerEntryResponse]
+
+
+class FeeDashboardResponse(BaseModel):
+    """Response schema for the fee dashboard analytics."""
+
+    total_collected: float
+    total_pending: float
+    students_paid: int
+    students_pending: int
