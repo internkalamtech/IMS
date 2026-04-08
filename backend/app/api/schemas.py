@@ -131,3 +131,6 @@ class DashboardResponse(BaseModel):
     role: str
     stats: list[StatItem]
 
+class UpdateClassSubjectsRequest(BaseModel):
+    class_id: int
+    subject_ids: list[int]
