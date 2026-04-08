@@ -22,7 +22,6 @@ from sqlalchemy.ext.asyncio import (
 from app.core.config import settings
 from app.infrastructure.database.models import Base
 
-
 # Create async engine with connection pooling
 engine = create_async_engine(
     settings.database_url,
@@ -88,4 +87,3 @@ async def close_db() -> None:
     This function should be called on application shutdown.
     """
     await engine.dispose()
-    Base.metadata.create_all(bind=engine)
