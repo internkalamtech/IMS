@@ -4,8 +4,6 @@ Development server runner for the IMS Backend.
 This script starts the FastAPI application using Uvicorn in development mode.
 """
 
-import uvicorn
-
 if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",

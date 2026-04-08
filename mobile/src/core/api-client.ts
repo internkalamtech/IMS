@@ -62,10 +62,15 @@ export class ApiClient {
                 if (error.response) {
                     // Server responded with a status code outside of 2xx
                     const status = error.response.status;
+                    const responseData = error.response.data as any;
+                    const message =
+                        responseData?.detail ||
+                        responseData?.message ||
+                        'Request failed';
                     if (status === 401) {
-                        return Promise.reject(new AuthError('Session expired'));
+                        return Promise.reject(new AuthError(message || 'Session expired'));
                     }
-                    return Promise.reject(new NetworkError(`Request failed with status ${status}`, status));
+                    return Promise.reject(new NetworkError(`Request failed with status ${status}: ${message}`, status));
                 } else if (error.request) {
                     // Request was made but no response received
                     return Promise.reject(new NetworkError('No response received from server'));
