@@ -515,9 +515,13 @@ class DatabasePaymentRepository(PaymentRepository):
                 f"amount={amount}, method={payment_method}"
             )
 
+            # NO_FEE_STRUCTURE sentinel: ledger-only payments are not tied to a
+            # specific fee structure record.
+            _NO_FEE_STRUCTURE_ID = 0
+
             payment_model = PaymentModel(
                 student_id=student_id,
-                fee_structure_id=0,
+                fee_structure_id=_NO_FEE_STRUCTURE_ID,
                 receipt_number=f"LGR-{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}",
                 amount=amount,
                 payment_mode=payment_method,
@@ -540,7 +544,8 @@ class DatabasePaymentRepository(PaymentRepository):
             )
             last_entry = result.scalar_one_or_none()
             previous_balance = last_entry.balance if last_entry else 0.0
-            new_balance = previous_balance - amount  # credit reduces balance
+            # A credit (payment received) reduces the outstanding balance owed.
+            new_balance = previous_balance - amount
 
             ledger_entry = StudentLedgerModel(
                 student_id=student_id,
