@@ -132,6 +132,3 @@ class DashboardResponse(BaseModel):
     role: str
     stats: list[StatItem]
 
-class NoticeCreate(BaseModel):
-    title: str
-    content: str
