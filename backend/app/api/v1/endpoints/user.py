@@ -14,4 +14,9 @@ async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db)):
     db.add(user)
     await db.flush()  # pushes insert to DB
 
-    return {"message": "User created", "id": user.id, "name": user.name, "email": user.email}
+    return {
+        "message": "User created",
+        "id": user.id,
+        "name": user.name,
+        "email": user.email
+    }

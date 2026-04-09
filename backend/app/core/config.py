@@ -24,7 +24,9 @@ class Settings(BaseSettings):
     port: int = 8000
 
     # Database
-    database_url: str = "postgresql+asyncpg://ims_user:ims_password@localhost:5432/ims_db"
+    database_url: str = (
+        "postgresql+asyncpg://ims_user:ims_password@localhost:5432/ims_db"
+    )
 
     # Security
     secret_key: str = "dev-secret-key-change-in-production"
