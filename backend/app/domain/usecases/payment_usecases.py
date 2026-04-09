@@ -118,7 +118,8 @@ class RecordPaymentUseCase:
             )
         if fee_structure.student_id != student_id:
             message = (
-                f"Fee structure {fee_structure_id} does not belong to student {student_id}."
+                f"Fee structure {fee_structure_id} does not belong to student"
+                f" {student_id}."
             )
             raise ValidationError(message)
 

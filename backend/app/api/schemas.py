@@ -224,7 +224,9 @@ class PaymentCreate(BaseModel):
     }
 
     @model_validator(mode="after")
-    def validate_reference_number_for_digital_payments(self) -> "PaymentCreate":
+    def validate_reference_number_for_digital_payments(
+        self,
+        ) -> "PaymentCreate":
         """
         Ensure a reference number is supplied for UPI or Card payments.
 
@@ -236,7 +238,8 @@ class PaymentCreate(BaseModel):
             self.reference_number and self.reference_number.strip()
         ):
             raise ValueError(
-                f"reference_number is required for {self.payment_mode} payments."
+                f"reference_number is required for "
+                f"{self.payment_mode} payments."
             )
         return self
 
