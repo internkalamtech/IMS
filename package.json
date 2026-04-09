@@ -10,7 +10,10 @@
         "backend:setup": "cd backend && python -m venv venv && venv\\Scripts\\activate && pip install -r requirements.txt",
         "dev": "concurrently \"npm run mobile\" \"npm run backend\"",
         "install:all": "npm run mobile:install && echo Backend dependencies: run 'npm run backend:setup' to create venv and install Python packages",
-        "lint:mobile": "cd mobile && npm run lint"
+        "lint:mobile": "cd mobile && npm run lint",
+        "env:mobile": "copy mobile\\.env.example mobile\\.env",
+        "env:backend": "copy backend\\.env.example backend\\.env",
+        "env:all": "npm run env:mobile && npm run env:backend"
     },
     "devDependencies": {
         "concurrently": "^9.1.2"

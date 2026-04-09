@@ -130,13 +130,6 @@ pip3 --version
       - Click the Execute (▶️) button or press F5
       - You should see "Query returned successfully"
 
-3. **Configure Backend Environment:**
-   - A `.env` file is automatically created in `backend/` folder
-   - Update `DATABASE_URL` if using different credentials:
-     ```
-     DATABASE_URL=postgresql+asyncpg://ims_user:ims_password@localhost:5432/ims_db
-     ```
-
 ### Initial Setup
 
 1. **Clone the repository**
@@ -144,29 +137,36 @@ pip3 --version
    git clone https://github.com/internkalamtech/IMS.git
    cd IMS
    ```
-
+   
 2. **Install root dependencies**
    ```bash
    npm install
    ```
 
-3. **Setup Mobile (React Native)**
+3. **Configure Environment Files**
+   ```bash
+   npm run env:all
+   ```
+   This creates `.env` files for both `mobile/` and `backend/` from their `.env.example` templates.
+   See [Environment Configuration](#environment-configuration) for more details.
+
+4. **Setup Mobile (React Native)**
    ```bash
    npm run mobile:install
    ```
 
-4. **Setup Backend (Python)**
+5. **Setup Backend (Python)**
    ```bash
    npm run backend:setup
    ```
    This creates a Python virtual environment and installs all dependencies.
 
-5. **Seed Database with Demo Users**
+6. **Seed Database with Demo Users**
    ```bash
    cd backend
    .venv\Scripts\python.exe -m app.infrastructure.database.seed
    ```
-   This creates demo users and roles in the database for testing.
+   This creates demo users and roles in the database for testing..
 
 ### Demo Credentials
 
@@ -189,14 +189,8 @@ After seeding the database, you can login with these credentials:
 
 ### Running the Application
 
-#### Option 1: Run Both Together (Recommended)
-```bash
-npm run dev
-```
-This starts both the mobile app and backend server concurrently.
-
-#### Option 2: Run Separately
-
+#### Option 1: Run Separately (Recommended)
+Open individual terminals for each.
 **Mobile Frontend:**
 ```bash
 npm run mobile
@@ -209,9 +203,44 @@ npm run mobile
 ```bash
 npm run backend
 ```
+
+Alternative:
+```bash
+cd backend
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 - Starts FastAPI server on http://localhost:8000
 - API documentation available at http://localhost:8000/docs
-- Alternative docs at http://localhost:8000/redoc
+
+#### Option 2: Run Both Together
+```bash
+npm run dev
+```
+This starts both the mobile app and backend server concurrently.
+
+## Testing the API
+
+### Using Swagger UI
+
+1. Open http://localhost:8000/docs
+2. Click on `/api/v1/auth/login`
+3. Click "Try it out"
+4. Enter credentials:
+```json
+{
+  "email": "admin@myuser.com",
+  "password": "admin123"
+}
+```
+5. Click "Execute"
+
+### Using curl
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@myuser.com","password":"admin123"}'
+```
 
 ## 📱 Mobile App
 
@@ -220,8 +249,6 @@ The mobile app is built with:
 - **Clean Architecture** principles
 - **TypeScript** for type safety
 - **Expo Router** for navigation
-
-See [mobile/README.md](mobile/README.md) for detailed mobile development guide.
 
 ## 🔧 Backend API
 
@@ -290,22 +317,51 @@ Both frontend and backend follow **Clean Architecture** principles:
    git push origin feature/your-feature-name
    ```
 
+## Environment Configuration
+
+The application uses environment variables for configuration. These are defined in the `.env` file.
+
+| Variable | Description | Default (in Dev) |
+| :--- | :--- | :--- |
+| `EXPO_PUBLIC_ENV` | Environment name (`development`, `staging`, `production`, `test`) | `development` |
+| `EXPO_PUBLIC_API_URL` | Override for Backend API URL | Auto-detected |
+
+### API URL Detection
+
+In `development`, the app automatically attempts to detect your computer's IP address to connect to the backend (handy for physical devices on the same WiFi).
+
+- **Physical Device**: Uses your computer's IP (detected via `expo-constants`).
+- **Web**: Uses `localhost`.
+- **Android Emulator**: Uses `10.0.2.2`.
+
+If detection fails, or you are using a tunnel (ngrok), you should manually set `EXPO_PUBLIC_API_URL` in your `.env` file.
+
+
 ## 🤝 Contributing
 
 For interns and developers:
-1. Follow the existing code structure and patterns
-2. Use Clean Architecture principles
-3. Write clear, self-documenting code
-4. Add comments for complex logic
-5. Test your changes before committing
+1. Read the documents in `docs/` 
+2. Read `docs/intern_onboarding_guide.md`
+3. Follow the existing code structure and patterns
+4. Use Clean Architecture principles
+5. Write clear, self-documenting code
+6. Add comments for complex logic
+7. Test your changes before committing
 
 ## 📞 Support
 
 If you encounter any issues:
 1. Check the respective README files in `mobile/` and `backend/`
-2. Review the developer guides
+2. Review the developer guides in `docs/`
 3. Review [Monorepo Structure Guide](docs/MONOREPO_STRUCTURE.md) for dependency management
 4. Ask your mentor or team lead
+
+## Learn more
+
+To learn more about developing your project with Expo, look at the following resources:
+
+- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
 ---
 
