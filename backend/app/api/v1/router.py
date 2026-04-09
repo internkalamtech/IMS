@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, health, dashboard, homework  # ✅ ADD homework
-from app.api.v1.endpoints import auth, health, dashboard, class_subjects_router
+from app.api.v1.endpoints import auth, health, dashboard, homework, class_subjects_router
 from app.api.v1.endpoints.payments import router as payments_router
 
 router = APIRouter(prefix="/v1")
