@@ -118,6 +118,4 @@ class GetDemoUsersUseCase:
         Returns:
             List of User entities
         """
-        return await self.auth_repository.get_users_by_email_pattern(
-            email_pattern
-        )
+        return await self.auth_repository.get_users_by_email_pattern(email_pattern)
