@@ -50,6 +50,36 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in v.split(",")]
         return v
 
+    @field_validator("debug", mode="before")
+    @classmethod
+    def parse_debug(cls, v):
+        """Accept common boolean-like debug values from environment.
+
+        This allows deployment-style values like "release" or "production"
+        to work in DEBUG mode parsing.
+        """
+        if isinstance(v, str):
+            normalized = v.strip().lower()
+            if normalized in {
+                "false",
+                "0",
+                "no",
+                "off",
+                "release",
+                "production",
+            }:
+                return False
+            if normalized in {
+                "true",
+                "1",
+                "yes",
+                "on",
+                "debug",
+                "development",
+            }:
+                return True
+        return v
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
