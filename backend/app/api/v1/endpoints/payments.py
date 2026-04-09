@@ -57,7 +57,9 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
     responses={
         400: {"model": ErrorResponse, "description": "Validation error"},
         401: {"model": ErrorResponse, "description": "Unauthorized"},
-        404: {"model": ErrorResponse, "description": "Student or fee structure not found"},
+        404: {"model": ErrorResponse, 
+              "description": "Student or fee structure not found"
+              },
         500: {
             "model": ErrorResponse,
             "description": "Internal server error",
@@ -75,7 +77,9 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
 async def create_payment(
     request: PaymentCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(
+        get_current_user
+        ),
 ) -> PaymentResponse:
     """
     Record a new student payment.
