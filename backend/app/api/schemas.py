@@ -294,7 +294,7 @@ class PaymentResponse(BaseModel):
                     "payment_mode": "UPI",
                     "reference_number": "UPI123456789",
                     "status": "Paid",
-                    "remarks": "Monthly fee \u2013 April",
+                    "remarks": "Monthly fee - April",
                     "payment_date": "2024-04-01T10:00:00",
                 }
             ]

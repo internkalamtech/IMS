@@ -117,9 +117,10 @@ class RecordPaymentUseCase:
                 f"Fee structure with id {fee_structure_id} not found."
             )
         if fee_structure.student_id != student_id:
-            raise ValidationError(
+            message = (
                 f"Fee structure {fee_structure_id} does not belong to student {student_id}."
             )
+            raise ValidationError(message)
 
         # 4. Determine payment status based on amount vs. balance
         balance = fee_structure.balance
