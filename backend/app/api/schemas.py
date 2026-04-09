@@ -6,9 +6,8 @@ These schemas define the shape of data for API endpoints.
 
 from datetime import datetime
 from typing import List, Literal, Optional
-from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field
 
 
 class LoginRequest(BaseModel):
