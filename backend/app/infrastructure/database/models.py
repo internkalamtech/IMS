@@ -17,6 +17,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     String,
@@ -62,19 +63,13 @@ class UserModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
-        )
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-        )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-        )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -91,11 +86,7 @@ class UserModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<User(id={self.id}, "
-            f"email='{self.email}', "
-            f"name='{self.name}')>"
-        )
+        return f"<User(id={self.id}, " f"email='{self.email}', " f"name='{self.name}')>"
 
 
 class RoleModel(Base):
@@ -109,9 +100,7 @@ class RoleModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    name: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-        )
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
 
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
@@ -182,3 +171,137 @@ class_subject_link = Table(
         primary_key=True,
     ),
 )
+
+
+class StudentModel(Base):
+    """
+    Student database model.
+
+    Represents a student enrolled in the school, including their fee
+    status and next payment due date.
+    """
+
+    __tablename__ = "students"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    roll_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    class_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    next_due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    fee_structures: Mapped[List["FeeStructureModel"]] = relationship(
+        "FeeStructureModel", back_populates="student", cascade="all, delete-orphan"
+    )
+    payments: Mapped[List["PaymentModel"]] = relationship(
+        "PaymentModel", back_populates="student", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:
+        return f"<Student(id={self.id}, " f"name='{self.name}', " f"roll='{self.roll_number}')>"
+
+
+class FeeStructureModel(Base):
+    """
+    Fee structure database model.
+
+    Represents the fee details for a student, including total fee,
+    amount paid, and outstanding balance.
+    """
+
+    __tablename__ = "fee_structures"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
+    )
+    total_fee: Mapped[float] = mapped_column(Float, nullable=False)
+    amount_paid: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    fee_type: Mapped[str] = mapped_column(String(100), nullable=False, default="Tuition")
+    academic_year: Mapped[str] = mapped_column(String(20), nullable=False, default="2024-25")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="fee_structures")
+    payments: Mapped[List["PaymentModel"]] = relationship(
+        "PaymentModel",
+        back_populates="fee_structure",
+        cascade="all, delete-orphan",
+    )
+
+    @property
+    def balance(self) -> float:
+        """Outstanding balance."""
+        return self.total_fee - self.amount_paid
+
+    def __repr__(self) -> str:
+        return (
+            f"<FeeStructure(id={self.id}, "
+            f"student_id={self.student_id}, "
+            f"total={self.total_fee})>"
+        )
+
+
+class PaymentModel(Base):
+    """
+    Payment database model.
+
+    Represents an individual payment transaction recorded for a student.
+    """
+
+    __tablename__ = "payments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
+    )
+    fee_structure_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("fee_structures.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    receipt_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+    payment_mode: Mapped[str] = mapped_column(String(20), nullable=False)  # Cash, UPI, Card
+    reference_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="Paid"
+    )  # Paid, Partial, Pending, Failed, Overdue
+    remarks: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    payment_date: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="payments")
+    fee_structure: Mapped["FeeStructureModel"] = relationship(
+        "FeeStructureModel", back_populates="payments"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Payment(id={self.id}, "
+            f"receipt='{self.receipt_number}', "
+            f"amount={self.amount}, "
+            f"status='{self.status}')>"
+        )
