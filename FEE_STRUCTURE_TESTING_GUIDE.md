@@ -9,10 +9,9 @@ This guide provides comprehensive testing strategies for the Fee Structure Manag
 ### Dependencies
 ```bash
 # Add to requirements-dev.txt
-pytest==7.4.0
-pytest-asyncio==0.21.0
-pytest-cov==4.1.0
-httpx==0.24.0
+pytest==8.3.5
+pytest-asyncio==0.25.2
+httpx==0.28.1
 ```
 
 ### Installation

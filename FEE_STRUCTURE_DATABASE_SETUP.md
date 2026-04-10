@@ -13,9 +13,10 @@ CREATE TABLE fee_structures (
     total_fee DOUBLE PRECISION NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(class_id, academic_year),
-    INDEX idx_fee_structures_class_year (class_id, academic_year)
+    UNIQUE(class_id, academic_year)
 );
+
+CREATE INDEX idx_fee_structures_class_year ON fee_structures (class_id, academic_year);
 ```
 
 **Purpose**: Stores the main fee structure information for each class and academic year.
@@ -43,9 +44,10 @@ CREATE TABLE fee_heads (
     description VARCHAR(500),
     amount DOUBLE PRECISION NOT NULL,
     percentage DOUBLE PRECISION,
-    FOREIGN KEY (fee_structure_id) REFERENCES fee_structures(id) ON DELETE CASCADE,
-    INDEX idx_fee_heads_fee_structure (fee_structure_id)
+    FOREIGN KEY (fee_structure_id) REFERENCES fee_structures(id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_fee_heads_fee_structure ON fee_heads (fee_structure_id);
 ```
 
 **Purpose**: Stores break-down items of the fee structure (tuition, lab, transport, etc.).
@@ -73,10 +75,11 @@ CREATE TABLE installments (
     due_date TIMESTAMP NOT NULL,
     amount DOUBLE PRECISION NOT NULL,
     description VARCHAR(500),
-    FOREIGN KEY (fee_structure_id) REFERENCES fee_structures(id) ON DELETE CASCADE,
-    INDEX idx_installments_fee_structure (fee_structure_id),
-    INDEX idx_installments_due_date (due_date)
+    FOREIGN KEY (fee_structure_id) REFERENCES fee_structures(id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_installments_fee_structure ON installments (fee_structure_id);
+CREATE INDEX idx_installments_due_date ON installments (due_date);
 ```
 
 **Purpose**: Stores installment payment schedules for fee structures.

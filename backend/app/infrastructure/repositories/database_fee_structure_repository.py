@@ -120,9 +120,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
                 f"installments={len(installment_models)}"
             )
 
-            return self._fee_structure_to_entity(
-                fs_model, fee_head_models, installment_models
-            )
+            return self._fee_structure_to_entity(fs_model, fee_head_models, installment_models)
 
         except Exception as e:
             Logger.error(
@@ -164,9 +162,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             return self._fee_structure_model_to_entity(model)
 
         except Exception as e:
-            Logger.error(
-                f"Database error fetching fee structure: {e}", exc_info=True
-            )
+            Logger.error(f"Database error fetching fee structure: {e}", exc_info=True)
             raise DatabaseError(f"Failed to fetch fee structure: {str(e)}")
 
     async def get_fee_structure_by_id(
@@ -186,9 +182,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
         """
         try:
             result = await self.db.execute(
-                select(FeeStructureModel).where(
-                    FeeStructureModel.id == int(fee_structure_id)
-                )
+                select(FeeStructureModel).where(FeeStructureModel.id == int(fee_structure_id))
             )
             model = result.scalar_one_or_none()
             if not model:
@@ -200,9 +194,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             Logger.error(f"Invalid fee structure ID: {fee_structure_id}")
             return None
         except Exception as e:
-            Logger.error(
-                f"Database error fetching fee structure: {e}", exc_info=True
-            )
+            Logger.error(f"Database error fetching fee structure: {e}", exc_info=True)
             raise DatabaseError(f"Failed to fetch fee structure: {str(e)}")
 
     async def get_fee_structures_by_class(
@@ -230,9 +222,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             return [self._fee_structure_model_to_entity(m) for m in models]
 
         except Exception as e:
-            Logger.error(
-                f"Database error fetching fee structures: {e}", exc_info=True
-            )
+            Logger.error(f"Database error fetching fee structures: {e}", exc_info=True)
             raise DatabaseError(f"Failed to fetch fee structures: {str(e)}")
 
     async def update_fee_structure(
@@ -278,15 +268,8 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             # Update fee heads if provided
             if fee_heads is not None:
                 # Delete existing fee heads
-                await self.db.execute(
-                    select(FeeHeadModel).where(
-                        FeeHeadModel.fee_structure_id == fs_id
-                    )
-                )
                 result = await self.db.execute(
-                    select(FeeHeadModel).where(
-                        FeeHeadModel.fee_structure_id == fs_id
-                    )
+                    select(FeeHeadModel).where(FeeHeadModel.fee_structure_id == fs_id)
                 )
                 existing_heads = result.scalars().all()
                 for head in existing_heads:
@@ -309,9 +292,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             if installments is not None:
                 # Delete existing installments
                 result = await self.db.execute(
-                    select(InstallmentModel).where(
-                        InstallmentModel.fee_structure_id == fs_id
-                    )
+                    select(InstallmentModel).where(InstallmentModel.fee_structure_id == fs_id)
                 )
                 existing_installments = result.scalars().all()
                 for inst in existing_installments:

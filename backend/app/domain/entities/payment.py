@@ -1,74 +1,40 @@
 """
-Domain entities for the payments module.
+Payment domain entities.
 
-Entities represent core business objects with no dependencies
-on external frameworks.
+These dataclasses represent the core payment business objects with no
+dependencies on external frameworks or database models.
 """
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Literal, Optional
+
+
+# Supported payment modes
+PaymentMode = Literal["Cash", "UPI", "Card"]
+
+# Supported payment statuses
+PaymentStatus = Literal["Paid", "Partial", "Pending", "Failed", "Overdue"]
 
 
 @dataclass
-class Payment:
+class Student:
     """
-    Payment entity representing a fee transaction.
+    Student entity.
 
     Attributes:
-        id: Unique identifier for the payment
-        student_id: ID of the student making the payment
-        amount: Payment amount
-        payment_method: Method used for payment (e.g., cash, card)
-        payment_date: Date and time of the payment
+        id: Unique identifier for the student
+        name: Full name of the student
+        roll_number: Student's roll number
+        class_name: Class/grade the student belongs to
+        next_due_date: Next payment due date (None if no outstanding dues)
     """
 
-    id: str
-    student_id: int
-    amount: float
-    payment_method: str
-    payment_date: datetime
-
-
-@dataclass
-class LedgerEntry:
-    """
-    Ledger entry entity representing a line in the student's fee ledger.
-
-    Attributes:
-        id: Unique identifier for the ledger entry
-        student_id: ID of the student this entry belongs to
-        debit: Amount debited (fee charged)
-        credit: Amount credited (payment received)
-        balance: Running balance after this entry
-        description: Description of the transaction
-        transaction_date: Date and time of the transaction
-    """
-
-    id: str
-    student_id: int
-    debit: float
-    credit: float
-    balance: float
-    description: str
-    transaction_date: datetime
-
-
-@dataclass
-class FeeDashboard:
-    """
-    Dashboard summary for fee collection analytics.
-
-    Attributes:
-        total_collected: Total fees collected
-        total_pending: Total fees pending
-        students_paid: Number of students who have paid
-        students_pending: Number of students with pending fees
-    """
-
-    total_collected: float
-    total_pending: float
-    students_paid: int
-    students_pending: int
+    id: int
+    name: str
+    roll_number: str
+    class_name: str
+    next_due_date: Optional[datetime] = None
 
 
 @dataclass
@@ -135,3 +101,93 @@ class FeeStructure:
     installments: list[Installment]
     created_at: datetime
     updated_at: datetime
+
+
+@dataclass
+class Payment:
+    """
+    Payment transaction entity.
+
+    Attributes:
+        id: Unique identifier for the payment
+        student_id: ID of the associated student
+        fee_structure_id: ID of the associated fee structure
+        receipt_number: Unique formatted receipt number (REC-YYYY-XXXX)
+        amount: Amount paid in this transaction
+        payment_mode: Mode of payment (Cash, UPI, Card)
+        reference_number: Reference number for UPI/Card transactions
+        status: Current payment status
+        remarks: Optional remarks or notes
+        payment_date: Date and time the payment was recorded
+    """
+
+    id: int
+    student_id: int
+    fee_structure_id: int
+    receipt_number: str
+    amount: float
+    payment_mode: PaymentMode
+    status: PaymentStatus
+    payment_date: datetime
+    reference_number: Optional[str] = None
+    remarks: Optional[str] = None
+
+
+@dataclass
+class LedgerEntry:
+    """
+    Ledger entry entity representing a line in the student's fee ledger.
+
+    Attributes:
+        id: Unique identifier for the ledger entry
+        student_id: ID of the student this entry belongs to
+        debit: Amount debited (fee charged)
+        credit: Amount credited (payment received)
+        balance: Running balance after this entry
+        description: Description of the transaction
+        transaction_date: Date and time of the transaction
+    """
+
+    id: str
+    student_id: int
+    debit: float
+    credit: float
+    balance: float
+    description: str
+    transaction_date: datetime
+
+
+@dataclass
+class FeeDashboard:
+    """
+    Dashboard summary for fee collection analytics.
+
+    Attributes:
+        total_collected: Total fees collected
+        total_pending: Total fees pending
+        students_paid: Number of students who have paid
+        students_pending: Number of students with pending fees
+    """
+
+    total_collected: float
+    total_pending: float
+    students_paid: int
+    students_pending: int
+
+
+@dataclass
+class PaymentSummary:
+    """
+    Aggregated payment statistics summary.
+
+    Attributes:
+        total_collectible: Total fee amount expected from all students
+        total_collected: Total amount collected so far
+        total_pending: Total outstanding amount
+        total_overdue: Total amount that is overdue
+    """
+
+    total_collectible: float
+    total_collected: float
+    total_pending: float
+    total_overdue: float
