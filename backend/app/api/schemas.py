@@ -176,6 +176,34 @@ class TimetableDayResponse(BaseModel):
         }
 
 
+class ParentChildTimetableRecordResponse(BaseModel):
+    """Response schema for a parent's child timetable record."""
+
+    period_id: int
+    day_of_week: int = Field(description="Day of week (0=Monday, 6=Sunday)")
+    start_time: str = Field(description="Start time in HH:MM format")
+    end_time: str = Field(description="End time in HH:MM format")
+    subject_name: str
+    teacher_name: str
+    room_location: str
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "period_id": 1,
+                    "day_of_week": 0,
+                    "start_time": "09:00",
+                    "end_time": "10:00",
+                    "subject_name": "Mathematics",
+                    "teacher_name": "Mr. Sharma",
+                    "room_location": "Room 101",
+                }
+            ]
+        }
+    }
+
+
 class DemoCredential(BaseModel):
     """Schema for a single demo credential."""
 

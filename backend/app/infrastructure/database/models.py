@@ -297,6 +297,9 @@ class TimetablePeriodModel(Base):
     period_number: Mapped[int] = mapped_column(
         Integer, nullable=False
     )  # 1, 2, 3, etc.
+    is_break: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )  # True for break periods
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
@@ -327,3 +330,109 @@ class TimetablePeriodModel(Base):
             f"day={self.day_of_week}, "
             f"period={self.period_number})>"
         )
+
+
+# Association table for many-to-many relationship between parent and student
+parent_student = Table(
+    "parent_student",
+    Base.metadata,
+    Column(
+        "parent_id",
+        Integer,
+        ForeignKey("parents.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "student_id",
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+
+class StudentModel(Base):
+    """
+    Student database model.
+
+    Represents a student enrolled in a class.
+    """
+
+    __tablename__ = "students"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False
+    )
+    roll_number: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False
+    )
+    class_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("class_sections.id"), nullable=False
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["UserModel"] = relationship(
+        "UserModel", backref="student_profile"
+    )
+    class_section: Mapped["ClassSectionModel"] = relationship(
+        "ClassSectionModel"
+    )
+    parents: Mapped[List["ParentModel"]] = relationship(
+        "ParentModel",
+        secondary=parent_student,
+        back_populates="students",
+    )
+
+    def __repr__(self) -> str:
+        return f"<Student(id={self.id}, roll_number='{self.roll_number}')>"
+
+
+class ParentModel(Base):
+    """
+    Parent database model.
+
+    Represents a parent/guardian of students.
+    """
+
+    __tablename__ = "parents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False
+    )
+    phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    address: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["UserModel"] = relationship(
+        "UserModel", backref="parent_profile"
+    )
+    students: Mapped[List["StudentModel"]] = relationship(
+        "StudentModel",
+        secondary=parent_student,
+        back_populates="parents",
+    )
+
+    def __repr__(self) -> str:
+        return f"<Parent(id={self.id}, user_id={self.user_id})>"

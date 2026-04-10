@@ -1,5 +1,5 @@
-import TimetableScreen from '@/presentation/screens/TimetableScreen';
+import ParentTimetable from '@/presentation/screens/ParentTimetable';
 
 export default function Timetable() {
-    return <TimetableScreen />;
+    return <ParentTimetable />;
 }

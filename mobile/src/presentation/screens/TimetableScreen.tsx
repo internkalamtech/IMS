@@ -17,6 +17,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
+type Child = {
+    id: number;
+    name: string;
+    class: string;
+    avatar: string;
+};
+
+type Period = {
+    id: number;
+    subject: string;
+    teacher: string;
+    room: string;
+    startTime: string;
+    endTime: string;
+    period: number;
+    isBreak?: boolean;
+};
+
 // Mock data for demonstration
 const MOCK_CHILDREN = [
     { id: 1, name: 'Aarav Kumar', class: 'Class 7-B', avatar: 'AK' },
@@ -45,16 +63,29 @@ const MOCK_TIMETABLE = {
     // Add more days as needed
 };
 
-const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default function TimetableScreen() {
     const { theme } = useTheme();
     const router = useRouter();
-    const [selectedChild, setSelectedChild] = useState(MOCK_CHILDREN[0]);
+    const [selectedChild, setSelectedChild] = useState<Child>(MOCK_CHILDREN[0]);
     const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
     const [selectedDay, setSelectedDay] = useState(0); // 0 = Monday
 
-    const currentTimetable = MOCK_TIMETABLE[selectedDay as keyof typeof MOCK_TIMETABLE] || [];
+    const maxDayIndex = DAY_NAMES.length - 1;
+    const currentTimetable: Period[] = MOCK_TIMETABLE[selectedDay as keyof typeof MOCK_TIMETABLE] || [];
+
+    const navigateToPreviousDay = () => {
+        setSelectedDay((current) => Math.max(0, current - 1));
+    };
+
+    const navigateToNextDay = () => {
+        setSelectedDay((current) => Math.min(maxDayIndex, current + 1));
+    };
+
+    const handleBackToDashboard = () => {
+        router.push('/(tabs)');
+    };
 
     const renderChildSelector = () => (
         <View style={styles.childSelector}>
@@ -131,14 +162,19 @@ export default function TimetableScreen() {
         <View style={styles.dayNavigation}>
             <TouchableOpacity
                 style={[styles.navButton, { backgroundColor: theme.colors.primary + '20' }]}
-                onPress={() => setSelectedDay(Math.max(0, selectedDay - 1))}
+                onPress={navigateToPreviousDay}
                 disabled={selectedDay === 0}
             >
-                <Ionicons
-                    name="chevron-back"
-                    size={20}
-                    color={selectedDay === 0 ? '#ccc' : theme.colors.primary}
-                />
+                <View style={styles.navContent}>
+                    <Ionicons
+                        name="chevron-back"
+                        size={20}
+                        color={selectedDay === 0 ? '#ccc' : theme.colors.primary}
+                    />
+                    <ThemedText style={[styles.navLabel, selectedDay === 0 && styles.navLabelDisabled]}>
+                        Previous
+                    </ThemedText>
+                </View>
             </TouchableOpacity>
 
             <View style={styles.dayInfo}>
@@ -152,24 +188,49 @@ export default function TimetableScreen() {
 
             <TouchableOpacity
                 style={[styles.navButton, { backgroundColor: theme.colors.primary + '20' }]}
-                onPress={() => setSelectedDay(Math.min(6, selectedDay + 1))}
-                disabled={selectedDay === 6}
+                onPress={navigateToNextDay}
+                disabled={selectedDay === maxDayIndex}
             >
-                <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color={selectedDay === 6 ? '#ccc' : theme.colors.primary}
-                />
+                <View style={styles.navContent}>
+                    <ThemedText style={[styles.navLabel, selectedDay === maxDayIndex && styles.navLabelDisabled]}>
+                        Next
+                    </ThemedText>
+                    <Ionicons
+                        name="chevron-forward"
+                        size={20}
+                        color={selectedDay === maxDayIndex ? '#ccc' : theme.colors.primary}
+                    />
+                </View>
             </TouchableOpacity>
         </View>
     );
 
-    const renderPeriodCard = (period: any) => (
-        <ThemedCard key={period.id} style={styles.periodCard} padding={16}>
+    const renderPeriodCard = (period: Period, index: number) => (
+        <View key={period.id} style={styles.timelineRow}>
+            <View style={styles.timelineTrack}>
+                <View
+                    style={[
+                        styles.timelineDot,
+                        { backgroundColor: period.isBreak ? '#f59e0b' : theme.colors.primary }
+                    ]}
+                />
+                {index < currentTimetable.length - 1 && <View style={[styles.timelineLine, { backgroundColor: theme.colors.border }]} />}
+            </View>
+
+            <ThemedCard
+                style={[
+                    styles.periodCard,
+                    {
+                        borderLeftColor: period.isBreak ? '#f59e0b' : theme.colors.primary,
+                        backgroundColor: period.isBreak ? '#f59e0b10' : theme.colors.card,
+                    }
+                ]}
+                padding={16}
+            >
             <View style={styles.periodHeader}>
                 <View style={styles.periodTime}>
                     <ThemedText style={styles.timeText} type="defaultSemiBold">
-                        {period.startTime} - {period.endTime}
+                        Time: {period.startTime} - {period.endTime}
                     </ThemedText>
                     <ThemedText style={styles.periodNumber} lightColor="#666" darkColor="#999">
                         Period {period.period}
@@ -190,32 +251,29 @@ export default function TimetableScreen() {
                     ]}
                     type="defaultSemiBold"
                 >
-                    {period.subject}
+                    Subject: {period.subject}
                 </ThemedText>
 
-                {!period.isBreak && (
-                    <>
-                        <View style={styles.detailRow}>
-                            <Ionicons name="person" size={16} color={theme.colors.primary} />
-                            <ThemedText style={styles.detailText} lightColor="#666" darkColor="#999">
-                                {period.teacher}
-                            </ThemedText>
-                        </View>
-                        <View style={styles.detailRow}>
-                            <Ionicons name="location" size={16} color={theme.colors.primary} />
-                            <ThemedText style={styles.detailText} lightColor="#666" darkColor="#999">
-                                {period.room}
-                            </ThemedText>
-                        </View>
-                    </>
-                )}
+                <View style={styles.detailRow}>
+                    <Ionicons name="person" size={16} color={theme.colors.primary} />
+                    <ThemedText style={styles.detailText} lightColor="#666" darkColor="#999">
+                        Teacher: {period.teacher || 'N/A'}
+                    </ThemedText>
+                </View>
+                <View style={styles.detailRow}>
+                    <Ionicons name="location" size={16} color={theme.colors.primary} />
+                    <ThemedText style={styles.detailText} lightColor="#666" darkColor="#999">
+                        Room/Lab: {period.room || 'N/A'}
+                    </ThemedText>
+                </View>
             </View>
-        </ThemedCard>
+            </ThemedCard>
+        </View>
     );
 
     const renderWeeklyView = () => (
         <View style={styles.weeklyView}>
-            {DAY_NAMES.slice(0, 5).map((dayName, index) => {
+            {DAY_NAMES.map((dayName, index) => {
                 const dayPeriods = MOCK_TIMETABLE[index as keyof typeof MOCK_TIMETABLE] || [];
                 const academicPeriods = dayPeriods.filter(p => !p.isBreak);
 
@@ -232,7 +290,7 @@ export default function TimetableScreen() {
                         }}
                     >
                         <ThemedText style={styles.weekDayName} type="defaultSemiBold">
-                            {dayName.slice(0, 3)}
+                            {dayName}
                         </ThemedText>
                         <ThemedText style={styles.weekDayCount} lightColor="#666" darkColor="#999">
                             {academicPeriods.length} periods
@@ -251,12 +309,17 @@ export default function TimetableScreen() {
             <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
                 <SafeAreaView edges={['top']}>
                     <View style={styles.headerContent}>
-                        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                        <TouchableOpacity style={styles.backButton} onPress={handleBackToDashboard}>
                             <Ionicons name="arrow-back" size={24} color={theme.colors.primaryForeground} />
                         </TouchableOpacity>
-                        <ThemedText style={styles.headerTitle} type="title" color="primaryForeground">
-                            Timetable
-                        </ThemedText>
+                        <View style={styles.headerTitleWrap}>
+                            <ThemedText style={styles.headerTitle} type="title" color="primaryForeground">
+                                Child Timetable
+                            </ThemedText>
+                            <ThemedText style={styles.headerSubtitle} color="primaryForeground">
+                                {selectedChild.name}
+                            </ThemedText>
+                        </View>
                         <View style={{ width: 40 }} />
                     </View>
                 </SafeAreaView>
@@ -270,13 +333,13 @@ export default function TimetableScreen() {
                 {renderViewToggle()}
 
                 {/* Day Navigation */}
-                {viewMode === 'daily' && renderDayNavigation()}
+                {renderDayNavigation()}
 
                 {/* Content */}
                 <View style={styles.content}>
                     {viewMode === 'daily' ? (
                         <View style={styles.dailyView}>
-                            {currentTimetable.map(renderPeriodCard)}
+                            {currentTimetable.map((period, index) => renderPeriodCard(period, index))}
                         </View>
                     ) : (
                         renderWeeklyView()
@@ -301,6 +364,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingTop: 20,
     },
+    headerTitleWrap: {
+        flex: 1,
+        alignItems: 'center',
+    },
     backButton: {
         width: 40,
         height: 40,
@@ -309,8 +376,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: '700',
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        marginTop: 2,
+        opacity: 0.9,
     },
     scrollView: {
         flex: 1,
@@ -386,11 +458,23 @@ const styles = StyleSheet.create({
         borderRadius: 12,
     },
     navButton: {
-        width: 40,
+        minWidth: 92,
         height: 40,
         borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    navContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2,
+    },
+    navLabel: {
+        fontSize: 12,
+        color: '#333',
+    },
+    navLabelDisabled: {
+        color: '#ccc',
     },
     dayInfo: {
         alignItems: 'center',
@@ -409,8 +493,30 @@ const styles = StyleSheet.create({
     dailyView: {
         gap: 12,
     },
+    timelineRow: {
+        flexDirection: 'row',
+        alignItems: 'stretch',
+    },
+    timelineTrack: {
+        width: 24,
+        alignItems: 'center',
+        paddingTop: 16,
+    },
+    timelineDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+    },
+    timelineLine: {
+        width: 2,
+        flex: 1,
+        marginTop: 4,
+        marginBottom: -8,
+    },
     periodCard: {
+        flex: 1,
         marginBottom: 8,
+        borderLeftWidth: 4,
     },
     periodHeader: {
         flexDirection: 'row',
