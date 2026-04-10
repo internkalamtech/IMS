@@ -21,6 +21,7 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -200,6 +201,9 @@ class FeeStructureModel(Base):
     """
 
     __tablename__ = "fee_structures"
+    __table_args__ = (
+        UniqueConstraint("class_id", "academic_year", name="uq_fee_structure_class_year"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     class_id: Mapped[int] = mapped_column(
@@ -314,3 +318,67 @@ class InstallmentModel(Base):
             f"installment_number={self.installment_number}, "
             f"due_date={self.due_date}, amount={self.amount})>"
         )
+
+
+class SubjectModel(Base):
+    """
+    Subject database model.
+
+    Represents subjects like Math, Science, English, etc.
+    """
+
+    __tablename__ = "subjects"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+
+    classes: Mapped[List["ClassSectionModel"]] = relationship(
+        "ClassSectionModel",
+        secondary="class_subject_link",
+        back_populates="subjects",
+    )
+
+    def __repr__(self) -> str:
+        return f"<Subject(id={self.id}, name='{self.name}')>"
+
+
+class ClassSectionModel(Base):
+    """
+    Class section database model.
+
+    Represents classes like Grade 1, Grade 2, etc.
+    """
+
+    __tablename__ = "class_sections"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    subjects: Mapped[List["SubjectModel"]] = relationship(
+        "SubjectModel",
+        secondary="class_subject_link",
+        back_populates="classes",
+    )
+
+    def __repr__(self) -> str:
+        return f"<ClassSection(id={self.id}, name='{self.name}')>"
+
+
+# Association table for many-to-many relationship between ClassSection and Subject
+class_subject_link = Table(
+    "class_subject_link",
+    Base.metadata,
+    Column(
+        "class_id",
+        Integer,
+        ForeignKey("class_sections.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "subject_id",
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+

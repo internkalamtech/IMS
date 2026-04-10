@@ -9,6 +9,7 @@ accessing fee collection analytics.
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependencies import get_current_user
 from app.api.schemas import (
     FeeDashboardResponse,
     PaymentCreate,
@@ -16,8 +17,9 @@ from app.api.schemas import (
     StudentLedgerResponse,
     LedgerEntryResponse,
 )
-from app.core.errors import ValidationError
+from app.core.errors import NotFoundError, ValidationError
 from app.core.logger import Logger
+from app.domain.entities.user import User
 from app.domain.usecases.payment_usecases import (
     CreatePaymentUseCase,
     GetFeeDashboardUseCase,
@@ -41,6 +43,7 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
 async def create_payment(
     payment: PaymentCreate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> PaymentResponse:
     """
     Create a payment transaction endpoint.
@@ -78,16 +81,27 @@ async def create_payment(
     status_code=status.HTTP_200_OK,
     summary="Get student fee ledger",
     description="Retrieve the full fee ledger for a specific student.",
+    responses={404: {"description": "Student not found"}},
 )
 async def get_student_ledger(
     student_id: int,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> StudentLedgerResponse:
     """
     Get student ledger endpoint.
 
     Returns all ledger entries for the student ordered by date.
+    Raises 404 if the student does not exist.
     """
+    from sqlalchemy import select
+    from app.infrastructure.database.models import UserModel
+
+    # Verify student exists
+    result = await db.execute(select(UserModel).where(UserModel.id == student_id))
+    if result.scalar_one_or_none() is None:
+        raise NotFoundError(f"Student with id {student_id} not found")
+
     repository = DatabasePaymentRepository(db)
     use_case = GetStudentLedgerUseCase(repository)
 
@@ -122,6 +136,7 @@ async def get_student_ledger(
 )
 async def fee_dashboard(
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> FeeDashboardResponse:
     """
     Fee dashboard endpoint.

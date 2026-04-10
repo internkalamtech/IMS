@@ -6,7 +6,7 @@ including creating, retrieving, updating, and deleting fee structures
 with their associated fee heads and installments.
 """
 
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Body, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas import (
@@ -14,7 +14,7 @@ from app.api.schemas import (
     FeeStructureResponse,
     FeeStructureUpdate,
 )
-from app.core.errors import ValidationError
+from app.core.errors import NotFoundError, ValidationError
 from app.core.logger import Logger
 from app.domain.usecases.payment_usecases import (
     CreateFeeStructureUseCase,
@@ -110,7 +110,7 @@ async def update_fee_structure(
     fee_structure_id: str = Path(
         ..., description="ID of the fee structure to update"
     ),
-    fee_structure_update: FeeStructureUpdate = None,
+    fee_structure_update: FeeStructureUpdate | None = Body(default=None),
     db: AsyncSession = Depends(get_db),
 ) -> FeeStructureResponse:
     """
@@ -131,7 +131,7 @@ async def update_fee_structure(
             total_fee=fee_structure_update.total_fee,
             fee_heads=(
                 [head.model_dump() for head in fee_structure_update.fee_heads]
-                if fee_structure_update.fee_heads
+                if fee_structure_update.fee_heads is not None
                 else None
             ),
             installments=(
@@ -139,7 +139,7 @@ async def update_fee_structure(
                     inst.model_dump()
                     for inst in fee_structure_update.installments
                 ]
-                if fee_structure_update.installments
+                if fee_structure_update.installments is not None
                 else None
             ),
         )
@@ -179,21 +179,23 @@ async def update_fee_structure(
 
 @router.get(
     "/class/{class_id}/academic-year/{academic_year}",
-    response_model=FeeStructureResponse | None,
+    response_model=FeeStructureResponse,
     status_code=status.HTTP_200_OK,
     summary="Get fee structure by class and academic year",
     description="Retrieve a fee structure for a specific class "
     "and academic year.",
+    responses={404: {"description": "Fee structure not found"}},
 )
 async def get_fee_structure_by_class_and_year(
     class_id: int = Path(..., gt=0, description="ID of the class"),
     academic_year: str = Path(..., min_length=1, description="Academic year"),
     db: AsyncSession = Depends(get_db),
-) -> FeeStructureResponse | None:
+) -> FeeStructureResponse:
     """
     Get fee structure by class and academic year endpoint.
 
     Returns the fee structure with all its fee heads and installments.
+    Raises 404 if no fee structure exists for the given class/year.
     """
     repository = DatabaseFeeStructureRepository(db)
     use_case = GetFeeStructureUseCase(repository)
@@ -207,7 +209,9 @@ async def get_fee_structure_by_class_and_year(
         raise ValidationError(str(e))
 
     if not result:
-        return None
+        raise NotFoundError(
+            f"Fee structure not found for class {class_id} and year {academic_year}"
+        )
 
     return FeeStructureResponse(
         id=result.id,
@@ -298,19 +302,21 @@ async def get_fee_structures_by_class(
 
 @router.get(
     "/{fee_structure_id}",
-    response_model=FeeStructureResponse | None,
+    response_model=FeeStructureResponse,
     status_code=status.HTTP_200_OK,
     summary="Get fee structure by ID",
     description="Retrieve a fee structure by its unique identifier.",
+    responses={404: {"description": "Fee structure not found"}},
 )
 async def get_fee_structure_by_id(
     fee_structure_id: str = Path(..., description="ID of the fee structure"),
     db: AsyncSession = Depends(get_db),
-) -> FeeStructureResponse | None:
+) -> FeeStructureResponse:
     """
     Get fee structure by ID endpoint.
 
     Returns the fee structure with all its fee heads and installments.
+    Raises 404 if the fee structure does not exist.
     """
     repository = DatabaseFeeStructureRepository(db)
     use_case = GetFeeStructureUseCase(repository)
@@ -323,7 +329,7 @@ async def get_fee_structure_by_id(
         raise ValidationError(str(e))
 
     if not result:
-        return None
+        raise NotFoundError(f"Fee structure with id {fee_structure_id} not found")
 
     return FeeStructureResponse(
         id=result.id,

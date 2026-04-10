@@ -155,7 +155,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
                     )
                 )
             )
-            model = result.scalar_one_or_none()
+            model = result.unique().scalar_one_or_none()
             if not model:
                 return None
 
@@ -184,7 +184,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             result = await self.db.execute(
                 select(FeeStructureModel).where(FeeStructureModel.id == int(fee_structure_id))
             )
-            model = result.scalar_one_or_none()
+            model = result.unique().scalar_one_or_none()
             if not model:
                 return None
 
@@ -218,7 +218,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
                 .where(FeeStructureModel.class_id == class_id)
                 .order_by(FeeStructureModel.academic_year.desc())
             )
-            models = result.scalars().all()
+            models = result.unique().scalars().all()
             return [self._fee_structure_model_to_entity(m) for m in models]
 
         except Exception as e:
@@ -273,7 +273,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
                 )
                 existing_heads = result.scalars().all()
                 for head in existing_heads:
-                    await self.db.delete(head)
+                    self.db.delete(head)
                 await self.db.flush()
 
                 # Add new fee heads
@@ -296,7 +296,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
                 )
                 existing_installments = result.scalars().all()
                 for inst in existing_installments:
-                    await self.db.delete(inst)
+                    self.db.delete(inst)
                 await self.db.flush()
 
                 # Add new installments
@@ -359,7 +359,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
 
             # TODO: Add check for student assignments when Student model
             # is created. For now, just delete the fee structure
-            await self.db.delete(fs_model)
+            self.db.delete(fs_model)
             await self.db.flush()
 
             Logger.info(f"Fee structure deleted: id={fs_id}")

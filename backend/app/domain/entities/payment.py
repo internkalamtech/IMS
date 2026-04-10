@@ -111,26 +111,18 @@ class Payment:
     Attributes:
         id: Unique identifier for the payment
         student_id: ID of the associated student
-        fee_structure_id: ID of the associated fee structure
-        receipt_number: Unique formatted receipt number (REC-YYYY-XXXX)
         amount: Amount paid in this transaction
-        payment_mode: Mode of payment (Cash, UPI, Card)
-        reference_number: Reference number for UPI/Card transactions
-        status: Current payment status
-        remarks: Optional remarks or notes
+        payment_method: Method of payment (e.g., cash, card, UPI)
         payment_date: Date and time the payment was recorded
+        fee_structure_id: Optional ID of the associated fee structure
     """
 
-    id: int
+    id: str
     student_id: int
-    fee_structure_id: int
-    receipt_number: str
     amount: float
-    payment_mode: PaymentMode
-    status: PaymentStatus
+    payment_method: str
     payment_date: datetime
-    reference_number: Optional[str] = None
-    remarks: Optional[str] = None
+    fee_structure_id: Optional[int] = None
 
 
 @dataclass
