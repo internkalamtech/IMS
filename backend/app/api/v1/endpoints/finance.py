@@ -67,7 +67,7 @@ class DummyFeeRepository:
 
     async def get_installments(self, student_id: str, fee_structure_id=None):
         from app.domain.entities.fee import Installment
-        from datetime import datetime, timedelta
+        from datetime import datetime
 
         installments = [
             Installment(
@@ -122,7 +122,7 @@ class DummyFeeRepository:
                 description="Tuition fee installment 1",
             ),
         ]
-        return transactions[offset : offset + limit]
+        return transactions[offset:offset + limit]
 
     async def get_transaction_by_receipt(self, receipt_number: str):
         from app.domain.entities.fee import Transaction

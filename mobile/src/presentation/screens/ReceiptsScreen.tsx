@@ -122,16 +122,16 @@ export function ReceiptsScreen() {
             style={[
               styles.searchBox,
               {
-                backgroundColor: theme.colors.cardBackground,
+                backgroundColor: theme.colors.card,
                 borderColor: theme.colors.border,
               },
             ]}
           >
-            <Ionicons name="search" size={20} color={theme.colors.text + '80'} />
+            <Ionicons name="search" size={20} color={theme.colors.foreground + '80'} />
             <TextInput
-              style={[styles.searchInput, { color: theme.colors.text }]}
+              style={[styles.searchInput, { color: theme.colors.foreground }]}
               placeholder="Search by receipt or description..."
-              placeholderTextColor={theme.colors.text + '80'}
+              placeholderTextColor={theme.colors.foreground + '80'}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
@@ -141,7 +141,7 @@ export function ReceiptsScreen() {
         {/* Transactions List */}
         {filteredTransactions.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="document-outline" size={48} color={theme.colors.text + '40'} />
+            <Ionicons name="document-outline" size={48} color={theme.colors.foreground + '40'} />
             <ThemedText type="default" style={styles.emptyText} lightColor="#999" darkColor="#666">
               {searchQuery ? 'No receipts found' : 'No payment receipts yet'}
             </ThemedText>

@@ -135,7 +135,6 @@ class DashboardResponse(BaseModel):
     stats: list[StatItem]
 
 
-<<<<<<< HEAD
 class SubjectInput(BaseModel):
     """Schema for subject input when updating class subjects."""
 
@@ -200,7 +199,7 @@ class PaymentCreate(BaseModel):
                     "amount": 5000.00,
                     "payment_mode": "UPI",
                     "reference_number": "UPI123456789",
-                    "remarks": "Monthly fee \u2013 April",
+                    "remarks": "Monthly fee – April",
                 }
             ]
         }
@@ -234,15 +233,15 @@ class StudentResponse(BaseModel):
     next_due_date: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
-=======
-# Fee Management Schemas
->>>>>>> 6057939 (feat: implement personal fee status and ledger (#352))
 
+
+# ------------------------------------------------------------------ #
+# Fee Management Schemas
+# ------------------------------------------------------------------ #
 
 class FeeStructureResponse(BaseModel):
     """Response schema for fee structure data."""
 
-<<<<<<< HEAD
     id: int
     student_id: int
     total_fee: float
@@ -281,7 +280,7 @@ class PaymentResponse(BaseModel):
                     "payment_mode": "UPI",
                     "reference_number": "UPI123456789",
                     "status": "Paid",
-                    "remarks": "Monthly fee \u2013 April",
+                    "remarks": "Monthly fee – April",
                     "payment_date": "2024-04-01T10:00:00",
                 }
             ]
@@ -298,28 +297,6 @@ class PaymentSummaryResponse(BaseModel):
     total_overdue: float
 
     model_config = {"from_attributes": True}
-=======
-    id: str
-    student_id: str
-    fee_head: str
-    total_amount: float
-    is_mandatory: bool
-    academic_year: str
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "id": "fs-001",
-                    "student_id": "std-123",
-                    "fee_head": "Tuition Fee",
-                    "total_amount": 50000.0,
-                    "is_mandatory": True,
-                    "academic_year": "2024-2025",
-                }
-            ]
-        }
-    }
 
 
 class FeeSummaryResponse(BaseModel):
@@ -408,4 +385,3 @@ class TransactionResponse(BaseModel):
             ]
         }
     }
->>>>>>> 6057939 (feat: implement personal fee status and ledger (#352))
