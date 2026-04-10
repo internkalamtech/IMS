@@ -6,7 +6,7 @@ including creating, retrieving, updating, and deleting fee structures
 with their associated fee heads and installments.
 """
 
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Body, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas import (
@@ -104,7 +104,7 @@ async def create_fee_structure(
 )
 async def update_fee_structure(
     fee_structure_id: str = Path(..., description="ID of the fee structure to update"),
-    fee_structure_update: FeeStructureUpdate = None,
+    fee_structure_update: FeeStructureUpdate = Body(default=None),
     db: AsyncSession = Depends(get_db),
 ) -> FeeStructureResponse:
     """
