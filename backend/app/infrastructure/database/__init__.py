@@ -5,9 +5,11 @@ from app.infrastructure.database.models import (
     Base,
     UserModel,
     RoleModel,
-    StudentModel,
     FeeStructureModel,
     PaymentModel,
+    StudentLedgerModel,
+    FeeHeadModel,
+    InstallmentModel,
 )
 
 __all__ = [
@@ -17,7 +19,9 @@ __all__ = [
     "Base",
     "UserModel",
     "RoleModel",
-    "StudentModel",
     "FeeStructureModel",
     "PaymentModel",
+    "StudentLedgerModel",
+    "FeeHeadModel",
+    "InstallmentModel",
 ]
