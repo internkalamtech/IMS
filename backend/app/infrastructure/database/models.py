@@ -1,9 +1,3 @@
-"""
-SQLAlchemy database models for the IMS application.
-
-These models represent the database schema using SQLAlchemy ORM.
-"""
-
 from datetime import datetime
 from typing import List
 
@@ -19,12 +13,16 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
+# =========================
+# BASE
+# =========================
 class Base(DeclarativeBase):
-    """Base class for all database models."""
     pass
 
 
-# Association table for many-to-many relationship between users and roles
+# =========================
+# USER - ROLE MAPPING
+# =========================
 user_roles = Table(
     "user_roles",
     Base.metadata,
@@ -43,120 +41,135 @@ user_roles = Table(
 )
 
 
+# =========================
+# USER MODEL
+# =========================
 class UserModel(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True
+    )
     email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
+        String(255),
+        unique=True,
+        index=True,
+        nullable=False,
     )
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-
+    password_hash: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    name: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
     is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-    )
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        Boolean,
+        default=True,
         nullable=False,
     )
 
     roles: Mapped[List["RoleModel"]] = relationship(
         "RoleModel",
         secondary=user_roles,
-        back_populates="users",
-        lazy="joined",
+        lazy="selectin",
     )
 
-    def __repr__(self) -> str:
-        return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
+    teacher_timetable: Mapped[List["TimetableModel"]] = relationship(
+        "TimetableModel",
+        back_populates="teacher",
+        lazy="selectin",
+    )
 
 
+# =========================
+# ROLE MODEL
+# =========================
 class RoleModel(Base):
     __tablename__ = "roles"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True
+    )
     name: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
-
-    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
-
-    users: Mapped[List["UserModel"]] = relationship(
-        "UserModel",
-        secondary=user_roles,
-        back_populates="roles",
-    )
-
-    def __repr__(self) -> str:
-        return f"<Role(id={self.id}, name='{self.name}')>"
-
-
-class TimetableModel(Base):
-    __tablename__ = "timetable"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
-    teacher_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False
-    )
-
-    subject: Mapped[str] = mapped_column(String(100), nullable=False)
-
-    room_type: Mapped[str] = mapped_column(String(50), nullable=False)
-
-    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-
-    end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-
-
-class SubjectModel(Base):
-    __tablename__ = "subjects"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-
-    classes: Mapped[List["ClassSectionModel"]] = relationship(
-        "ClassSectionModel",
-        secondary="class_subject_link",
-        back_populates="subjects",
+        String(50),
+        unique=True,
+        nullable=False,
     )
 
 
+# =========================
+# CLASS MODEL
+# =========================
 class ClassSectionModel(Base):
     __tablename__ = "class_sections"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True
+    )
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
 
-    subjects: Mapped[List["SubjectModel"]] = relationship(
-        "SubjectModel",
-        secondary="class_subject_link",
-        back_populates="classes",
+    timetable_entries: Mapped[List["TimetableModel"]] = relationship(
+        "TimetableModel",
+        back_populates="class_",
+        lazy="selectin",
     )
 
 
-class_subject_link = Table(
-    "class_subject_link",
-    Base.metadata,
-    Column(
-        "class_id",
-        Integer,
-        ForeignKey("class_sections.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-    Column(
-        "subject_id",
-        Integer,
-        ForeignKey("subjects.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-)
+# =========================
+# TIMETABLE MODEL
+# =========================
+class TimetableModel(Base):
+    __tablename__ = "timetable"
+
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True
+    )
+
+    teacher_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+    )
+
+    subject: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    class_id: Mapped[int] = mapped_column(
+        ForeignKey("class_sections.id"),
+        nullable=False,
+    )
+
+    room_type: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    start_time: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+    )
+    end_time: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+    )
+
+    # =========================
+    # RELATIONSHIPS
+    # =========================
+    class_: Mapped["ClassSectionModel"] = relationship(
+        "ClassSectionModel",
+        back_populates="timetable_entries",
+        lazy="selectin",
+    )
+
+    teacher: Mapped["UserModel"] = relationship(
+        "UserModel",
+        back_populates="teacher_timetable",
+        lazy="selectin",
+    )
