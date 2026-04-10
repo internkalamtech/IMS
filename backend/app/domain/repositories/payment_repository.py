@@ -1,7 +1,7 @@
 """
-Abstract repository interface for payment operations.
+Abstract repository interfaces for payment operations.
 
-Defines the contract that all concrete payment repository
+Defines the contracts that all concrete payment repository
 implementations must fulfill.
 """
 
@@ -10,7 +10,9 @@ from datetime import datetime
 from typing import List, Optional
 
 from app.domain.entities.payment import (
+    FeeDashboard,
     FeeStructure,
+    LedgerEntry,
     Payment,
     PaymentStatus,
     PaymentSummary,
@@ -33,13 +35,13 @@ class PaymentRepository(ABC):
     @abstractmethod
     async def get_student_by_id(self, student_id: int) -> Optional[Student]:
         """
-        Retrieve a student by their ID.
+        Retrieve a student by their unique ID.
 
         Args:
             student_id: Unique identifier of the student
 
         Returns:
-            Student entity if found, None otherwise
+            Student entity, or ``None`` if not found
         """
         pass
 
@@ -52,16 +54,16 @@ class PaymentRepository(ABC):
         status: Optional[PaymentStatus] = None,
     ) -> List[Student]:
         """
-        List students with optional filters.
+        Retrieve a list of students with optional filters.
 
         Args:
-            name: Partial name to filter by
+            name: Partial name to search by (case-insensitive)
             roll_number: Exact roll number to filter by
             class_name: Class name to filter by
             status: Payment status to filter by
 
         Returns:
-            List of matching Student entities
+            List of Student entities
         """
         pass
 
@@ -74,7 +76,7 @@ class PaymentRepository(ABC):
 
         Args:
             student_id: ID of the student to update
-            next_due_date: New next due date (datetime or None)
+            next_due_date: New due date, or ``None`` to clear
         """
         pass
 
@@ -87,29 +89,13 @@ class PaymentRepository(ABC):
         self, fee_structure_id: int
     ) -> Optional[FeeStructure]:
         """
-        Retrieve a fee structure by its ID.
+        Retrieve a fee structure by its unique ID.
 
         Args:
             fee_structure_id: Unique identifier of the fee structure
 
         Returns:
-            FeeStructure entity if found, None otherwise
-        """
-        pass
-
-    @abstractmethod
-    async def update_fee_structure_paid(
-        self, fee_structure_id: int, additional_amount: float
-    ) -> FeeStructure:
-        """
-        Increment the amount_paid on a fee structure record.
-
-        Args:
-            fee_structure_id: ID of the fee structure to update
-            additional_amount: Amount to add to the existing paid amount
-
-        Returns:
-            Updated FeeStructure entity
+            FeeStructure entity, or ``None`` if not found
         """
         pass
 
@@ -133,14 +119,14 @@ class PaymentRepository(ABC):
         Persist a new payment transaction.
 
         Args:
-            student_id: ID of the student making the payment
-            fee_structure_id: ID of the associated fee structure
-            receipt_number: Unique formatted receipt number
+            student_id: ID of the student
+            fee_structure_id: ID of the fee structure being paid against
+            receipt_number: Unique receipt number (REC-YYYY-XXXX format)
             amount: Payment amount
             payment_mode: Mode of payment (Cash, UPI, Card)
             status: Payment status (Paid, Partial, etc.)
-            reference_number: Reference number for UPI/Card payments
-            remarks: Optional remarks
+            reference_number: Optional reference for UPI/Card payments
+            remarks: Optional free-text remarks
 
         Returns:
             Created Payment entity
@@ -150,13 +136,13 @@ class PaymentRepository(ABC):
     @abstractmethod
     async def get_payment_by_id(self, payment_id: int) -> Optional[Payment]:
         """
-        Retrieve a payment by its ID.
+        Retrieve a single payment by its unique ID.
 
         Args:
             payment_id: Unique identifier of the payment
 
         Returns:
-            Payment entity if found, None otherwise
+            Payment entity, or ``None`` if not found
         """
         pass
 
@@ -169,13 +155,13 @@ class PaymentRepository(ABC):
         limit: int = 100,
     ) -> List[Payment]:
         """
-        List payments with optional filters and pagination.
+        Retrieve a list of payments with optional filters and pagination.
 
         Args:
-            student_id: Filter by student ID
-            status: Filter by payment status
-            skip: Number of records to skip (pagination)
-            limit: Maximum records to return (pagination)
+            student_id: Filter results to a specific student
+            status: Filter by payment status string
+            skip: Pagination offset
+            limit: Maximum number of records to return
 
         Returns:
             List of Payment entities
@@ -185,7 +171,7 @@ class PaymentRepository(ABC):
     @abstractmethod
     async def get_payment_summary(self) -> PaymentSummary:
         """
-        Compute aggregated payment statistics across all students.
+        Compute and return aggregated payment statistics.
 
         Returns:
             PaymentSummary with totals for collectible, collected,
@@ -196,12 +182,150 @@ class PaymentRepository(ABC):
     @abstractmethod
     async def receipt_number_exists(self, receipt_number: str) -> bool:
         """
-        Check whether a receipt number already exists in the database.
+        Check whether a receipt number is already in use.
 
         Args:
             receipt_number: Receipt number to check
 
         Returns:
-            True if the receipt number exists, False otherwise
+            ``True`` if the receipt number exists, ``False`` otherwise
+        """
+        pass
+
+    @abstractmethod
+    async def get_student_ledger(self, student_id: int) -> List[LedgerEntry]:
+        """
+        Retrieve the full fee ledger for a student.
+
+        Args:
+            student_id: ID of the student
+
+        Returns:
+            List of LedgerEntry entities ordered by date
+        """
+        pass
+
+    @abstractmethod
+    async def get_fee_dashboard(self) -> FeeDashboard:
+        """
+        Retrieve aggregated fee collection statistics.
+
+        Returns:
+            FeeDashboard entity with summary statistics
+        """
+        pass
+
+
+class FeeStructureRepository(ABC):
+    """
+    Abstract repository for fee structure operations.
+
+    This interface defines the contract for fee structure data access.
+    Concrete implementations are provided in the infrastructure layer.
+    """
+
+    @abstractmethod
+    async def create_fee_structure(
+        self,
+        class_id: int,
+        academic_year: str,
+        total_fee: float,
+        fee_heads: list[dict],
+        installments: list[dict],
+    ) -> FeeStructure:
+        """
+        Create a new fee structure for a class.
+
+        Args:
+            class_id: ID of the class
+            academic_year: Academic year (e.g., "2024-2025")
+            total_fee: Total fee amount
+            fee_heads: List of dicts with fee head details
+            installments: List of dicts with installment details
+
+        Returns:
+            Created FeeStructure entity
+        """
+        pass
+
+    @abstractmethod
+    async def get_fee_structure_by_class_and_year(
+        self,
+        class_id: int,
+        academic_year: str,
+    ) -> Optional[FeeStructure]:
+        """
+        Retrieve a fee structure by class ID and academic year.
+
+        Args:
+            class_id: ID of the class
+            academic_year: Academic year
+
+        Returns:
+            FeeStructure entity or None if not found
+        """
+        pass
+
+    @abstractmethod
+    async def get_fee_structure_by_id(self, fee_structure_id: str) -> Optional[FeeStructure]:
+        """
+        Retrieve a fee structure by its ID.
+
+        Args:
+            fee_structure_id: Unique identifier of the fee structure
+
+        Returns:
+            FeeStructure entity or None if not found
+        """
+        pass
+
+    @abstractmethod
+    async def get_fee_structures_by_class(self, class_id: int) -> list[FeeStructure]:
+        """
+        Retrieve all fee structures for a class.
+
+        Args:
+            class_id: ID of the class
+
+        Returns:
+            List of FeeStructure entities
+        """
+        pass
+
+    @abstractmethod
+    async def update_fee_structure(
+        self,
+        fee_structure_id: str,
+        total_fee: Optional[float] = None,
+        fee_heads: Optional[list[dict]] = None,
+        installments: Optional[list[dict]] = None,
+    ) -> FeeStructure:
+        """
+        Update an existing fee structure.
+
+        Args:
+            fee_structure_id: ID of the fee structure to update
+            total_fee: New total fee amount (optional)
+            fee_heads: New list of fee heads (optional)
+            installments: New list of installments (optional)
+
+        Returns:
+            Updated FeeStructure entity
+        """
+        pass
+
+    @abstractmethod
+    async def delete_fee_structure(self, fee_structure_id: str) -> bool:
+        """
+        Delete a fee structure.
+
+        Args:
+            fee_structure_id: ID of the fee structure to delete
+
+        Returns:
+            True if deletion was successful
+
+        Raises:
+            ValueError: If the fee structure is in use by students
         """
         pass

@@ -235,8 +235,8 @@ class StudentResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class FeeStructureResponse(BaseModel):
-    """Response schema for fee structure data."""
+class StudentFeeStructureResponse(BaseModel):
+    """Response schema for student-based fee structure data."""
 
     id: int
     student_id: int
@@ -293,3 +293,235 @@ class PaymentSummaryResponse(BaseModel):
     total_overdue: float
 
     model_config = {"from_attributes": True}
+
+
+# ---------------------------------------------------------------------------
+# Ledger and dashboard schemas
+# ---------------------------------------------------------------------------
+
+
+class LedgerEntryResponse(BaseModel):
+    """Response schema for a single student ledger entry."""
+
+    id: str
+    student_id: int
+    debit: float
+    credit: float
+    balance: float
+    description: str
+    transaction_date: datetime
+
+
+class StudentLedgerResponse(BaseModel):
+    """Response schema for a student's full ledger."""
+
+    student_id: int
+    transactions: list[LedgerEntryResponse]
+
+
+class FeeDashboardResponse(BaseModel):
+    """Response schema for the fee dashboard analytics."""
+
+    total_collected: float
+    total_pending: float
+    students_paid: int
+    students_pending: int
+
+
+# ---------------------------------------------------------------------------
+# Fee Structure schemas
+# ---------------------------------------------------------------------------
+
+
+class FeeHeadCreate(BaseModel):
+    """Request schema for creating a fee head."""
+
+    name: str = Field(..., min_length=1, description="Name of the fee head")
+    description: str | None = Field(None, description="Description of the fee head")
+    amount: float = Field(..., gt=0, description="Amount for this fee head")
+    percentage: float | None = Field(None, ge=0, le=100, description="Percentage of total fee")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "name": "Tuition Fee",
+                    "description": "Regular tuition charges",
+                    "amount": 5000.0,
+                    "percentage": 60.0,
+                }
+            ]
+        }
+    }
+
+
+class FeeHeadResponse(BaseModel):
+    """Response schema for a fee head."""
+
+    id: str
+    name: str
+    description: str | None
+    amount: float
+    percentage: float | None
+
+
+class InstallmentCreate(BaseModel):
+    """Request schema for creating an installment."""
+
+    installment_number: int = Field(..., gt=0, description="Sequential number of the installment")
+    due_date: datetime = Field(..., description="Due date for the installment")
+    amount: float = Field(..., gt=0, description="Amount for this installment")
+    description: str | None = Field(None, description="Description of the installment")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "installment_number": 1,
+                    "due_date": "2024-04-01T00:00:00",
+                    "amount": 3000.0,
+                    "description": "First Installment",
+                }
+            ]
+        }
+    }
+
+
+class InstallmentResponse(BaseModel):
+    """Response schema for an installment."""
+
+    id: str
+    installment_number: int
+    due_date: datetime
+    amount: float
+    description: str | None
+
+
+class FeeStructureCreate(BaseModel):
+    """Request schema for creating a fee structure."""
+
+    class_id: int = Field(..., gt=0, description="ID of the class")
+    academic_year: str = Field(..., min_length=1, description="Academic year (e.g., 2024-2025)")
+    total_fee: float = Field(..., gt=0, description="Total fee amount")
+    fee_heads: list[FeeHeadCreate] = Field(..., min_length=1, description="List of fee heads")
+    installments: list[InstallmentCreate] = Field(
+        ..., min_length=1, description="List of installments"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "class_id": 1,
+                    "academic_year": "2024-2025",
+                    "total_fee": 10000.0,
+                    "fee_heads": [
+                        {
+                            "name": "Tuition Fee",
+                            "description": "Regular tuition charges",
+                            "amount": 6000.0,
+                            "percentage": 60.0,
+                        },
+                        {
+                            "name": "Lab Fee",
+                            "description": "Laboratory charges",
+                            "amount": 2000.0,
+                            "percentage": 20.0,
+                        },
+                        {
+                            "name": "Transport Fee",
+                            "description": "Transport charges",
+                            "amount": 2000.0,
+                            "percentage": 20.0,
+                        },
+                    ],
+                    "installments": [
+                        {
+                            "installment_number": 1,
+                            "due_date": "2024-04-01T00:00:00",
+                            "amount": 5000.0,
+                            "description": "First Installment",
+                        },
+                        {
+                            "installment_number": 2,
+                            "due_date": "2024-08-01T00:00:00",
+                            "amount": 5000.0,
+                            "description": "Second Installment",
+                        },
+                    ],
+                }
+            ]
+        }
+    }
+
+
+class FeeStructureUpdate(BaseModel):
+    """Request schema for updating a fee structure."""
+
+    total_fee: float | None = Field(None, gt=0, description="Total fee amount")
+    fee_heads: list[FeeHeadCreate] | None = Field(None, description="List of fee heads")
+    installments: list[InstallmentCreate] | None = Field(None, description="List of installments")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "total_fee": 12000.0,
+                    "fee_heads": [
+                        {
+                            "name": "Tuition Fee",
+                            "description": "Regular tuition charges",
+                            "amount": 7000.0,
+                            "percentage": 58.3,
+                        }
+                    ],
+                }
+            ]
+        }
+    }
+
+
+class FeeStructureResponse(BaseModel):
+    """Response schema for a complete fee structure."""
+
+    id: str
+    class_id: int
+    academic_year: str
+    total_fee: float
+    fee_heads: list[FeeHeadResponse]
+    installments: list[InstallmentResponse]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "1",
+                    "class_id": 1,
+                    "academic_year": "2024-2025",
+                    "total_fee": 10000.0,
+                    "fee_heads": [
+                        {
+                            "id": "1",
+                            "name": "Tuition Fee",
+                            "description": "Regular tuition charges",
+                            "amount": 6000.0,
+                            "percentage": 60.0,
+                        }
+                    ],
+                    "installments": [
+                        {
+                            "id": "1",
+                            "installment_number": 1,
+                            "due_date": "2024-04-01T00:00:00",
+                            "amount": 5000.0,
+                            "description": "First Installment",
+                        }
+                    ],
+                    "created_at": "2024-01-15T10:30:00",
+                    "updated_at": "2024-01-15T10:30:00",
+                }
+            ]
+        }
+    }

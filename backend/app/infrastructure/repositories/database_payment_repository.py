@@ -14,7 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import DatabaseError
 from app.core.logger import Logger
 from app.domain.entities.payment import (
+    FeeDashboard,
+    FeeHead,
     FeeStructure,
+    Installment,
+    LedgerEntry,
     Payment,
     PaymentStatus,
     PaymentSummary,
@@ -22,8 +26,11 @@ from app.domain.entities.payment import (
 )
 from app.domain.repositories.payment_repository import PaymentRepository
 from app.infrastructure.database.models import (
+    FeeHeadModel,
     FeeStructureModel,
+    InstallmentModel,
     PaymentModel,
+    StudentLedgerModel,
     StudentModel,
 )
 
@@ -63,13 +70,35 @@ class DatabasePaymentRepository(PaymentRepository):
     @staticmethod
     def _fee_structure_to_entity(model: FeeStructureModel) -> FeeStructure:
         """Map a FeeStructureModel ORM object to a FeeStructure domain entity."""
+        fee_heads = [
+            FeeHead(
+                id=str(fh.id),
+                name=fh.name,
+                description=fh.description,
+                amount=fh.amount,
+                percentage=fh.percentage,
+            )
+            for fh in (model.fee_heads or [])
+        ]
+        installments = [
+            Installment(
+                id=str(inst.id),
+                installment_number=inst.installment_number,
+                due_date=inst.due_date,
+                amount=inst.amount,
+                description=inst.description,
+            )
+            for inst in (model.installments or [])
+        ]
         return FeeStructure(
-            id=model.id,
-            student_id=model.student_id,
-            total_fee=model.total_fee,
-            amount_paid=model.amount_paid,
-            fee_type=model.fee_type,
+            id=str(model.id),
+            class_id=model.class_id,
             academic_year=model.academic_year,
+            total_fee=model.total_fee,
+            fee_heads=fee_heads,
+            installments=installments,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
         )
 
     @staticmethod
@@ -78,7 +107,7 @@ class DatabasePaymentRepository(PaymentRepository):
         return Payment(
             id=model.id,
             student_id=model.student_id,
-            fee_structure_id=model.fee_structure_id,
+            fee_structure_id=model.fee_structure_id or 0,
             receipt_number=model.receipt_number,
             amount=model.amount,
             payment_mode=model.payment_mode,  # type: ignore[arg-type]
@@ -86,6 +115,19 @@ class DatabasePaymentRepository(PaymentRepository):
             payment_date=model.payment_date,
             reference_number=model.reference_number,
             remarks=model.remarks,
+        )
+
+    @staticmethod
+    def _ledger_to_entity(model: StudentLedgerModel) -> LedgerEntry:
+        """Convert StudentLedgerModel to LedgerEntry domain entity."""
+        return LedgerEntry(
+            id=str(model.id),
+            student_id=model.student_id,
+            debit=model.debit,
+            credit=model.credit,
+            balance=model.balance,
+            description=model.description,
+            transaction_date=model.transaction_date,
         )
 
     # ------------------------------------------------------------------ #
@@ -121,9 +163,6 @@ class DatabasePaymentRepository(PaymentRepository):
     ) -> List[Student]:
         """
         List students with optional filters.
-
-        The ``status`` filter is applied in SQL via a subquery that joins
-        students to their latest payment, avoiding N+1 queries.
 
         Args:
             name: Partial name filter (case-insensitive LIKE)
@@ -184,18 +223,6 @@ class DatabasePaymentRepository(PaymentRepository):
             Logger.error(f"Error listing students: {exc}")
             raise DatabaseError("Failed to list students.") from exc
 
-    async def _latest_payment_status(
-        self, student_id: int
-    ) -> Optional[str]:
-        """Return the most recent payment status for a student."""
-        result = await self.db.execute(
-            select(PaymentModel.status)
-            .where(PaymentModel.student_id == student_id)
-            .order_by(PaymentModel.payment_date.desc())
-            .limit(1)
-        )
-        return result.scalar_one_or_none()
-
     async def update_student_next_due_date(
         self, student_id: int, next_due_date: Optional[datetime]
     ) -> None:
@@ -252,41 +279,6 @@ class DatabasePaymentRepository(PaymentRepository):
             )
             raise DatabaseError("Failed to retrieve fee structure.") from exc
 
-    async def update_fee_structure_paid(
-        self, fee_structure_id: int, additional_amount: float
-    ) -> FeeStructure:
-        """
-        Increment the amount_paid on a fee structure by additional_amount.
-
-        Args:
-            fee_structure_id: Primary key of the fee structure
-            additional_amount: Amount to add to amount_paid
-
-        Returns:
-            Updated FeeStructure entity
-        """
-        try:
-            result = await self.db.execute(
-                select(FeeStructureModel).where(
-                    FeeStructureModel.id == fee_structure_id
-                )
-            )
-            model = result.scalar_one_or_none()
-            if model is None:
-                raise DatabaseError(
-                    f"Fee structure {fee_structure_id} not found."
-                )
-            model.amount_paid = model.amount_paid + additional_amount
-            await self.db.flush()
-            return self._fee_structure_to_entity(model)
-        except DatabaseError:
-            raise
-        except Exception as exc:
-            Logger.error(
-                f"Error updating fee structure {fee_structure_id}: {exc}"
-            )
-            raise DatabaseError("Failed to update fee structure.") from exc
-
     # ------------------------------------------------------------------ #
     # Payment operations
     # ------------------------------------------------------------------ #
@@ -321,7 +313,7 @@ class DatabasePaymentRepository(PaymentRepository):
         try:
             model = PaymentModel(
                 student_id=student_id,
-                fee_structure_id=fee_structure_id,
+                fee_structure_id=fee_structure_id if fee_structure_id else None,
                 receipt_number=receipt_number,
                 amount=amount,
                 payment_mode=payment_mode,
@@ -413,41 +405,34 @@ class DatabasePaymentRepository(PaymentRepository):
             )
             total_collectible: float = total_collectible_result.scalar() or 0.0
 
-            # Total collected = sum of all fee structure amount_paid values
+            # Total collected = sum of all payments
             total_collected_result = await self.db.execute(
-                select(
-                    func.coalesce(func.sum(FeeStructureModel.amount_paid), 0)
-                )
+                select(func.coalesce(func.sum(PaymentModel.amount), 0))
             )
             total_collected: float = total_collected_result.scalar() or 0.0
 
-            # Overdue = outstanding balances for students past their next_due_date
+            # Overdue = students whose next_due_date has passed
             overdue_result = await self.db.execute(
                 select(
-                    func.coalesce(
-                        func.sum(
-                            FeeStructureModel.total_fee - FeeStructureModel.amount_paid
-                        ),
-                        0,
-                    )
+                    func.coalesce(func.sum(PaymentModel.amount), 0)
                 )
                 .join(
                     StudentModel,
-                    FeeStructureModel.student_id == StudentModel.id,
+                    PaymentModel.student_id == StudentModel.id,
                 )
                 .where(
                     StudentModel.next_due_date < datetime.utcnow(),
-                    FeeStructureModel.total_fee > FeeStructureModel.amount_paid,
+                    PaymentModel.status == "Partial",
                 )
             )
             total_overdue: float = overdue_result.scalar() or 0.0
 
-            total_pending = total_collectible - total_collected
+            total_pending = max(total_collectible - total_collected, 0.0)
 
             return PaymentSummary(
                 total_collectible=total_collectible,
                 total_collected=total_collected,
-                total_pending=max(total_pending, 0.0),
+                total_pending=total_pending,
                 total_overdue=total_overdue,
             )
         except Exception as exc:
@@ -478,3 +463,95 @@ class DatabasePaymentRepository(PaymentRepository):
             raise DatabaseError(
                 "Failed to check receipt number."
             ) from exc
+
+    async def get_student_ledger(self, student_id: int) -> List[LedgerEntry]:
+        """
+        Retrieve the full fee ledger for a student.
+
+        Args:
+            student_id: ID of the student
+
+        Returns:
+            List of LedgerEntry entities ordered by date
+        """
+        try:
+            result = await self.db.execute(
+                select(StudentLedgerModel)
+                .where(StudentLedgerModel.student_id == student_id)
+                .order_by(StudentLedgerModel.transaction_date.asc())
+            )
+            entries = result.scalars().all()
+            return [self._ledger_to_entity(e) for e in entries]
+        except Exception as exc:
+            Logger.error(f"Database error fetching ledger: {exc}", exc_info=True)
+            raise DatabaseError(f"Failed to fetch student ledger: {str(exc)}")
+
+    async def get_fee_dashboard(self) -> FeeDashboard:
+        """
+        Retrieve aggregated fee collection statistics.
+
+        Returns:
+            FeeDashboard entity with summary statistics
+        """
+        try:
+            # Total amount collected from payment records
+            collected_result = await self.db.execute(
+                select(func.coalesce(func.sum(PaymentModel.amount), 0.0))
+            )
+            total_collected: float = collected_result.scalar_one()
+
+            # Students who have made at least one payment
+            paid_result = await self.db.execute(
+                select(func.count(func.distinct(PaymentModel.student_id)))
+            )
+            students_paid: int = paid_result.scalar_one()
+
+            # Latest ledger row per student, using id as a deterministic tie-breaker
+            latest_ledger_subquery = (
+                select(
+                    StudentLedgerModel.student_id.label("student_id"),
+                    StudentLedgerModel.balance.label("balance"),
+                    func.row_number()
+                    .over(
+                        partition_by=StudentLedgerModel.student_id,
+                        order_by=(
+                            StudentLedgerModel.transaction_date.desc(),
+                            StudentLedgerModel.id.desc(),
+                        ),
+                    )
+                    .label("row_num"),
+                )
+            ).subquery()
+
+            # Students whose latest ledger balance is still positive
+            pending_result = await self.db.execute(
+                select(func.count())
+                .select_from(latest_ledger_subquery)
+                .where(
+                    latest_ledger_subquery.c.row_num == 1,
+                    latest_ledger_subquery.c.balance > 0,
+                )
+            )
+            students_pending: int = pending_result.scalar_one()
+
+            # Total pending from latest outstanding balances only
+            pending_amount_result = await self.db.execute(
+                select(func.coalesce(func.sum(latest_ledger_subquery.c.balance), 0.0))
+                .select_from(latest_ledger_subquery)
+                .where(
+                    latest_ledger_subquery.c.row_num == 1,
+                    latest_ledger_subquery.c.balance > 0,
+                )
+            )
+            total_pending: float = pending_amount_result.scalar_one()
+
+            return FeeDashboard(
+                total_collected=total_collected,
+                total_pending=total_pending,
+                students_paid=students_paid,
+                students_pending=students_pending,
+            )
+
+        except Exception as exc:
+            Logger.error(f"Database error fetching fee dashboard: {exc}", exc_info=True)
+            raise DatabaseError(f"Failed to fetch fee dashboard: {str(exc)}")

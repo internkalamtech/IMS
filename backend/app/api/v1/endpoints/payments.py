@@ -6,6 +6,8 @@ Provides REST API endpoints for the Payment Module, including:
 - Listing and filtering payments
 - Listing students with fee information
 - Aggregated payment statistics
+- Student fee ledger
+- Fee collection dashboard
 - CSV export of payment records
 """
 
@@ -20,18 +22,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies import get_current_user
 from app.api.schemas import (
     ErrorResponse,
+    FeeDashboardResponse,
+    LedgerEntryResponse,
     PaymentCreate,
     PaymentResponse,
-    PaymentSummaryResponse,
     PaymentStatus,
+    PaymentSummaryResponse,
+    StudentLedgerResponse,
     StudentResponse,
 )
 from app.core.errors import DatabaseError, NotFoundError, ValidationError
 from app.core.logger import Logger
 from app.domain.entities.user import User
 from app.domain.usecases.payment_usecases import (
+    GetFeeDashboardUseCase,
     GetPaymentSummaryUseCase,
     GetPaymentUseCase,
+    GetStudentLedgerUseCase,
     GetStudentUseCase,
     ListPaymentsUseCase,
     ListStudentsUseCase,
@@ -211,67 +218,48 @@ async def list_payments(
 
 
 @router.get(
-    "/{payment_id}",
-    response_model=PaymentResponse,
+    "/dashboard",
+    response_model=FeeDashboardResponse,
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
-        404: {"model": ErrorResponse, "description": "Payment not found"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
-    summary="Get payment by ID",
-    description="Retrieve a single payment transaction by its unique ID.",
+    summary="Fee collection dashboard",
+    description="Retrieve aggregated fee collection analytics.",
 )
-async def get_payment(
-    payment_id: int,
+async def fee_dashboard(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> PaymentResponse:
+) -> FeeDashboardResponse:
     """
-    Retrieve a payment by its ID.
+    Fee dashboard endpoint.
+
+    Returns summary statistics for fee collection across all students.
 
     Args:
-        payment_id: Unique identifier of the payment
         db: Database session (injected)
         current_user: Authenticated user (injected)
 
     Returns:
-        PaymentResponse for the requested payment
-
-    Raises:
-        HTTPException 404: If payment is not found
+        FeeDashboardResponse with summary statistics
     """
     try:
         repository = DatabasePaymentRepository(db)
-        use_case = GetPaymentUseCase(repository)
-        payment = await use_case.execute(payment_id)
-        return PaymentResponse(
-            id=payment.id,
-            student_id=payment.student_id,
-            fee_structure_id=payment.fee_structure_id,
-            receipt_number=payment.receipt_number,
-            amount=payment.amount,
-            payment_mode=payment.payment_mode,
-            reference_number=payment.reference_number,
-            status=payment.status,
-            remarks=payment.remarks,
-            payment_date=payment.payment_date,
-        )
-    except NotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=exc.message
+        use_case = GetFeeDashboardUseCase(repository)
+        result = await use_case.execute()
+        return FeeDashboardResponse(
+            total_collected=result.total_collected,
+            total_pending=result.total_pending,
+            students_paid=result.students_paid,
+            students_pending=result.students_pending,
         )
     except DatabaseError as exc:
-        Logger.error(f"Database error while fetching payment {payment_id}: {exc}")
+        Logger.error(f"Database error while fetching fee dashboard: {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred while retrieving the payment.",
+            detail="An error occurred while retrieving the fee dashboard.",
         )
-
-
-# ------------------------------------------------------------------ #
-# Summary / stats endpoint
-# ------------------------------------------------------------------ #
 
 
 @router.get(
@@ -396,6 +384,67 @@ async def list_students(
 
 
 @router.get(
+    "/students/{student_id}/ledger",
+    response_model=StudentLedgerResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        404: {"model": ErrorResponse, "description": "Student not found"},
+        500: {"model": ErrorResponse, "description": "Internal server error"},
+    },
+    summary="Get student fee ledger",
+    description="Retrieve the full fee ledger for a specific student.",
+)
+async def get_student_ledger(
+    student_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> StudentLedgerResponse:
+    """
+    Get student ledger endpoint.
+
+    Returns all ledger entries for the student ordered by date.
+
+    Args:
+        student_id: ID of the student
+        db: Database session (injected)
+        current_user: Authenticated user (injected)
+
+    Returns:
+        StudentLedgerResponse with all ledger entries
+    """
+    try:
+        repository = DatabasePaymentRepository(db)
+        use_case = GetStudentLedgerUseCase(repository)
+        entries = await use_case.execute(student_id=student_id)
+        return StudentLedgerResponse(
+            student_id=student_id,
+            transactions=[
+                LedgerEntryResponse(
+                    id=e.id,
+                    student_id=e.student_id,
+                    debit=e.debit,
+                    credit=e.credit,
+                    balance=e.balance,
+                    description=e.description,
+                    transaction_date=e.transaction_date,
+                )
+                for e in entries
+            ],
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        )
+    except DatabaseError as exc:
+        Logger.error(f"Database error while fetching student ledger: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while retrieving the student ledger.",
+        )
+
+
+@router.get(
     "/students/{student_id}",
     response_model=StudentResponse,
     status_code=status.HTTP_200_OK,
@@ -448,6 +497,65 @@ async def get_student(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while retrieving the student.",
+        )
+
+
+@router.get(
+    "/{payment_id}",
+    response_model=PaymentResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        404: {"model": ErrorResponse, "description": "Payment not found"},
+        500: {"model": ErrorResponse, "description": "Internal server error"},
+    },
+    summary="Get payment by ID",
+    description="Retrieve a single payment transaction by its unique ID.",
+)
+async def get_payment(
+    payment_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> PaymentResponse:
+    """
+    Retrieve a payment by its ID.
+
+    Args:
+        payment_id: Unique identifier of the payment
+        db: Database session (injected)
+        current_user: Authenticated user (injected)
+
+    Returns:
+        PaymentResponse for the requested payment
+
+    Raises:
+        HTTPException 404: If payment is not found
+    """
+    try:
+        repository = DatabasePaymentRepository(db)
+        use_case = GetPaymentUseCase(repository)
+        payment = await use_case.execute(payment_id)
+        return PaymentResponse(
+            id=payment.id,
+            student_id=payment.student_id,
+            fee_structure_id=payment.fee_structure_id,
+            receipt_number=payment.receipt_number,
+            amount=payment.amount,
+            payment_mode=payment.payment_mode,
+            reference_number=payment.reference_number,
+            status=payment.status,
+            remarks=payment.remarks,
+            payment_date=payment.payment_date,
+        )
+    except NotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.message
+        )
+    except DatabaseError as exc:
+        Logger.error(f"Database error while fetching payment {payment_id}: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while retrieving the payment.",
         )
 
 
