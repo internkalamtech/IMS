@@ -7,6 +7,7 @@ accessing fee collection analytics.
 """
 
 from fastapi import APIRouter, Depends, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
@@ -26,6 +27,7 @@ from app.domain.usecases.payment_usecases import (
     GetStudentLedgerUseCase,
 )
 from app.infrastructure.database.database import get_db
+from app.infrastructure.database.models import UserModel
 from app.infrastructure.repositories.database_payment_repository import (
     DatabasePaymentRepository,
 )
@@ -94,9 +96,6 @@ async def get_student_ledger(
     Returns all ledger entries for the student ordered by date.
     Raises 404 if the student does not exist.
     """
-    from sqlalchemy import select
-    from app.infrastructure.database.models import UserModel
-
     # Verify student exists
     result = await db.execute(select(UserModel).where(UserModel.id == student_id))
     if result.scalar_one_or_none() is None:

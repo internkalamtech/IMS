@@ -255,7 +255,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             result = await self.db.execute(
                 select(FeeStructureModel).where(FeeStructureModel.id == fs_id)
             )
-            fs_model = result.scalar_one_or_none()
+            fs_model = result.unique().scalar_one_or_none()
             if not fs_model:
                 raise ValueError(
                     f"Fee structure not found: {fee_structure_id}"
@@ -351,7 +351,7 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             result = await self.db.execute(
                 select(FeeStructureModel).where(FeeStructureModel.id == fs_id)
             )
-            fs_model = result.scalar_one_or_none()
+            fs_model = result.unique().scalar_one_or_none()
             if not fs_model:
                 raise ValueError(
                     f"Fee structure not found: {fee_structure_id}"

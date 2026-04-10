@@ -75,7 +75,10 @@ class DatabasePaymentRepository(PaymentRepository):
             self.db.add(payment_model)
             await self.db.flush()
 
-            # Compute running balance for the ledger
+            # Compute running balance for the ledger.
+            # Balance convention: positive value = cumulative amount paid by student
+            # (debit entries, e.g. fee charges, will increase an outstanding amount;
+            #  credit entries, i.e. payments, increase the running total paid).
             # (lock row for concurrency safety)
             result = await self.db.execute(
                 select(StudentLedgerModel)
@@ -90,7 +93,8 @@ class DatabasePaymentRepository(PaymentRepository):
             last_entry = result.scalar_one_or_none()
             previous_balance = last_entry.balance if last_entry else 0.0
 
-            new_balance = previous_balance - amount  # credit reduces balance
+            # Each payment increases the running total of amount paid
+            new_balance = previous_balance + amount
 
             # Add ledger entry
             ledger_entry = StudentLedgerModel(
