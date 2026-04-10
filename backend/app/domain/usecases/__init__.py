@@ -5,21 +5,23 @@ from app.domain.usecases.auth_usecases import (
     GetCurrentUserUseCase,
 )
 from app.domain.usecases.payment_usecases import (
-    RecordPaymentUseCase,
-    GetPaymentUseCase,
-    ListPaymentsUseCase,
-    GetPaymentSummaryUseCase,
-    ListStudentsUseCase,
-    GetStudentUseCase,
+    CreatePaymentUseCase,
+    GetStudentLedgerUseCase,
+    GetFeeDashboardUseCase,
+    CreateFeeStructureUseCase,
+    GetFeeStructureUseCase,
+    UpdateFeeStructureUseCase,
+    DeleteFeeStructureUseCase,
 )
 
 __all__ = [
     "LoginUseCase",
     "GetCurrentUserUseCase",
-    "RecordPaymentUseCase",
-    "GetPaymentUseCase",
-    "ListPaymentsUseCase",
-    "GetPaymentSummaryUseCase",
-    "ListStudentsUseCase",
-    "GetStudentUseCase",
+    "CreatePaymentUseCase",
+    "GetStudentLedgerUseCase",
+    "GetFeeDashboardUseCase",
+    "CreateFeeStructureUseCase",
+    "GetFeeStructureUseCase",
+    "UpdateFeeStructureUseCase",
+    "DeleteFeeStructureUseCase",
 ]
