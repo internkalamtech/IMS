@@ -32,10 +32,30 @@ export class AuthRepositoryImpl implements AuthRepository {
             return domainUser;
         } catch (error: any) {
             Logger.error('Login failed', error);
-            if (error.response?.data?.detail) {
-                throw new NetworkError(error.response.data.detail);
+
+            if (error instanceof Error) {
+                throw error;
             }
-            throw error;
+
+            const errorDetail =
+                error &&
+                typeof error === 'object' &&
+                'response' in error &&
+                error.response &&
+                typeof error.response === 'object' &&
+                'data' in error.response &&
+                error.response.data &&
+                typeof error.response.data === 'object' &&
+                'detail' in error.response.data &&
+                typeof error.response.data.detail === 'string'
+                    ? error.response.data.detail
+                    : null;
+
+            if (errorDetail) {
+                throw new NetworkError(errorDetail);
+            }
+
+            throw new NetworkError('Login failed');
         }
     }
 

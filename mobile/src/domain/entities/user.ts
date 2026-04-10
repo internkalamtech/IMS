@@ -1,7 +1,7 @@
 export interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: 'admin' | 'student' | 'teacher' | 'parent' | 'driver';
-    avatarUrl?: string;
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'student' | 'teacher';
+  avatarUrl?: string;
 }
