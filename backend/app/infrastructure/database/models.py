@@ -62,10 +62,14 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(255), unique=True, index=True, nullable=False
+    )
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -87,7 +91,9 @@ class UserModel(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
+        return (
+            f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
+        )
 
 
 class RoleModel(Base):
@@ -131,7 +137,10 @@ class PaymentModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     amount: Mapped[float] = mapped_column(Float, nullable=False)
     payment_method: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -142,7 +151,10 @@ class PaymentModel(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Payment(id={self.id}, student_id={self.student_id}, " f"amount={self.amount})>"
+        return (
+            f"<Payment(id={self.id}, student_id={self.student_id}, "
+            f"amount={self.amount})>"
+        )
 
 
 class StudentLedgerModel(Base):
@@ -157,7 +169,10 @@ class StudentLedgerModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     debit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     credit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
@@ -227,7 +242,8 @@ class FeeStructureModel(Base):
     def __repr__(self) -> str:
         return (
             f"<FeeStructure(id={self.id}, class_id={self.class_id}, "
-            f"academic_year='{self.academic_year}', total_fee={self.total_fee})>"
+            f"academic_year='{self.academic_year}', "
+            f"total_fee={self.total_fee})>"
         )
 
 
@@ -259,7 +275,10 @@ class FeeHeadModel(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<FeeHead(id={self.id}, name='{self.name}', amount={self.amount})>"
+        return (
+            f"<FeeHead(id={self.id}, name='{self.name}', "
+            f"amount={self.amount})>"
+        )
 
 
 class InstallmentModel(Base):
@@ -291,6 +310,7 @@ class InstallmentModel(Base):
 
     def __repr__(self) -> str:
         return (
-            f"<Installment(id={self.id}, installment_number={self.installment_number}, "
+            f"<Installment(id={self.id}, "
+            f"installment_number={self.installment_number}, "
             f"due_date={self.due_date}, amount={self.amount})>"
         )

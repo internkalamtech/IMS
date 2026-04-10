@@ -118,7 +118,9 @@ class FeeStructureRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_fee_structure_by_id(self, fee_structure_id: str) -> FeeStructure | None:
+    async def get_fee_structure_by_id(
+        self, fee_structure_id: str
+    ) -> FeeStructure | None:
         """
         Retrieve a fee structure by its ID.
 
@@ -131,7 +133,9 @@ class FeeStructureRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_fee_structures_by_class(self, class_id: int) -> list[FeeStructure]:
+    async def get_fee_structures_by_class(
+        self, class_id: int
+    ) -> list[FeeStructure]:
         """
         Retrieve all fee structures for a class.
 

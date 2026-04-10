@@ -114,8 +114,10 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             await self.db.flush()
 
             Logger.info(
-                f"Fee structure created: id={fs_model.id}, class_id={class_id}, "
-                f"fee_heads={len(fee_head_models)}, installments={len(installment_models)}"
+                f"Fee structure created: id={fs_model.id}, "
+                f"class_id={class_id}, "
+                f"fee_heads={len(fee_head_models)}, "
+                f"installments={len(installment_models)}"
             )
 
             return self._fee_structure_to_entity(
@@ -123,7 +125,9 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             )
 
         except Exception as e:
-            Logger.error(f"Database error creating fee structure: {e}", exc_info=True)
+            Logger.error(
+                f"Database error creating fee structure: {e}", exc_info=True
+            )
             raise DatabaseError(f"Failed to create fee structure: {str(e)}")
 
     async def get_fee_structure_by_class_and_year(
@@ -165,7 +169,9 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             )
             raise DatabaseError(f"Failed to fetch fee structure: {str(e)}")
 
-    async def get_fee_structure_by_id(self, fee_structure_id: str) -> FeeStructure | None:
+    async def get_fee_structure_by_id(
+        self, fee_structure_id: str
+    ) -> FeeStructure | None:
         """
         Retrieve a fee structure by its ID.
 
@@ -199,7 +205,9 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             )
             raise DatabaseError(f"Failed to fetch fee structure: {str(e)}")
 
-    async def get_fee_structures_by_class(self, class_id: int) -> list[FeeStructure]:
+    async def get_fee_structures_by_class(
+        self, class_id: int
+    ) -> list[FeeStructure]:
         """
         Retrieve all fee structures for a class.
 
@@ -259,7 +267,9 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             )
             fs_model = result.scalar_one_or_none()
             if not fs_model:
-                raise ValueError(f"Fee structure not found: {fee_structure_id}")
+                raise ValueError(
+                    f"Fee structure not found: {fee_structure_id}"
+                )
 
             # Update total fee if provided
             if total_fee is not None:
@@ -331,7 +341,9 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             Logger.error(f"Validation error updating fee structure: {e}")
             raise
         except Exception as e:
-            Logger.error(f"Database error updating fee structure: {e}", exc_info=True)
+            Logger.error(
+                f"Database error updating fee structure: {e}", exc_info=True
+            )
             raise DatabaseError(f"Failed to update fee structure: {str(e)}")
 
     async def delete_fee_structure(self, fee_structure_id: str) -> bool:
@@ -360,10 +372,12 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             )
             fs_model = result.scalar_one_or_none()
             if not fs_model:
-                raise ValueError(f"Fee structure not found: {fee_structure_id}")
+                raise ValueError(
+                    f"Fee structure not found: {fee_structure_id}"
+                )
 
-            # TODO: Add check for student assignments when Student model is created
-            # For now, just delete the fee structure
+            # TODO: Add check for student assignments when Student model
+            # is created. For now, just delete the fee structure
             await self.db.delete(fs_model)
             await self.db.flush()
 
@@ -374,7 +388,9 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             Logger.error(f"Validation error deleting fee structure: {e}")
             raise
         except Exception as e:
-            Logger.error(f"Database error deleting fee structure: {e}", exc_info=True)
+            Logger.error(
+                f"Database error deleting fee structure: {e}", exc_info=True
+            )
             raise DatabaseError(f"Failed to delete fee structure: {str(e)}")
 
     def _fee_structure_to_entity(
@@ -417,8 +433,10 @@ class DatabaseFeeStructureRepository(FeeStructureRepository):
             updated_at=model.updated_at,
         )
 
-    def _fee_structure_model_to_entity(self, model: FeeStructureModel) -> FeeStructure:
-        """Convert FeeStructureModel (with relationships) to FeeStructure domain entity."""
+    def _fee_structure_model_to_entity(
+        self, model: FeeStructureModel
+    ) -> FeeStructure:
+        """Convert FeeStructureModel (with relationships) to domain entity."""
         fee_heads = [
             FeeHead(
                 id=str(fh.id),

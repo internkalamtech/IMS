@@ -49,7 +49,8 @@ class CreatePaymentUseCase:
             Created Payment entity
 
         Raises:
-            ValueError: If amount is not positive or required fields are missing
+            ValueError: If amount is not positive or required
+            fields are missing
         """
         if student_id <= 0:
             raise ValueError("Student ID must be a positive integer")
@@ -186,12 +187,17 @@ class CreateFeeStructureUseCase:
 
         # Validate installments
         for inst in installments:
-            if not inst.get("installment_number") or inst.get("installment_number") <= 0:
+            if (
+                not inst.get("installment_number")
+                or inst.get("installment_number") <= 0
+            ):
                 raise ValueError("Installment number must be positive")
             if not inst.get("due_date"):
                 raise ValueError("Due date is required for each installment")
             if not inst.get("amount") or inst.get("amount") <= 0:
-                raise ValueError("Installment amount must be greater than zero")
+                raise ValueError(
+                    "Installment amount must be greater than zero"
+                )
 
         return await self.fee_structure_repository.create_fee_structure(
             class_id=class_id,
@@ -238,12 +244,17 @@ class GetFeeStructureUseCase:
         if not academic_year or not academic_year.strip():
             raise ValueError("Academic year is required")
 
-        return await self.fee_structure_repository.get_fee_structure_by_class_and_year(
-            class_id=class_id,
-            academic_year=academic_year.strip(),
+        return (
+            await self.fee_structure_repository
+            .get_fee_structure_by_class_and_year(
+                class_id=class_id,
+                academic_year=academic_year.strip(),
+            )
         )
 
-    async def execute_by_id(self, fee_structure_id: str) -> FeeStructure | None:
+    async def execute_by_id(
+        self, fee_structure_id: str
+    ) -> FeeStructure | None:
         """
         Get fee structure by ID.
 
@@ -333,18 +344,27 @@ class UpdateFeeStructureUseCase:
                 if not head.get("name"):
                     raise ValueError("Fee head name is required")
                 if not head.get("amount") or head.get("amount") <= 0:
-                    raise ValueError("Fee head amount must be greater than zero")
+                    raise ValueError(
+                        "Fee head amount must be greater than zero"
+                    )
 
         if installments is not None:
             if not installments:
                 raise ValueError("At least one installment is required")
             for inst in installments:
-                if not inst.get("installment_number") or inst.get("installment_number") <= 0:
+                if (
+                    not inst.get("installment_number")
+                    or inst.get("installment_number") <= 0
+                ):
                     raise ValueError("Installment number must be positive")
                 if not inst.get("due_date"):
-                    raise ValueError("Due date is required for each installment")
+                    raise ValueError(
+                        "Due date is required for each installment"
+                    )
                 if not inst.get("amount") or inst.get("amount") <= 0:
-                    raise ValueError("Installment amount must be greater than zero")
+                    raise ValueError(
+                        "Installment amount must be greater than zero"
+                    )
 
         return await self.fee_structure_repository.update_fee_structure(
             fee_structure_id=fee_structure_id.strip(),

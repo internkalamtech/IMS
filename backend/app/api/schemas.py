@@ -21,7 +21,9 @@ class LoginRequest(BaseModel):
     )
 
     model_config = {
-        "json_schema_extra": {"examples": [{"email": "admin@myuser.com", "password": "admin123"}]}
+        "json_schema_extra": {
+            "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
+        }
     }
 
 
@@ -110,7 +112,9 @@ class ErrorResponse(BaseModel):
 
     detail: str
 
-    model_config = {"json_schema_extra": {"examples": [{"detail": "Error message"}]}}
+    model_config = {
+        "json_schema_extra": {"examples": [{"detail": "Error message"}]}
+    }
 
 
 class DemoCredential(BaseModel):
@@ -153,7 +157,9 @@ class PaymentCreate(BaseModel):
 
     student_id: int = Field(..., gt=0, description="ID of the student")
     amount: float = Field(..., gt=0, description="Payment amount")
-    payment_method: str = Field(..., min_length=1, description="Payment method (e.g., cash, card)")
+    payment_method: str = Field(
+        ..., min_length=1, description="Payment method (e.g., cash, card)"
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -215,9 +221,13 @@ class FeeHeadCreate(BaseModel):
     """Request schema for creating a fee head."""
 
     name: str = Field(..., min_length=1, description="Name of the fee head")
-    description: str | None = Field(None, description="Description of the fee head")
+    description: str | None = Field(
+        None, description="Description of the fee head"
+    )
     amount: float = Field(..., gt=0, description="Amount for this fee head")
-    percentage: float | None = Field(None, ge=0, le=100, description="Percentage of total fee")
+    percentage: float | None = Field(
+        None, ge=0, le=100, description="Percentage of total fee"
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -251,7 +261,9 @@ class InstallmentCreate(BaseModel):
     )
     due_date: datetime = Field(..., description="Due date for the installment")
     amount: float = Field(..., gt=0, description="Amount for this installment")
-    description: str | None = Field(None, description="Description of the installment")
+    description: str | None = Field(
+        None, description="Description of the installment"
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -343,7 +355,9 @@ class FeeStructureUpdate(BaseModel):
     """Request schema for updating a fee structure."""
 
     total_fee: float | None = Field(None, gt=0, description="Total fee amount")
-    fee_heads: list[FeeHeadCreate] | None = Field(None, description="List of fee heads")
+    fee_heads: list[FeeHeadCreate] | None = Field(
+        None, description="List of fee heads"
+    )
     installments: list[InstallmentCreate] | None = Field(
         None, description="List of installments"
     )

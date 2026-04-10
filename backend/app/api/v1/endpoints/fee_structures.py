@@ -35,7 +35,8 @@ router = APIRouter(prefix="/fee-structures", tags=["Fee Structures"])
     response_model=FeeStructureResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create a fee structure",
-    description="Create a new fee structure with fee heads and installments for a class.",
+    description="Create a new fee structure with fee heads and "
+    "installments for a class.",
 )
 async def create_fee_structure(
     fee_structure: FeeStructureCreate,
@@ -56,7 +57,9 @@ async def create_fee_structure(
             academic_year=fee_structure.academic_year,
             total_fee=fee_structure.total_fee,
             fee_heads=[head.model_dump() for head in fee_structure.fee_heads],
-            installments=[inst.model_dump() for inst in fee_structure.installments],
+            installments=[
+                inst.model_dump() for inst in fee_structure.installments
+            ],
         )
     except ValueError as e:
         raise ValidationError(str(e))
@@ -100,17 +103,21 @@ async def create_fee_structure(
     response_model=FeeStructureResponse,
     status_code=status.HTTP_200_OK,
     summary="Update a fee structure",
-    description="Update total fee, fee heads, or installments for an existing fee structure.",
+    description="Update total fee, fee heads, or installments "
+    "for an existing fee structure.",
 )
 async def update_fee_structure(
-    fee_structure_id: str = Path(..., description="ID of the fee structure to update"),
+    fee_structure_id: str = Path(
+        ..., description="ID of the fee structure to update"
+    ),
     fee_structure_update: FeeStructureUpdate = None,
     db: AsyncSession = Depends(get_db),
 ) -> FeeStructureResponse:
     """
     Update a fee structure endpoint.
 
-    Updates fee structure details including total fee, fee heads, or installments.
+    Updates fee structure details including total fee, fee heads, or
+    installments.
     """
     if fee_structure_update is None:
         fee_structure_update = FeeStructureUpdate()
@@ -128,7 +135,10 @@ async def update_fee_structure(
                 else None
             ),
             installments=(
-                [inst.model_dump() for inst in fee_structure_update.installments]
+                [
+                    inst.model_dump()
+                    for inst in fee_structure_update.installments
+                ]
                 if fee_structure_update.installments
                 else None
             ),
@@ -172,7 +182,8 @@ async def update_fee_structure(
     response_model=FeeStructureResponse | None,
     status_code=status.HTTP_200_OK,
     summary="Get fee structure by class and academic year",
-    description="Retrieve a fee structure for a specific class and academic year.",
+    description="Retrieve a fee structure for a specific class "
+    "and academic year.",
 )
 async def get_fee_structure_by_class_and_year(
     class_id: int = Path(..., gt=0, description="ID of the class"),
@@ -305,7 +316,9 @@ async def get_fee_structure_by_id(
     use_case = GetFeeStructureUseCase(repository)
 
     try:
-        result = await use_case.execute_by_id(fee_structure_id=fee_structure_id)
+        result = await use_case.execute_by_id(
+            fee_structure_id=fee_structure_id
+        )
     except ValueError as e:
         raise ValidationError(str(e))
 
@@ -346,10 +359,13 @@ async def get_fee_structure_by_id(
     "/{fee_structure_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a fee structure",
-    description="Delete a fee structure with data integrity checks for student records.",
+    description="Delete a fee structure with data integrity checks "
+    "for student records.",
 )
 async def delete_fee_structure(
-    fee_structure_id: str = Path(..., description="ID of the fee structure to delete"),
+    fee_structure_id: str = Path(
+        ..., description="ID of the fee structure to delete"
+    ),
     db: AsyncSession = Depends(get_db),
 ) -> None:
     """

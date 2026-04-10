@@ -75,7 +75,8 @@ class DatabasePaymentRepository(PaymentRepository):
             self.db.add(payment_model)
             await self.db.flush()
 
-            # Compute running balance for the ledger (lock row for concurrency safety)
+            # Compute running balance for the ledger
+            # (lock row for concurrency safety)
             result = await self.db.execute(
                 select(StudentLedgerModel)
                 .where(StudentLedgerModel.student_id == student_id)
@@ -103,11 +104,16 @@ class DatabasePaymentRepository(PaymentRepository):
             self.db.add(ledger_entry)
             await self.db.flush()
 
-            Logger.info(f"Payment created: id={payment_model.id}, student_id={student_id}")
+            Logger.info(
+                f"Payment created: id={payment_model.id}, "
+                f"student_id={student_id}"
+            )
             return self._payment_to_entity(payment_model)
 
         except Exception as e:
-            Logger.error(f"Database error creating payment: {e}", exc_info=True)
+            Logger.error(
+                f"Database error creating payment: {e}", exc_info=True
+            )
             raise DatabaseError(f"Failed to create payment: {str(e)}")
 
     async def get_student_ledger(self, student_id: int) -> list[LedgerEntry]:
@@ -159,7 +165,7 @@ class DatabasePaymentRepository(PaymentRepository):
             )
             students_paid: int = paid_result.scalar_one()
 
-            # Latest ledger row per student, using id as a deterministic tie-breaker
+            # Latest ledger row per student, using id as a tie-breaker
             latest_ledger_subquery = (
                 select(
                     StudentLedgerModel.student_id.label("student_id"),
@@ -189,7 +195,11 @@ class DatabasePaymentRepository(PaymentRepository):
 
             # Total pending from latest outstanding balances only
             pending_amount_result = await self.db.execute(
-                select(func.coalesce(func.sum(latest_ledger_subquery.c.balance), 0.0))
+                select(
+                    func.coalesce(
+                        func.sum(latest_ledger_subquery.c.balance), 0.0
+                    )
+                )
                 .select_from(latest_ledger_subquery)
                 .where(
                     latest_ledger_subquery.c.row_num == 1,
@@ -206,7 +216,9 @@ class DatabasePaymentRepository(PaymentRepository):
             )
 
         except Exception as e:
-            Logger.error(f"Database error fetching fee dashboard: {e}", exc_info=True)
+            Logger.error(
+                f"Database error fetching fee dashboard: {e}", exc_info=True
+            )
             raise DatabaseError(f"Failed to fetch fee dashboard: {str(e)}")
 
     def _payment_to_entity(self, model: PaymentModel) -> Payment:

@@ -60,7 +60,9 @@ async def create_payment(
     except ValueError as e:
         raise ValidationError(str(e))
 
-    Logger.info(f"Payment recorded: id={result.id}, student_id={result.student_id}")
+    Logger.info(
+        f"Payment recorded: id={result.id}, student_id={result.student_id}"
+    )
     return PaymentResponse(
         id=result.id,
         student_id=result.student_id,
