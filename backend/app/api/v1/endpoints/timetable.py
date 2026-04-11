@@ -142,7 +142,8 @@ async def get_parent_child_timetable(
 
     Security:
     - The authenticated user must have parent role.
-    - The requested child must be linked to the parent in parent_student mapping.
+    - The requested child must be linked to the parent in
+      parent_student mapping.
     """
     if "parent" not in {role.name for role in current_user.roles}:
         raise HTTPException(
@@ -152,7 +153,9 @@ async def get_parent_child_timetable(
 
     try:
         parent_result = await db.execute(
-            select(ParentModel).where(ParentModel.user_id == int(current_user.id))
+            select(ParentModel).where(
+                ParentModel.user_id == int(current_user.id)
+            )
         )
         parent = parent_result.scalar_one_or_none()
 
@@ -180,10 +183,15 @@ async def get_parent_child_timetable(
             .options(
                 joinedload(TimetablePeriodModel.subject),
                 joinedload(TimetablePeriodModel.room),
-                joinedload(TimetablePeriodModel.teacher).joinedload(TeacherModel.user),
+                joinedload(TimetablePeriodModel.teacher).joinedload(
+                    TeacherModel.user
+                ),
             )
             .where(TimetablePeriodModel.class_id == child.class_id)
-            .order_by(TimetablePeriodModel.day_of_week, TimetablePeriodModel.period_number)
+            .order_by(
+                TimetablePeriodModel.day_of_week,
+                TimetablePeriodModel.period_number,
+            )
         )
         periods = timetable_result.scalars().all()
 

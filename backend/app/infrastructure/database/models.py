@@ -103,7 +103,8 @@ class RoleModel(Base):
     )
 
 
-# Association table for many-to-many relationship between class section and subject
+# Association table for many-to-many between class section
+# and subject
 class_subject_link = Table(
     "class_subject_link",
     Base.metadata,
@@ -233,7 +234,9 @@ class TimetablePeriodModel(Base):
     start_time: Mapped[str] = mapped_column(String(10), nullable=False)
     end_time: Mapped[str] = mapped_column(String(10), nullable=False)
     period_number: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_break: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_break: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
@@ -354,7 +357,9 @@ class ParentModel(Base):
         nullable=False,
     )
 
-    user: Mapped["UserModel"] = relationship("UserModel", backref="parent_profile")
+    user: Mapped["UserModel"] = relationship(
+        "UserModel", backref="parent_profile"
+    )
     students: Mapped[List["StudentModel"]] = relationship(
         "StudentModel",
         secondary=parent_student,
@@ -428,7 +433,9 @@ class PaymentModel(Base):
     )
     amount: Mapped[float] = mapped_column(Float, nullable=False)
     payment_mode: Mapped[str] = mapped_column(String(20), nullable=False)
-    status: Mapped[str] = mapped_column(String(20), nullable=False, default="Paid")
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="Paid"
+    )
     reference_number: Mapped[str | None] = mapped_column(
         String(100), nullable=True
     )
