@@ -228,6 +228,7 @@ class_subject_link = Table(
 )
 
 
+<<<<<<< HEAD
 class StudentProfileModel(Base):
     """
     Student profile database model.
@@ -253,15 +254,7 @@ class StudentProfileModel(Base):
         "UserModel",
         back_populates="profile",
         uselist=False,
-    )
-
-    def __repr__(self) -> str:
-        return (
-            f"<StudentProfile(id={self.id}, student_id={self.student_id}, "
-            f"attendance={self.attendance_percent}, avg_marks={self.avg_marks})>"
-        )
-
-
+=======
 class StudentModel(Base):
     """
     Student database model.
@@ -297,10 +290,17 @@ class StudentModel(Base):
     )
     payments: Mapped[List["PaymentModel"]] = relationship(
         "PaymentModel", back_populates="student", cascade="all, delete-orphan"
+>>>>>>> origin/main
     )
 
     def __repr__(self) -> str:
         return (
+<<<<<<< HEAD
+            f"<StudentProfile(id={self.id}, student_id={self.student_id}, "
+            f"attendance={self.attendance_percent}, avg_marks={self.avg_marks})>"
+        )
+
+=======
             f"<Student(id={self.id}, "
             f"name='{self.name}', "
             f"roll='{self.roll_number}')>"
@@ -422,3 +422,4 @@ class PaymentModel(Base):
             f"amount={self.amount}, "
             f"status='{self.status}')>"
         )
+>>>>>>> origin/main
