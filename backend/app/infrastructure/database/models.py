@@ -11,6 +11,7 @@ Best practices followed:
 """
 
 from datetime import datetime
+import enum
 from typing import List
 
 from sqlalchemy import (
@@ -223,6 +224,9 @@ class StudentModel(Base):
     payments: Mapped[List["PaymentModel"]] = relationship(
         "PaymentModel", back_populates="student", cascade="all, delete-orphan"
     )
+    boardings: Mapped[List["StudentBoardingModel"]] = relationship(
+        "StudentBoardingModel", back_populates="student", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return (
@@ -322,3 +326,109 @@ class PaymentModel(Base):
     payment_date: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
+
+
+# ============ TRANSPORT MODELS ============
+
+class TripModel(Base):
+    """
+    Trip database model.
+
+    Represents a vehicle trip assigned to a driver.
+    """
+
+    __tablename__ = "trips"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    driver_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    vehicle_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    route_name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="scheduled"
+    )  # scheduled, in_progress, completed, cancelled
+
+    start_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    end_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+
+    # Relationships
+    driver: Mapped["UserModel"] = relationship("UserModel")
+    stops: Mapped[List["TripStopModel"]] = relationship(
+        "TripStopModel", back_populates="trip", cascade="all, delete-orphan"
+    )
+    boardings: Mapped[List["StudentBoardingModel"]] = relationship(
+        "StudentBoardingModel", back_populates="trip", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Trip(id={self.id}, "
+            f"driver_id={self.driver_id}, "
+            f"status='{self.status}')>"
+        )
+
+
+class TripStopModel(Base):
+    """
+    Trip Stop database model.
+
+    Represents a specific stop within a trip.
+    """
+
+    __tablename__ = "trip_stops"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    trip_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("trips.id", ondelete="CASCADE"), nullable=False
+    )
+    stop_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    sequence_order: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="pending"
+    )  # pending, reached, skipped
+
+    arrival_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    # Relationships
+    trip: Mapped["TripModel"] = relationship("TripModel", back_populates="stops")
+
+    def __repr__(self) -> str:
+        return f"<TripStop(id={self.id}, name='{self.stop_name}', order={self.sequence_order})>"
+
+
+class StudentBoardingModel(Base):
+    """
+    Student Boarding database model.
+
+    Tracks which students board/alight during a trip.
+    """
+
+    __tablename__ = "student_boardings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
+    )
+    trip_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("trips.id", ondelete="CASCADE"), nullable=False
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="pending"
+    )  # pending, boarded, alighted, absent
+
+    # Relationships
+    trip: Mapped["TripModel"] = relationship("TripModel", back_populates="boardings")
+    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="boardings")
+
+    def __repr__(self) -> str:
+        return f"<StudentBoarding(id={self.id}, student_id={self.student_id}, trip_id={self.trip_id}, status='{self.status}')>"
