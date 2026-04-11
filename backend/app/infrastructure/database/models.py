@@ -94,6 +94,16 @@ class ClassSectionModel(Base):
 
 
 # =========================
+# SUBJECT MODEL (✅ FIX ADDED)
+# =========================
+class SubjectModel(Base):
+    __tablename__ = "subjects"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+
+
+# =========================
 # TIMETABLE MODEL (YOUR FEATURE)
 # =========================
 class TimetableModel(Base):
@@ -230,4 +240,3 @@ class PaymentModel(Base):
 
     student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="payments")
     fee_structure: Mapped["FeeStructureModel"] = relationship("FeeStructureModel", back_populates="payments")
-    
