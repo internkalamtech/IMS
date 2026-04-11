@@ -3,6 +3,7 @@ name: PR Build Pipeline
 on:
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   backend-build:
@@ -14,6 +15,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -41,6 +44,8 @@ jobs:
         
       - name: Lint
         run: |
+          echo "Linting commit: ${GITHUB_SHA}"
+          git rev-parse HEAD
           pip install flake8
           flake8 app/
 
@@ -53,6 +58,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       
       - name: Set up Node.js
         uses: actions/setup-node@v4
