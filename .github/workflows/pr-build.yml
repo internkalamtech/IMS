@@ -32,7 +32,7 @@ jobs:
         run: |
           pip install flake8
           flake8 app/
-        continue-on-error: true   # ✅ added
+        continue-on-error: true
 
   mobile-build:
     name: Mobile Build
