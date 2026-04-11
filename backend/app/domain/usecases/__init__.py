@@ -11,6 +11,8 @@ from app.domain.usecases.payment_usecases import (
     GetPaymentSummaryUseCase,
     ListStudentsUseCase,
     GetStudentUseCase,
+)
+from app.domain.usecases.homework_usecases import (
     GetPendingHomeworkCountUseCase,
 )
 
@@ -25,3 +27,4 @@ __all__ = [
     "GetStudentUseCase",
     "GetPendingHomeworkCountUseCase",
 ]
+
