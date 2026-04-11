@@ -1,6 +1,7 @@
 import { QuickAction } from '@/core/config/dashboard';
 import { ThemedText } from '@/presentation/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -10,18 +11,31 @@ interface QuickActionGridProps {
 }
 
 export function QuickActionGrid({ actions, onActionPress }: QuickActionGridProps) {
+    const router = useRouter();
+
+    const handlePress = (action: QuickAction) => {
+        if (onActionPress) {
+            onActionPress(action);
+            return;
+        }
+        if (action.route) {
+            router.push(action.route as any);
+        }
+    };
+
     return (
         <View style={styles.container}>
             {actions.map((action) => (
                 <TouchableOpacity
                     key={action.id}
                     style={styles.item}
-                    onPress={() => onActionPress?.(action)}
+                    onPress={() => handlePress(action)}
+                    activeOpacity={0.7}
                 >
-                    <View style={[styles.iconContainer, { backgroundColor: action.color + '15' }]}>
-                        <Ionicons name={action.icon as any} size={28} color={action.color} />
+                    <View style={[styles.iconContainer, { backgroundColor: action.color + '18' }]}>
+                        <Ionicons name={action.icon as any} size={26} color={action.color} />
                     </View>
-                    <ThemedText style={styles.label}>{action.title}</ThemedText>
+                    <ThemedText style={styles.label} numberOfLines={1}>{action.title}</ThemedText>
                 </TouchableOpacity>
             ))}
         </View>
@@ -33,13 +47,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'flex-start',
-        gap: 20,
+        gap: 16,
         marginBottom: 32,
     },
     item: {
-        width: 100, // Fixed width for consistent grid look regardless of screen size
+        width: 72,
         alignItems: 'center',
-        marginBottom: 8,
     },
     iconContainer: {
         width: 56,
@@ -50,7 +63,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     label: {
-        fontSize: 12,
+        fontSize: 11,
         textAlign: 'center',
         fontWeight: '500',
     },

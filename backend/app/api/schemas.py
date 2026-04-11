@@ -4,8 +4,13 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
+<<<<<<< HEAD
+from pydantic import BaseModel, EmailStr, Field
+from typing import Literal, Optional, List
+=======
 from datetime import datetime
 from typing import List, Literal, Optional
+>>>>>>> origin/main
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
@@ -128,11 +133,22 @@ class StatItem(BaseModel):
     value: str | int
 
 
+class ChildSummary(BaseModel):
+    """Summary for a child user linked to a parent dashboard."""
+
+    id: str
+    name: str
+    class_name: str | None = None
+    roll_number: str | None = None
+
+
 class DashboardResponse(BaseModel):
     """Response schema for the dashboard stats endpoint."""
 
     role: str
     stats: list[StatItem]
+    children: list[ChildSummary] | None = None
+    selected_child_id: str | None = None
 
 
 class SubjectInput(BaseModel):
