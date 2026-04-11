@@ -106,17 +106,26 @@ async def get_academic_summary(
     Pending homework includes assignments with status 'pending' or 'overdue'.
     """
     try:
+        # Validate childId format
+        if not child_id or not child_id.strip():
+            raise ValueError("childId is required")
+
+        # Repository and use case setup
         repository = DatabaseHomeworkRepository(db)
         use_case = GetPendingHomeworkCountUseCase(repository)
+
+        # Execute use case to get pending homework count
         count = await use_case.execute(child_id)
+
         return AcademicSummaryResponse(
             child_id=child_id,
             pending_homework_count=count,
         )
+
     except ValueError as e:
-        Logger.warning(f"Invalid childId in academic-summary request: {e}")
+        Logger.warning(f"Invalid or missing childId in academic-summary: {e}")
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
     except DatabaseError as e:

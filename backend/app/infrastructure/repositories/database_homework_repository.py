@@ -49,26 +49,36 @@ class DatabaseHomeworkRepository(HomeworkRepository):
             Integer count of pending homework assignments
 
         Raises:
+            ValueError: If child_id is not a valid integer
             DatabaseError: If database operation fails
         """
         try:
+            # Convert and validate child_id is numeric
+            child_id_int = int(child_id)
+        except (ValueError, TypeError) as e:
+            Logger.warning(f"Invalid child_id format: {child_id}")
+            raise ValueError(f"childId must be a valid integer, got '{child_id}'")
+
+        try:
             Logger.info(
-                f"Fetching pending homework count for child_id: {child_id}"
+                f"Fetching pending homework count for child_id: {child_id_int}"
             )
 
             result = await self.db.execute(
                 select(func.count()).where(
-                    HomeworkModel.child_id == int(child_id),
+                    HomeworkModel.child_id == child_id_int,
                     HomeworkModel.status.in_(["pending", "overdue"]),
                 )
             )
             count = result.scalar_one()
 
             Logger.info(
-                f"Pending homework count for child_id {child_id}: {count}"
+                f"Pending homework count for child_id {child_id_int}: {count}"
             )
             return count
 
+        except DatabaseError:
+            raise
         except Exception as e:
             Logger.error(
                 f"Database error fetching homework count: {e}",

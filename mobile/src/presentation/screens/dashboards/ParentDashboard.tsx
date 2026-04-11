@@ -29,7 +29,13 @@ export default function ParentDashboard() {
     const pendingHomework = Number(getStatValue('Pending Homework', '5'));
 
     const handleHomeworkCounterPress = () => {
-        router.push('/(tabs)/academics?initialTab=homework');
+        router.push('/academics?initialTab=homework');
+    };
+
+    const handleQuickActionPress = (action: any) => {
+        if (action.route) {
+            router.push(action.route);
+        }
     };
 
     return (
@@ -122,7 +128,7 @@ export default function ParentDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickActionPress} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
