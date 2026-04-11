@@ -27,6 +27,17 @@ jobs:
           
       - name: Run tests
         run: pytest tests/
+
+      - name: Debug checkout and lint context
+        run: |
+          echo "GITHUB_SHA=${GITHUB_SHA}"
+          git rev-parse HEAD
+          python --version
+          python -m flake8 --version
+          echo "--- app/__init__.py (lines 1-12) ---"
+          nl -ba app/__init__.py | sed -n '1,12p'
+          echo "--- app/api/v1/router.py (lines 1-25) ---"
+          nl -ba app/api/v1/router.py | sed -n '1,25p'
         
       - name: Lint
         run: |
