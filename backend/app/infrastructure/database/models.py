@@ -1,15 +1,3 @@
-"""
-SQLAlchemy database models for the IMS application.
-
-These models represent the database schema using SQLAlchemy ORM.
-
-Best practices followed:
-- Declarative base for model definition
-- Proper relationships and foreign keys
-- Timestamps for audit trail
-- Indexes for performance
-"""
-
 from datetime import datetime
 from typing import List
 
@@ -26,13 +14,16 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
+# =========================
+# BASE
+# =========================
 class Base(DeclarativeBase):
-    """Base class for all database models."""
-
     pass
 
 
-# Association table for many-to-many relationship between users and roles
+# =========================
+# USER - ROLE MAPPING
+# =========================
 user_roles = Table(
     "user_roles",
     Base.metadata,
@@ -51,122 +42,108 @@ user_roles = Table(
 )
 
 
+# =========================
+# USER MODEL
+# =========================
 class UserModel(Base):
-    """
-    User database model.
-
-    Represents a user with authentication credentials
-    and associated roles.
-    """
-
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
-        )
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-        )
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-        )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
-    )
-
-    # Relationships
     roles: Mapped[List["RoleModel"]] = relationship(
         "RoleModel",
         secondary=user_roles,
-        back_populates="users",
-        lazy="joined",
+        lazy="selectin",
     )
 
-    def __repr__(self) -> str:
-        return (
-            f"<User(id={self.id}, "
-            f"email='{self.email}', "
-            f"name='{self.name}')>"
-        )
+    teacher_timetable: Mapped[List["TimetableModel"]] = relationship(
+        "TimetableModel",
+        back_populates="teacher",
+        lazy="selectin",
+    )
 
 
+# =========================
+# ROLE MODEL
+# =========================
 class RoleModel(Base):
-    """
-    Role database model.
-
-    Represents roles like admin, teacher, student, etc.
-    """
-
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
-    name: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-        )
-
-    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
-
-    # Relationships
-    users: Mapped[List["UserModel"]] = relationship(
-        "UserModel",
-        secondary=user_roles,
-        back_populates="roles",
-    )
-
-    def __repr__(self) -> str:
-        return f"<Role(id={self.id}, name='{self.name}')>"
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
 
 
-class SubjectModel(Base):
-    """
-    Subject database model.
-
-    Represents subjects like Math, Science, English, etc.
-    """
-
-    __tablename__ = "subjects"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-
-    classes: Mapped[List["ClassSectionModel"]] = relationship(
-        "ClassSectionModel",
-        secondary="class_subject_link",
-        back_populates="subjects",
-    )
-
-
+# =========================
+# CLASS MODEL
+# =========================
 class ClassSectionModel(Base):
-    """
-    Class section database model.
-
-    Represents classes like Grade 1, Grade 2, etc.
-    """
-
     __tablename__ = "class_sections"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
 
-    subjects: Mapped[List["SubjectModel"]] = relationship(
-        "SubjectModel",
-        secondary="class_subject_link",
-        back_populates="classes",
+    timetable_entries: Mapped[List["TimetableModel"]] = relationship(
+        "TimetableModel",
+        back_populates="class_",
+        lazy="selectin",
     )
 
 
-# Association table for many-to-many relationship between
-# ClassSection and Subject
+# =========================
+# SUBJECT MODEL (✅ FIX ADDED)
+# =========================
+class SubjectModel(Base):
+    __tablename__ = "subjects"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+
+
+# =========================
+# TIMETABLE MODEL (YOUR FEATURE)
+# =========================
+class TimetableModel(Base):
+    __tablename__ = "timetable"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    teacher_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+    )
+
+    subject: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    class_id: Mapped[int] = mapped_column(
+        ForeignKey("class_sections.id"),
+        nullable=False,
+    )
+
+    room_type: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    class_: Mapped["ClassSectionModel"] = relationship(
+        "ClassSectionModel",
+        back_populates="timetable_entries",
+        lazy="selectin",
+    )
+
+    teacher: Mapped["UserModel"] = relationship(
+        "UserModel",
+        back_populates="teacher_timetable",
+        lazy="selectin",
+    )
+
+
+# =========================
+# ASSOCIATION TABLE
+# =========================
 class_subject_link = Table(
     "class_subject_link",
     Base.metadata,
@@ -185,163 +162,81 @@ class_subject_link = Table(
 )
 
 
+# =========================
+# STUDENT MODEL
+# =========================
 class StudentModel(Base):
-    """
-    Student database model.
-
-    Represents a student enrolled in the school, including their fee
-    status and next payment due date.
-    """
-
     __tablename__ = "students"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    roll_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    roll_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     class_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    next_due_date: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
-    )
+    next_due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    # Relationships
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
     fee_structures: Mapped[List["FeeStructureModel"]] = relationship(
         "FeeStructureModel", back_populates="student", cascade="all, delete-orphan"
     )
+
     payments: Mapped[List["PaymentModel"]] = relationship(
         "PaymentModel", back_populates="student", cascade="all, delete-orphan"
     )
 
-    def __repr__(self) -> str:
-        return (
-            f"<Student(id={self.id}, "
-            f"name='{self.name}', "
-            f"roll='{self.roll_number}')>"
-        )
 
-
+# =========================
+# FEE STRUCTURE MODEL
+# =========================
 class FeeStructureModel(Base):
-    """
-    Fee structure database model.
-
-    Represents the fee details for a student, including total fee,
-    amount paid, and outstanding balance.
-    """
-
     __tablename__ = "fee_structures"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
-    )
+    student_id: Mapped[int] = mapped_column(ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+
     total_fee: Mapped[float] = mapped_column(Float, nullable=False)
     amount_paid: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
-    fee_type: Mapped[str] = mapped_column(
-        String(100), nullable=False, default="Tuition"
-    )
-    academic_year: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="2024-25"
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
-    )
 
-    # Relationships
-    student: Mapped["StudentModel"] = relationship(
-        "StudentModel", back_populates="fee_structures"
-    )
+    fee_type: Mapped[str] = mapped_column(String(100), nullable=False, default="Tuition")
+    academic_year: Mapped[str] = mapped_column(String(20), nullable=False, default="2024-25")
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="fee_structures")
+
     payments: Mapped[List["PaymentModel"]] = relationship(
-        "PaymentModel",
-        back_populates="fee_structure",
-        cascade="all, delete-orphan",
+        "PaymentModel", back_populates="fee_structure", cascade="all, delete-orphan"
     )
 
     @property
     def balance(self) -> float:
-        """Outstanding balance."""
         return self.total_fee - self.amount_paid
 
-    def __repr__(self) -> str:
-        return (
-            f"<FeeStructure(id={self.id}, "
-            f"student_id={self.student_id}, "
-            f"total={self.total_fee})>"
-        )
 
-
+# =========================
+# PAYMENT MODEL
+# =========================
 class PaymentModel(Base):
-    """
-    Payment database model.
-
-    Represents an individual payment transaction recorded for a student.
-    """
-
     __tablename__ = "payments"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
-    )
-    fee_structure_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("fee_structures.id", ondelete="CASCADE"),
-        nullable=False,
-    )
-    receipt_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    student_id: Mapped[int] = mapped_column(ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    fee_structure_id: Mapped[int] = mapped_column(ForeignKey("fee_structures.id", ondelete="CASCADE"), nullable=False)
+
+    receipt_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     amount: Mapped[float] = mapped_column(Float, nullable=False)
-    payment_mode: Mapped[str] = mapped_column(
-        String(20), nullable=False
-    )  # Cash, UPI, Card
-    reference_number: Mapped[str | None] = mapped_column(
-        String(100), nullable=True
-    )
-    status: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="Paid"
-    )  # Paid, Partial, Pending, Failed, Overdue
+
+    payment_mode: Mapped[str] = mapped_column(String(20), nullable=False)
+    reference_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    status: Mapped[str] = mapped_column(String(20), default="Paid", nullable=False)
     remarks: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    payment_date: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
-    )
 
-    # Relationships
-    student: Mapped["StudentModel"] = relationship(
-        "StudentModel", back_populates="payments"
-    )
-    fee_structure: Mapped["FeeStructureModel"] = relationship(
-        "FeeStructureModel", back_populates="payments"
-    )
+    payment_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    def __repr__(self) -> str:
-        return (
-            f"<Payment(id={self.id}, "
-            f"receipt='{self.receipt_number}', "
-            f"amount={self.amount}, "
-            f"status='{self.status}')>"
-        )
+    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="payments")
+    fee_structure: Mapped["FeeStructureModel"] = relationship("FeeStructureModel", back_populates="payments")
