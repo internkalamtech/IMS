@@ -14,6 +14,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
+const ACTIVE_CHILD = {
+    name: 'Aarav Kumar',
+    classLabel: 'Class 7-B • Roll 23',
+    initials: 'AK',
+};
+
 export default function ParentDashboard() {
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
@@ -28,7 +34,13 @@ export default function ParentDashboard() {
 
     const handleQuickAction = (action: any) => {
         if (action.title === 'Timetable') {
-            router.push('/timetable');
+            router.push({
+                pathname: '/timetable',
+                params: {
+                    childName: ACTIVE_CHILD.name,
+                    mode: 'parent',
+                },
+            });
         }
         // Add other action handlers as needed
     };
@@ -63,11 +75,11 @@ export default function ParentDashboard() {
                             <ThemedCard style={styles.childCard} padding={20}>
                                 <View style={styles.childHeader}>
                                     <View style={[styles.childAvatar, { backgroundColor: theme.colors.primary + '20' }]}>
-                                        <ThemedText style={{ color: theme.colors.primary, fontWeight: '700' }}>AK</ThemedText>
+                                        <ThemedText style={{ color: theme.colors.primary, fontWeight: '700' }}>{ACTIVE_CHILD.initials}</ThemedText>
                                     </View>
                                     <View>
-                                        <ThemedText style={styles.childName} type="defaultSemiBold">Aarav Kumar</ThemedText>
-                                        <ThemedText style={styles.childClass} lightColor="#666" darkColor="#999">Class 7-B • Roll 23</ThemedText>
+                                        <ThemedText style={styles.childName} type="defaultSemiBold">{ACTIVE_CHILD.name}</ThemedText>
+                                        <ThemedText style={styles.childClass} lightColor="#666" darkColor="#999">{ACTIVE_CHILD.classLabel}</ThemedText>
                                     </View>
                                 </View>
 

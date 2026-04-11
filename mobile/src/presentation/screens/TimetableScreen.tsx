@@ -3,8 +3,8 @@ import { ThemedCard } from '@/presentation/components/ThemedCard';
 import { ThemedText } from '@/presentation/components/ThemedText';
 import { ThemedView } from '@/presentation/components/ThemedView';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
     Dimensions,
     ScrollView,
@@ -68,9 +68,35 @@ const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satu
 export default function TimetableScreen() {
     const { theme } = useTheme();
     const router = useRouter();
+    const params = useLocalSearchParams<{ childName?: string; mode?: string }>();
     const [selectedChild, setSelectedChild] = useState<Child>(MOCK_CHILDREN[0]);
     const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
     const [selectedDay, setSelectedDay] = useState(0); // 0 = Monday
+
+    useEffect(() => {
+        const childName = Array.isArray(params.childName) ? params.childName[0] : params.childName;
+        if (!childName) {
+            return;
+        }
+
+        const matchedChild = MOCK_CHILDREN.find((child) => child.name === childName);
+        if (matchedChild) {
+            setSelectedChild(matchedChild);
+            return;
+        }
+
+        setSelectedChild((current) => ({
+            ...current,
+            name: childName,
+            avatar: childName
+                .split(' ')
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((part: string) => part[0]?.toUpperCase() || '')
+                .join(''),
+            class: Array.isArray(params.mode) ? params.mode[0] : params.mode === 'parent' ? 'Parent Selected Child' : current.class,
+        }));
+    }, [params.childName, params.mode]);
 
     const maxDayIndex = DAY_NAMES.length - 1;
     const currentTimetable: Period[] = MOCK_TIMETABLE[selectedDay as keyof typeof MOCK_TIMETABLE] || [];
