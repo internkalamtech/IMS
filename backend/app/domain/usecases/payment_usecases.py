@@ -348,3 +348,26 @@ class GetStudentUseCase:
         if student is None:
             raise NotFoundError(f"Student with id {student_id} not found.")
         return student
+class GetPendingHomeworkCountUseCase:
+    """Use case for retrieving count of pending homework for a student."""
+
+    def __init__(self, repository: PaymentRepository) -> None:
+        """
+        Initialise with a payment repository.
+
+        Args:
+            repository: Concrete implementation of PaymentRepository
+        """
+        self.repository = repository
+
+    async def execute(self, student_id: int) -> int:
+        """
+        Get the count of pending homework for a student.
+
+        Args:
+            student_id: ID of the student
+
+        Returns:
+            Count of pending homework tasks (pending or overdue)
+        """
+        return await self.repository.get_pending_homework_count(student_id)
