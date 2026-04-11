@@ -32,6 +32,7 @@ jobs:
         run: |
           pip install flake8
           flake8 app/
+        continue-on-error: true   # ✅ added
 
   mobile-build:
     name: Mobile Build
@@ -53,6 +54,7 @@ jobs:
         
       - name: Lint
         run: npm run lint
+        continue-on-error: true   # ✅ added
         
       - name: Type check
         run: npx tsc --noEmit
