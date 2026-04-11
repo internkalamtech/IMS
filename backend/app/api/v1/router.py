@@ -13,7 +13,6 @@ from app.api.v1.endpoints import (
     class_subjects_router,
     timetable
 )
-from app.api.v1.endpoints import auth, health, dashboard, class_subjects_router
 from app.api.v1.endpoints.payments import router as payments_router
 
 # Create v1 router

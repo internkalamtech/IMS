@@ -48,13 +48,21 @@ class UserModel(Base):
 
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True
+    )
     email: Mapped[str] = mapped_column(
         String(255), unique=True, index=True, nullable=False
     )
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(
+        String(255), nullable=False
+    )
+    name: Mapped[str] = mapped_column(
+        String(255), nullable=False
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
@@ -78,11 +86,15 @@ class RoleModel(Base):
 
     __tablename__ = "roles"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True
+    )
     name: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
     )
-    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    description: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
 
     users: Mapped[List["UserModel"]] = relationship(
         "UserModel",
@@ -146,9 +158,15 @@ class TeacherModel(Base):
     __tablename__ = "teachers"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    employee_id: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    specialization: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False
+    )
+    employee_id: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False
+    )
+    specialization: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
@@ -159,7 +177,9 @@ class TeacherModel(Base):
         nullable=False,
     )
 
-    user: Mapped["UserModel"] = relationship("UserModel", backref="teacher_profile")
+    user: Mapped["UserModel"] = relationship(
+        "UserModel", backref="teacher_profile"
+    )
     timetable_periods: Mapped[List["TimetablePeriodModel"]] = relationship(
         "TimetablePeriodModel",
         back_populates="teacher",
@@ -206,7 +226,9 @@ class TimetablePeriodModel(Base):
     teacher_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("teachers.id"), nullable=False
     )
-    room_id: Mapped[int] = mapped_column(Integer, ForeignKey("rooms.id"), nullable=False)
+    room_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("rooms.id"), nullable=False
+    )
     day_of_week: Mapped[int] = mapped_column(Integer, nullable=False)
     start_time: Mapped[str] = mapped_column(String(10), nullable=False)
     end_time: Mapped[str] = mapped_column(String(10), nullable=False)
@@ -222,7 +244,9 @@ class TimetablePeriodModel(Base):
         nullable=False,
     )
 
-    class_section: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
+    class_section: Mapped["ClassSectionModel"] = relationship(
+        "ClassSectionModel"
+    )
     subject: Mapped["SubjectModel"] = relationship("SubjectModel")
     teacher: Mapped["TeacherModel"] = relationship(
         "TeacherModel",
@@ -269,7 +293,9 @@ class StudentModel(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     class_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    next_due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    next_due_date: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
@@ -309,9 +335,15 @@ class ParentModel(Base):
     __tablename__ = "parents"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    address: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False
+    )
+    phone: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )
+    address: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
@@ -337,10 +369,15 @@ class FeeStructureModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False
     )
-    total_fee: Mapped[float] = mapped_column(Float, nullable=False)
-    amount_paid: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    total_fee: Mapped[float] = mapped_column(
+        Float, nullable=False
+    )
+    amount_paid: Mapped[float] = mapped_column(
+        Float, default=0.0, nullable=False
+    )
     fee_type: Mapped[str] = mapped_column(
         String(100), nullable=False, default="Tuition"
     )
@@ -392,8 +429,12 @@ class PaymentModel(Base):
     amount: Mapped[float] = mapped_column(Float, nullable=False)
     payment_mode: Mapped[str] = mapped_column(String(20), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="Paid")
-    reference_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    remarks: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    reference_number: Mapped[str | None] = mapped_column(
+        String(100), nullable=True
+    )
+    remarks: Mapped[str | None] = mapped_column(
+        String(500), nullable=True
+    )
     payment_date: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
