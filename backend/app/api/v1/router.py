@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     health,
     dashboard,
     transport,
+    class_subjects,
 )
 
 # Create v1 router
@@ -21,3 +22,4 @@ router.include_router(auth.router)
 router.include_router(health.router)
 router.include_router(dashboard.router)
 router.include_router(transport.router)
+router.include_router(class_subjects.router)
