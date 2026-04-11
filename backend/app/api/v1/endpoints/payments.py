@@ -97,7 +97,9 @@ async def get_student_ledger(
     Raises 404 if the student does not exist.
     """
     # Verify student exists
-    result = await db.execute(select(UserModel).where(UserModel.id == student_id))
+    result = await db.execute(
+        select(UserModel).where(UserModel.id == student_id)
+    )
     if result.scalar_one_or_none() is None:
         raise NotFoundError(f"Student with id {student_id} not found")
 

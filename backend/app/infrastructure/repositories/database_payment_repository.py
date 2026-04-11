@@ -76,8 +76,9 @@ class DatabasePaymentRepository(PaymentRepository):
             await self.db.flush()
 
             # Compute running balance for the ledger.
-            # Balance convention: positive value = cumulative amount paid by student
-            # (debit entries, e.g. fee charges, will increase an outstanding amount;
+            # Balance convention: positive value = cumulative amount
+            # paid by student.
+            # (debit entries, e.g. fee charges, increase outstanding amount;
             #  credit entries, i.e. payments, increase the running total paid).
             # (lock row for concurrency safety)
             result = await self.db.execute(

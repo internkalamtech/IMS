@@ -210,7 +210,8 @@ async def get_fee_structure_by_class_and_year(
 
     if not result:
         raise NotFoundError(
-            f"Fee structure not found for class {class_id} and year {academic_year}"
+            f"Fee structure not found for class {class_id} "
+            f"and year {academic_year}"
         )
 
     return FeeStructureResponse(
@@ -309,7 +310,9 @@ async def get_fee_structures_by_class(
     responses={404: {"description": "Fee structure not found"}},
 )
 async def get_fee_structure_by_id(
-    fee_structure_id: str = Path(..., description="ID of the fee structure"),
+    fee_structure_id: str = Path(
+        ..., description="ID of the fee structure"
+    ),
     db: AsyncSession = Depends(get_db),
 ) -> FeeStructureResponse:
     """
@@ -329,7 +332,9 @@ async def get_fee_structure_by_id(
         raise ValidationError(str(e))
 
     if not result:
-        raise NotFoundError(f"Fee structure with id {fee_structure_id} not found")
+        raise NotFoundError(
+            f"Fee structure with id {fee_structure_id} not found"
+        )
 
     return FeeStructureResponse(
         id=result.id,

@@ -202,7 +202,11 @@ class FeeStructureModel(Base):
 
     __tablename__ = "fee_structures"
     __table_args__ = (
-        UniqueConstraint("class_id", "academic_year", name="uq_fee_structure_class_year"),
+        UniqueConstraint(
+            "class_id",
+            "academic_year",
+            name="uq_fee_structure_class_year",
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -364,7 +368,8 @@ class ClassSectionModel(Base):
         return f"<ClassSection(id={self.id}, name='{self.name}')>"
 
 
-# Association table for many-to-many relationship between ClassSection and Subject
+# Association table for many-to-many relationship
+# between ClassSection and Subject
 class_subject_link = Table(
     "class_subject_link",
     Base.metadata,
