@@ -54,7 +54,7 @@ jobs:
         
       - name: Lint
         run: npm run lint
-        continue-on-error: true   # ✅ added
+        continue-on-error: true
         
       - name: Type check
         run: npx tsc --noEmit
