@@ -118,7 +118,10 @@ class RecordPaymentUseCase:
             )
         if fee_structure.student_id != student_id:
             raise ValidationError(
-                f"Fee structure {fee_structure_id} does not belong to student {student_id}."
+                (
+                    f"Fee structure {fee_structure_id} "
+                    f"does not belong to student {student_id}."
+                )
             )
 
         # 4. Determine payment status based on amount vs. balance

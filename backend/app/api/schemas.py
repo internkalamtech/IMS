@@ -9,8 +9,6 @@ from datetime import time
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
-
 
 class LoginRequest(BaseModel):
     """Request schema for login endpoint."""

@@ -262,7 +262,9 @@ class StudentModel(Base):
 
     # Relationships
     fee_structures: Mapped[List["FeeStructureModel"]] = relationship(
-        "FeeStructureModel", back_populates="student", cascade="all, delete-orphan"
+        "FeeStructureModel",
+        back_populates="student",
+        cascade="all, delete-orphan",
     )
     payments: Mapped[List["PaymentModel"]] = relationship(
         "PaymentModel", back_populates="student", cascade="all, delete-orphan"
@@ -291,7 +293,11 @@ class FeeStructureModel(Base):
         Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
     )
     total_fee: Mapped[float] = mapped_column(Float, nullable=False)
-    amount_paid: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    amount_paid: Mapped[float] = mapped_column(
+        Float,
+        default=0.0,
+        nullable=False,
+    )
     fee_type: Mapped[str] = mapped_column(
         String(100), nullable=False, default="Tuition"
     )
