@@ -7,16 +7,24 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
+const ACTIVE_CHILD = {
+    name: 'Aarav Kumar',
+    classLabel: 'Class 7-B • Roll 23',
+    initials: 'AK',
+};
+
 export default function ParentDashboard() {
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
+    const router = useRouter();
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
 
@@ -24,6 +32,18 @@ export default function ParentDashboard() {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
     };
 
+    const handleQuickAction = (action: any) => {
+        if (action.title === 'Timetable') {
+            router.push({
+                pathname: '/timetable',
+                params: {
+                    childName: ACTIVE_CHILD.name,
+                    mode: 'parent',
+                },
+            });
+        }
+        // Add other action handlers as needed
+    };
     return (
         <ThemedView style={styles.container}>
             <StatusBar barStyle="light-content" />
@@ -54,11 +74,11 @@ export default function ParentDashboard() {
                             <ThemedCard style={styles.childCard} padding={20}>
                                 <View style={styles.childHeader}>
                                     <View style={[styles.childAvatar, { backgroundColor: theme.colors.primary + '20' }]}>
-                                        <ThemedText style={{ color: theme.colors.primary, fontWeight: '700' }}>AK</ThemedText>
+                                        <ThemedText style={{ color: theme.colors.primary, fontWeight: '700' }}>{ACTIVE_CHILD.initials}</ThemedText>
                                     </View>
                                     <View>
-                                        <ThemedText style={styles.childName} type="defaultSemiBold">Aarav Kumar</ThemedText>
-                                        <ThemedText style={styles.childClass} lightColor="#666" darkColor="#999">Class 7-B • Roll 23</ThemedText>
+                                        <ThemedText style={styles.childName} type="defaultSemiBold">{ACTIVE_CHILD.name}</ThemedText>
+                                        <ThemedText style={styles.childClass} lightColor="#666" darkColor="#999">{ACTIVE_CHILD.classLabel}</ThemedText>
                                     </View>
                                 </View>
 
@@ -90,7 +110,7 @@ export default function ParentDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickAction} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
