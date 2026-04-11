@@ -4,8 +4,13 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
+<<<<<<< HEAD
+from pydantic import BaseModel, EmailStr, Field
+from typing import Literal, Optional, List
+=======
 from datetime import datetime
 from typing import List, Literal, Optional
+>>>>>>> origin/main
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
