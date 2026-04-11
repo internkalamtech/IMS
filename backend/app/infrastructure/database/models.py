@@ -5,7 +5,7 @@ These models represent the database schema using SQLAlchemy ORM.
 """
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -280,10 +280,10 @@ class StudentModel(Base):
         nullable=False,
     )
 
-    user: Mapped["UserModel" | None] = relationship(
+    user: Mapped[Optional["UserModel"]] = relationship(
         "UserModel", backref="student_profile"
     )
-    class_section: Mapped["ClassSectionModel" | None] = relationship(
+    class_section: Mapped[Optional["ClassSectionModel"]] = relationship(
         "ClassSectionModel"
     )
     parents: Mapped[List["ParentModel"]] = relationship(
