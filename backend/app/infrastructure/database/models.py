@@ -386,4 +386,3 @@ class_subject_link = Table(
         primary_key=True,
     ),
 )
-
