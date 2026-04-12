@@ -18,13 +18,15 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
-from app.api.schemas import (
-    ErrorResponse,
+from app.api.payment_schemas import (
     PaymentCreate,
     PaymentResponse,
     PaymentSummaryResponse,
     PaymentStatus,
     StudentResponse,
+)
+from app.api.schemas import (
+    ErrorResponse,
 )
 from app.core.errors import DatabaseError, NotFoundError, ValidationError
 from app.core.logger import Logger
