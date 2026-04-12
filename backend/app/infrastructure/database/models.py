@@ -201,6 +201,8 @@ class StudentModel(Base):
         String(50), unique=True, nullable=False, index=True
     )
     class_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    marks: Mapped[float] = mapped_column(nullable=False)
+    attendance: Mapped[float] = mapped_column(nullable=True)
     next_due_date: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True
     )
