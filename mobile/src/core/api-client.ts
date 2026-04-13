@@ -36,8 +36,11 @@ export class ApiClient {
         // Request Interceptor
         this.axiosInstance.interceptors.request.use(
             async (config: InternalAxiosRequestConfig) => {
+                const requestUrl = config.url ?? '';
+                const isAuthLoginRequest = requestUrl.includes('/auth/login');
                 const token = await StorageService.getItem<string>('auth_token');
-                if (token) {
+
+                if (token && !isAuthLoginRequest) {
                     config.headers.Authorization = `Bearer ${token}`;
                 }
                 Logger.debug(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);

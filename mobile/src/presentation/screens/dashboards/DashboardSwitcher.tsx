@@ -7,11 +7,11 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import LoginScreen from '../LoginScreen';
+import MaintenanceScreen from '../MaintenanceScreen';
 import AdminDashboard from './AdminDashboard';
 import ParentDashboard from './ParentDashboard';
 import StudentDashboard from './StudentDashboard';
 import TeacherDashboard from './TeacherDashboard';
-import DriverDashboard from './DriverDashboard';
 
 export default function DashboardSwitcher() {
     const { logout, user } = useAuth();
@@ -31,7 +31,7 @@ export default function DashboardSwitcher() {
         case 'student':
             return <StudentDashboard />;
         case 'driver':
-            return <DriverDashboard />;
+            return <MaintenanceScreen />;
         default:
             return (
                 <ThemedView style={styles.container}>

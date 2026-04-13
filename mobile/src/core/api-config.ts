@@ -26,8 +26,8 @@ export const getApiBaseUrl = (): string => {
 
     // 2. Web Development
     if (Platform.OS === 'web') {
-        // On web, if configuredUrl is set (e.g. to a local IP), use it, otherwise localhost
-        return configuredUrl || 'http://localhost:8000/api/v1';
+        // On web, use the loopback IP to avoid hostname resolution issues.
+        return configuredUrl || 'http://127.0.0.1:8000/api/v1';
     }
 
     // 3. Native Development (iOS/Android)
