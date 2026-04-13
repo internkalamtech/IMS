@@ -7,6 +7,7 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from "expo-router";
 import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,6 +21,12 @@ export default function AdminDashboard() {
     const { theme, isDark } = useTheme();
 
     const quickActions = DASHBOARD_CONFIG.admin.quickActions;
+
+    const handleActionPress = (action: any) => {
+      if (action.title === "Manage Classes") {
+        router.push("/manage-classes"); // ✅ NOT inside tabs
+      }
+    };
 
     const getStatValue = (label: string, defaultValue: string = '0') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
@@ -87,6 +94,7 @@ export default function AdminDashboard() {
                             }
                         }}
                     />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
