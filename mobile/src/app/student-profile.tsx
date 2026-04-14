@@ -1,5 +1,1 @@
-import StudentProfileScreen from '@/presentation/screens/StudentProfileScreen';
-
-export default function StudentProfile() {
-  return <StudentProfileScreen />;
-}
+export { default } from '@/presentation/screens/StudentProfileScreen';

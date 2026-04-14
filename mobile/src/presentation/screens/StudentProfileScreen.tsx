@@ -40,16 +40,19 @@ export default function StudentProfile() {
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
           <Text style={styles.green}>{student.attendance}</Text>
+          <Text style={styles.green}>{attendance}</Text>
           <Text style={styles.statLabel}>Attendance</Text>
         </View>
 
         <View style={styles.statBox}>
           <Text style={styles.yellow}>{student.marks}</Text>
+          <Text style={styles.yellow}>{marks}</Text>
           <Text style={styles.statLabel}>Overall Score</Text>
         </View>
 
         <View style={styles.statBox}>
           <Text style={styles.white}>{student.rank}</Text>
+          <Text style={styles.white}>{rank}</Text>
           <Text style={styles.statLabel}>Class Rank</Text>
         </View>
       </View>

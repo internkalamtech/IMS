@@ -1,5 +1,1 @@
-import StudentDirectoryScreen from '@/presentation/screens/StudentDirectoryScreen';
-
-export default function StudentDirectory() {
-  return <StudentDirectoryScreen />;
-}
+export { default } from '@/presentation/screens/StudentDirectoryScreen';
