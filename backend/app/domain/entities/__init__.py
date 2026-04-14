@@ -9,6 +9,7 @@ from app.domain.entities.transport import (
     StudentRouteAllocation,
     RouteSummary,
 )
+from app.domain.entities.payment import Payment, FeeStructure, PaymentSummary
 
 __all__ = [
     "User",
@@ -20,4 +21,7 @@ __all__ = [
     "Stop",
     "StudentRouteAllocation",
     "RouteSummary",
+    "Payment",
+    "FeeStructure",
+    "PaymentSummary",
 ]
