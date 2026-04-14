@@ -15,6 +15,8 @@ from app.api.v1.endpoints import (
 )
 from app.api.v1.endpoints.payments import router as payments_router
 
+    subjects,
+)
 # Create v1 router
 router = APIRouter(prefix="/v1")
 
@@ -25,3 +27,4 @@ router.include_router(dashboard.router)
 router.include_router(class_subjects_router)
 router.include_router(timetable.router)
 router.include_router(payments_router)
+router.include_router(subjects.router)
