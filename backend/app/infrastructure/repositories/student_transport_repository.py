@@ -3,6 +3,7 @@
 from datetime import time
 
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -45,16 +46,41 @@ class StudentTransportRepository:
         pickup_time: time | None,
         dropoff_time: time | None,
     ) -> StudentTransportEnrollmentModel:
-        enrollment = StudentTransportEnrollmentModel(
-            student_id=student_id,
-            route_id=route_id,
-            stop_id=stop_id,
-            pickup_time=pickup_time,
-            dropoff_time=dropoff_time,
+        # Concurrency-safe idempotent create: if another request inserts the same
+        # (student_id, route_id) concurrently, we return the existing row.
+        stmt = (
+            insert(StudentTransportEnrollmentModel)
+            .values(
+                student_id=student_id,
+                route_id=route_id,
+                stop_id=stop_id,
+                pickup_time=pickup_time,
+                dropoff_time=dropoff_time,
+            )
+            .on_conflict_do_nothing(
+                index_elements=[
+                    StudentTransportEnrollmentModel.student_id,
+                    StudentTransportEnrollmentModel.route_id,
+                ]
+            )
+            .returning(StudentTransportEnrollmentModel.id)
         )
-        self.db.add(enrollment)
-        await self.db.flush()
-        return enrollment
+
+        result = await self.db.execute(stmt)
+        created_id = result.scalar_one_or_none()
+
+        if created_id is not None:
+            created = await self.db.get(StudentTransportEnrollmentModel, created_id)
+            if created is not None:
+                return created
+
+        existing = await self.get_enrollment(student_id=student_id, route_id=route_id)
+        if existing is None:
+            raise RuntimeError(
+                "Enrollment upsert failed unexpectedly for "
+                f"student_id={student_id}, route_id={route_id}"
+            )
+        return existing
 
     async def list_students_by_route(
         self, route_id: int

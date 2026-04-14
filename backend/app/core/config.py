@@ -64,6 +64,13 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             # Split on comma, strip whitespace, and filter out empty entries
             return [origin.strip() for origin in v.split(",") if origin.strip()]
+        if isinstance(v, list):
+            # Normalize list values the same way as comma-separated strings.
+            return [
+                origin.strip()
+                for origin in v
+                if isinstance(origin, str) and origin.strip()
+            ]
         return v
 
     model_config = SettingsConfigDict(
