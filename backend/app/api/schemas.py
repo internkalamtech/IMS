@@ -6,7 +6,7 @@ These schemas define the shape of data for API endpoints.
 
 from datetime import date, time
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import AliasChoices, BaseModel, EmailStr, Field, model_validator
 from typing import List, Literal, Optional
 
 
@@ -226,7 +226,18 @@ class StudentInput(BaseModel):
     """Student payload for create-student enrollment APIs."""
 
     name: str = Field(..., min_length=1)
-    class_section_id: int = Field(..., alias="classSectionId", gt=0)
+    class_id: int = Field(
+        ...,
+        gt=0,
+        validation_alias=AliasChoices("class_id", "classSectionId"),
+        serialization_alias="classSectionId",
+    )
+    class_name: str = Field(
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("class_name", "className"),
+        serialization_alias="className",
+    )
     roll_number: str = Field(..., alias="rollNumber", min_length=1)
     date_of_birth: Optional[date] = Field(default=None, alias="dateOfBirth")
     blood_group: Optional[str] = Field(default=None, alias="bloodGroup")
@@ -240,6 +251,12 @@ class ParentInput(BaseModel):
     name: str = Field(..., min_length=1)
     phone: str = Field(..., min_length=7)
     email: Optional[EmailStr] = None
+    relationship_type: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("relationship_type", "relationshipType"),
+        serialization_alias="relationshipType",
+    )
+    address: Optional[str] = None
 
 
 class CreateStudentWithParentRequest(BaseModel):
