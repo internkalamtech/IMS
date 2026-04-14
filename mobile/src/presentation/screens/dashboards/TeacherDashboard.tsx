@@ -23,7 +23,10 @@ export default function TeacherDashboard() {
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
-
+    const displayName =
+    user?.name && user.name !== 'Teacher User'
+    ? user.name
+    : 'Mr. Rajesh Kumar';
     const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
 
     const upcomingClasses = [
@@ -50,11 +53,14 @@ export default function TeacherDashboard() {
                         <View style={styles.headerContent}>
                             <View>
                                 <ThemedText style={styles.userName} type="title" color="primaryForeground">
-                                    Hello, {user?.name?.split(' ')[0] || 'Teacher'} 👋
-                                </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
-                                    Your academic day at a glance
-                                </ThemedText>
+</ThemedText>
+<ThemedText style={styles.userName} color="primaryForeground">
+  {displayName}
+</ThemedText>
+
+<ThemedText style={styles.subtitle} color="primaryForeground">
+  Mathematics & Physics Teacher
+</ThemedText>
                             </View>
                             <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
                                 <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
@@ -62,28 +68,49 @@ export default function TeacherDashboard() {
                         </View>
 
                         {/* Banner Stats */}
-                        <View style={styles.bannerStats}>
-                            <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                                <View style={styles.statIconContainer}>
-                                    <Ionicons name="people" size={24} color={theme.colors.primaryForeground} />
-                                </View>
-                                <View>
-                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Total Students', '42')}</ThemedText>
-                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">My Students</ThemedText>
-                                </View>
-                            </View>
-                            <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                                <View style={styles.statIconContainer}>
-                                    <Ionicons name="time" size={24} color={theme.colors.primaryForeground} />
-                                </View>
-                                <View>
-                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Today\'s Classes', '5')}</ThemedText>
-                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">Classes Today</ThemedText>
-                                </View>
-                            </View>
-                        </View>
+                        <View style={styles.classCard}>
+    <ThemedText style={styles.classLabel} color="primaryForeground">
+        Current Class
+    </ThemedText>
+<View style={{ position: 'relative' }}>
+
+  {/* LEFT ARROW */}
+  <View style={styles.arrowLeft}>
+    <Ionicons name="chevron-back" size={18} color="#333" />
+  </View>
+
+  {/* RIGHT ARROW */}
+  <View style={styles.arrowRight}>
+    <Ionicons name="chevron-forward" size={18} color="#333" />
+  </View>
+
+  {/* EXISTING CONTENT BELOW */}
+    <ThemedText style={styles.className} color="primaryForeground">
+        Class 7B
+    </ThemedText>
+
+    <ThemedText style={styles.classSub} color="primaryForeground">
+        Mathematics
+    </ThemedText>
+<View style={styles.sliderDot} />
+    <View style={styles.statsRow}>
+        <View style={styles.studentBadge}>
+            <ThemedText style={styles.badgeText}>35 Students</ThemedText>
+        </View>
+<View style={styles.iconContainer}>
+  <Ionicons name="book-outline" size={20} color="#f97316" />
+</View>
+<View style={styles.rightSection}>
+  <ThemedText style={styles.reviewText}>Review →</ThemedText>
+</View>
+        <ThemedText style={styles.presentText}>
+            ✓ 32 Present
+        </ThemedText>
+    </View>
+</View>
+</View>
                     </SafeAreaView>
-                </View>
+            </View>
 
                 {/* Main Content */}
                 <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
@@ -136,6 +163,14 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 32,
         borderBottomRightRadius: 32,
     },
+    sliderDot: {
+  width: 30,
+  height: 5,
+  borderRadius: 10,
+  backgroundColor: '#e5e7eb',
+  alignSelf: 'center',
+  marginTop: 12,
+},
     headerContent: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -228,12 +263,20 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         overflow: 'hidden',
         marginBottom: 40,
+        gap:12,
     },
     updateItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-    },
+  flexDirection: 'row',
+  alignItems: 'center',
+  padding: 16,
+  backgroundColor: '#ffffff',
+  borderRadius: 16,
+  marginBottom: 12,
+  shadowColor: '#000',
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  elevation: 3,
+},
     classColorBar: {
         width: 4,
         height: 40,
@@ -244,15 +287,117 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     updateTitle: {
-        fontSize: 15,
-        marginBottom: 2,
-    },
-    updateSubtitle: {
-        fontSize: 13,
-    },
+  fontSize: 15,
+  fontWeight: '600',
+},
+
+updateSubtitle: {
+  fontSize: 13,
+  color: '#6b7280',
+},
+rightSection: {
+  alignItems: 'flex-end',
+  justifyContent: 'center',
+},
+
+reviewText: {
+  color: '#2563eb',
+  fontSize: 13,
+  fontWeight: '500',
+},
     timeTag: {
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 8,
     },
+    classCard: {
+  backgroundColor: 'rgba(255,255,255,0.15)',
+  marginHorizontal: 24,
+  paddingVertical: 30,
+  marginTop: 10,
+  padding: 20,
+  borderRadius: 20,
+},
+classLabel: {
+  fontSize: 14,
+  opacity: 0.8,
+  textAlign: 'center',
+},
+
+className: {
+  fontSize: 26,
+  fontWeight: '700',
+  marginTop: 6,
+  textAlign: 'center',
+},
+
+classSub: {
+  fontSize: 14,
+  marginBottom: 14,
+  textAlign: 'center',
+},
+classContent: {
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+statsRow: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: 16,
+},
+
+studentBadge: {
+  backgroundColor: 'rgba(255,255,255,0.25)',
+  paddingHorizontal: 14,
+  paddingVertical: 6,
+  borderRadius: 20,
+},
+
+badgeText: {
+  color: '#fff',
+  fontSize: 12,
+  fontWeight: '500',
+},
+
+presentText: {
+  color: '#bbf7d0',
+  fontSize: 13,
+  fontWeight: '500',
+},
+arrowLeft: {
+  position: 'absolute',
+  left: -10,
+  top: '45%',
+  backgroundColor: '#fff',
+  width: 32,
+  height: 32,
+  borderRadius: 16,
+  justifyContent: 'center',
+  alignItems: 'center',
+  elevation: 3,
+},
+
+arrowRight: {
+  position: 'absolute',
+  right: -10,
+  top: '45%',
+  backgroundColor: '#fff',
+  width: 32,
+  height: 32,
+  borderRadius: 16,
+  justifyContent: 'center',
+  alignItems: 'center',
+  elevation: 3,
+},
+iconContainer: {
+  width: 40,
+  height: 40,
+  borderRadius: 12,
+  backgroundColor: '#fef3c7', // soft color
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 12,
+},
 });
