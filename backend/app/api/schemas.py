@@ -4,9 +4,9 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
-from datetime import time
+from datetime import date, time
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 from typing import List, Literal, Optional
 
 
@@ -220,6 +220,44 @@ class UpdateClassSubjectsResponse(BaseModel):
     message: str
     class_id: int
     subjects_count: int
+
+
+class StudentInput(BaseModel):
+    """Student payload for create-student enrollment APIs."""
+
+    name: str = Field(..., min_length=1)
+    class_section_id: int = Field(..., alias="classSectionId", gt=0)
+    roll_number: str = Field(..., alias="rollNumber", min_length=1)
+    date_of_birth: Optional[date] = Field(default=None, alias="dateOfBirth")
+    blood_group: Optional[str] = Field(default=None, alias="bloodGroup")
+
+    model_config = {"populate_by_name": True}
+
+
+class ParentInput(BaseModel):
+    """Parent payload for create-student enrollment APIs."""
+
+    name: str = Field(..., min_length=1)
+    phone: str = Field(..., min_length=7)
+    email: Optional[EmailStr] = None
+
+
+class CreateStudentWithParentRequest(BaseModel):
+    """Create student request with either new parent details or parentId."""
+
+    student: StudentInput
+    parent: Optional[ParentInput] = None
+    parent_id: Optional[int] = Field(default=None, alias="parentId", gt=0)
+
+    model_config = {"populate_by_name": True}
+
+    @model_validator(mode="after")
+    def validate_parent_reference(self):
+        has_parent_payload = self.parent is not None
+        has_parent_id = self.parent_id is not None
+        if has_parent_payload == has_parent_id:
+            raise ValueError("Provide exactly one of 'parent' or 'parentId'.")
+        return self
 
 
 class StudentTransportEnrollmentCreate(BaseModel):
