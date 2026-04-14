@@ -27,3 +27,5 @@ router.include_router(transport.router)
 router.include_router(class_subjects_router)
 router.include_router(payments_router)
 router.include_router(subjects.router)
+router.include_router(enrollment.router)
+
