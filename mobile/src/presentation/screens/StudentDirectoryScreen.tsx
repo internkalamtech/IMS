@@ -6,7 +6,7 @@ import { getStudentMetricsUsecase } from '@/domain/usecases/get-student-metrics-
 import { LinearGradient } from "expo-linear-gradient";  
 import { Ionicons } from "@expo/vector-icons";
 import { MOCK_STUDENTS } from "@/data/local/students";
-import { useRoute } from "@react-navigation/native";
+
 type Student = {
   id: string;
   name: string;
@@ -19,8 +19,6 @@ type Student = {
 };
 
 export default function StudentDirectory() {
-  const route = useRoute();
-  const { student } = route.params as any;
   const [selectedClass, setSelectedClass] = useState("7B");
   const [showDropdown, setShowDropdown] = useState(false);
   const { theme } = useTheme();
@@ -62,7 +60,7 @@ export default function StudentDirectory() {
       <Image source={{ uri: item.avatar }} style={styles.avatar} />
 
       <View style={{ flex: 1 }}>
-        <Text style={[styles.name, { color: theme.colors.text }]}>
+        <Text style={[styles.name, { color: theme.colors.foreground }]}>
           {item.name}
         </Text>
 
@@ -73,6 +71,7 @@ export default function StudentDirectory() {
         {/* Stats Row (matches prototype) */}
         <View style={styles.statsRow}>
           <Text>🎓 {item.marks}%</Text>
+          <Text>🎓 {item.marks}</Text>
           <Text>🏆 {item.rank}</Text>
         </View>
       </View>
@@ -209,7 +208,7 @@ const styles = StyleSheet.create({
   search: {
     borderRadius: 12,
     padding: 12,
-    marginBottom: 10,
+    marginBottom: 16,
   },
 
   card: {
