@@ -182,7 +182,7 @@ class StudentTransportEnrollmentModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     student_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("students.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -208,7 +208,7 @@ class StudentTransportEnrollmentModel(Base):
         nullable=False,
     )
 
-    student: Mapped["UserModel"] = relationship("UserModel")
+    student: Mapped["StudentModel"] = relationship("StudentModel")
 
 
 # Association table for many-to-many relationship between

@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 PaymentMode = Literal["Cash", "UPI", "Card"]
@@ -19,6 +19,15 @@ class PaymentCreate(BaseModel):
     payment_mode: PaymentMode
     reference_number: Optional[str] = None
     remarks: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_reference_number_for_digital_payments(self):
+        if self.payment_mode in {"UPI", "Card"}:
+            if not self.reference_number or not self.reference_number.strip():
+                raise ValueError(
+                    "reference_number is required for UPI or Card payments"
+                )
+        return self
 
 
 class PaymentResponse(BaseModel):

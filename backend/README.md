@@ -83,6 +83,20 @@ Initialize database and seed demo data:
 python -m app.infrastructure.database.seed
 ```
 
+### Existing DB Migration: Transport Enrollment FK
+
+If your database was created before transport enrollments were aligned to
+the `students` table, run the migration below once:
+
+```bash
+psql "$DATABASE_URL" -f app/infrastructure/database/migrations/2026_04_14_align_transport_enrollment_student_fk.sql
+```
+
+What it does:
+- Validates that `student_transport_enrollments.student_id` values exist in `students.id`
+- Drops old foreign key constraints on `student_transport_enrollments.student_id`
+- Recreates the FK to `students(id)` with `ON DELETE CASCADE`
+
 This will:
 - Create all database tables
 - Create roles (admin, teacher, student, parent, transport, driver)

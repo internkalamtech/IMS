@@ -21,6 +21,7 @@ from app.infrastructure.database.database import AsyncSessionLocal, init_db
 from app.infrastructure.database.models import (
     ClassSectionModel,
     RoleModel,
+    StudentModel,
     UserModel,
 )
 
@@ -112,6 +113,24 @@ CLASS_SECTIONS = [
     {"name": "Grade 1"},
     {"name": "Grade 2"},
     {"name": "Grade 3"},
+]
+
+DEMO_STUDENTS = [
+    {
+        "name": "John Doe",
+        "roll_number": "G1-001",
+        "class_name": "Grade 1",
+    },
+    {
+        "name": "Aarav Kumar",
+        "roll_number": "G2-001",
+        "class_name": "Grade 2",
+    },
+    {
+        "name": "Bhavya Singh",
+        "roll_number": "G3-001",
+        "class_name": "Grade 3",
+    },
 ]
 
 
@@ -223,6 +242,47 @@ async def create_class_sections(db: AsyncSession) -> None:
     await db.commit()
 
 
+async def create_demo_students(db: AsyncSession) -> None:
+    """Create demo student records in the students table if missing."""
+    Logger.info("Creating demo students...")
+
+    class_sections_result = await db.execute(select(ClassSectionModel))
+    class_sections = {
+        class_section.name: class_section
+        for class_section in class_sections_result.scalars().all()
+    }
+
+    for student_data in DEMO_STUDENTS:
+        result = await db.execute(
+            select(StudentModel).where(
+                StudentModel.roll_number == student_data["roll_number"]
+            )
+        )
+        student = result.scalar_one_or_none()
+
+        if student:
+            Logger.info(
+                f"Student already exists: {student_data['roll_number']}"
+            )
+            continue
+
+        class_section = class_sections.get(student_data["class_name"])
+        student = StudentModel(
+            name=student_data["name"],
+            roll_number=student_data["roll_number"],
+            class_id=class_section.id if class_section else None,
+            class_name=student_data["class_name"],
+            next_due_date=None,
+        )
+        db.add(student)
+        Logger.info(
+            "Created student: "
+            f"{student_data['name']} ({student_data['roll_number']})"
+        )
+
+    await db.commit()
+
+
 async def seed_database() -> None:
     """
     Main function to seed the database.
@@ -232,6 +292,7 @@ async def seed_database() -> None:
     2. Creates roles
     3. Creates demo users
     4. Creates demo class sections
+    5. Creates demo students
     """
     try:
         Logger.info("Starting database seeding...")
@@ -250,6 +311,9 @@ async def seed_database() -> None:
 
             # Create class sections
             await create_class_sections(db)
+
+            # Create demo students in students table
+            await create_demo_students(db)
 
         Logger.info("Database seeding completed successfully!")
 

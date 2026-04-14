@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.infrastructure.database.models import (
+    StudentModel,
     StudentTransportEnrollmentModel,
-    UserModel,
 )
 
 
@@ -18,9 +18,9 @@ class StudentTransportRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_student_by_id(self, student_id: int) -> UserModel | None:
+    async def get_student_by_id(self, student_id: int) -> StudentModel | None:
         result = await self.db.execute(
-            select(UserModel).where(UserModel.id == student_id)
+            select(StudentModel).where(StudentModel.id == student_id)
         )
         return result.unique().scalar_one_or_none()
 

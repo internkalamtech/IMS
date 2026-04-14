@@ -4,7 +4,7 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
-from datetime import date, time
+from datetime import date, datetime, time
 
 from pydantic import AliasChoices, BaseModel, EmailStr, Field, model_validator
 from typing import List, Literal, Optional
@@ -265,6 +265,10 @@ class CreateStudentWithParentRequest(BaseModel):
     student: StudentInput
     parent: Optional[ParentInput] = None
     parent_id: Optional[int] = Field(default=None, alias="parentId", gt=0)
+    link_existing_parent: bool = Field(
+        default=False,
+        alias="linkExistingParent",
+    )
 
     model_config = {"populate_by_name": True}
 
@@ -275,6 +279,40 @@ class CreateStudentWithParentRequest(BaseModel):
         if has_parent_payload == has_parent_id:
             raise ValueError("Provide exactly one of 'parent' or 'parentId'.")
         return self
+
+
+class StudentResponse(BaseModel):
+    """Student response payload for enrollment APIs."""
+
+    id: int
+    name: str
+    roll_number: str
+    class_id: int
+    class_name: str
+    next_due_date: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+class ParentResponse(BaseModel):
+    """Parent response payload for enrollment APIs."""
+
+    id: int
+    name: str
+    phone: str
+    email: Optional[EmailStr] = None
+    relationship_type: Optional[str] = None
+    is_active: bool = True
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+class CreateStudentWithParentResponse(BaseModel):
+    """Response for creating student with parent link."""
+
+    student: StudentResponse
+    parent: ParentResponse
+    message: str
 
 
 class StudentTransportEnrollmentCreate(BaseModel):
