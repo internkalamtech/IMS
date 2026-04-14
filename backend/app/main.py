@@ -86,12 +86,12 @@ async def log_requests(request: Request, call_next):
 
 
 # Configure CORS
-# In development (debug=True), allow all origins so Expo web works on any port.
-# In production, restrict to the configured cors_origins list.
+# In production, restrict to configured origins (CORS_ORIGINS env var).
+# Debug mode can optionally use wildcard, but requires explicit enablement.
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https?://.*",
-    allow_credentials=True,
+    allow_origins=["*"] if settings.debug else settings.cors_origins,
+    allow_credentials=False if settings.debug else True,  # credentials incompatible with wildcard
     allow_methods=["*"],
     allow_headers=["*"],
 )

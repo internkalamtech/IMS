@@ -183,7 +183,10 @@ async def get_parent_children(
 
             present = sum(1 for r in records if r.status == "present")
             absent = sum(1 for r in records if r.status == "absent")
-            total = present + absent
+            leave = sum(1 for r in records if r.status == "leave")
+            # Count leave as a non-present school day, but exclude holidays
+            # from totals so the denominator reflects actual school days only.
+            total = present + absent + leave
             pct = round((present / total * 100), 1) if total > 0 else 0.0
 
             status = "Present Today" if pct >= 75 else "Absent Today"
@@ -224,15 +227,22 @@ async def get_child_calendar(
     Validates that the child belongs to the authenticated parent.
     """
     try:
-        # Parse requested month
+        # Parse requested month — initialize defaults first to prevent UnboundLocalError
+        year, m = None, None
         if month:
-            year, m = map(int, month.split("-"))
+            try:
+                year, m = map(int, month.split("-"))
+            except (ValueError, TypeError):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid month format. Use YYYY-MM format (e.g., 2026-03).",
+                )
         else:
             now = datetime.utcnow()
             year, m = now.year, now.month
 
         # Security: verify parent owns this child
-        # Warn but continue in demo mode so mock child IDs ("1","2") still show real DB data.
+        # Production strictly enforces ownership; debug allows for testing.
         try:
             link_stmt = select(parent_student).where(
                 parent_student.c.parent_id == int(current_user.id),
@@ -240,11 +250,18 @@ async def get_child_calendar(
             )
             link_result = await db.execute(link_stmt)
             if not link_result.first():
+                if not settings.debug:
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Not authorised for this student."
+                    )
                 Logger.warning(
                     f"Parent {current_user.id} has no DB link to child {child_id}. "
-                    "Returning live DB data anyway (demo mode)."
+                    "Returning live DB data in debug mode."
                 )
-        except (ValueError, Exception):
+        except (ValueError, Exception) as e:
+            if isinstance(e, HTTPException):
+                raise
             Logger.warning(f"Could not verify ownership for child_id={child_id!r} – skipping.")
 
         month_start = datetime(year, m, 1)
@@ -358,13 +375,19 @@ async def apply_for_leave(
 
     try:
         # Parse dates
-        start = dt.strptime(body.startDate, "%Y-%m-%d")
-        end = dt.strptime(body.endDate, "%Y-%m-%d")
+        try:
+            start = dt.strptime(body.startDate, "%Y-%m-%d")
+            end = dt.strptime(body.endDate, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid date format. startDate and endDate must be valid dates in YYYY-MM-DD format.",
+            )
         if end < start:
             raise HTTPException(status_code=400, detail="End date must be on or after start date.")
 
         # Security: verify parent-child link
-        # In demo/dev mode we warn but still allow, so mock child IDs ("1","2") work.
+        # Only bypass in debug mode; production strictly enforces ownership.
         try:
             link_stmt = select(parent_student).where(
                 parent_student.c.parent_id == int(current_user.id),
@@ -372,9 +395,14 @@ async def apply_for_leave(
             )
             link_result = await db.execute(link_stmt)
             if not link_result.first():
+                if not settings.debug:
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Not authorised for this student."
+                    )
                 Logger.warning(
                     f"Parent {current_user.id} has no DB link to child {child_id}. "
-                    "Allowing in demo mode."
+                    "Allowing in debug mode."
                 )
                 # Uncomment the line below to enforce strict ownership in production:
                 # raise HTTPException(status_code=403, detail="Not authorised for this student.")

@@ -72,7 +72,11 @@ export class AttendanceRepositoryImpl implements AttendanceRepository {
         try {
             const response = await api.get<ChildSummary[]>('/attendance/parent/children');
             return response.data?.length ? response.data : MOCK_CHILDREN;
-        } catch (error) {
+        } catch (error: any) {
+            // Re-throw AuthError so session expiry is properly handled
+            if (error?.name === 'AuthError' || error instanceof AuthError) {
+                throw error;
+            }
             Logger.error('getParentChildren — using mock fallback:', error);
             return MOCK_CHILDREN;
         }
@@ -86,7 +90,11 @@ export class AttendanceRepositoryImpl implements AttendanceRepository {
                 { params }
             );
             return response.data;
-        } catch (error) {
+        } catch (error: any) {
+            // Re-throw AuthError so session expiry is properly handled
+            if (error?.name === 'AuthError' || error instanceof AuthError) {
+                throw error;
+            }
             Logger.error(`getChildCalendar(${childId}) — using mock fallback:`, error);
             const [year, m] = month
                 ? month.split('-').map(Number)

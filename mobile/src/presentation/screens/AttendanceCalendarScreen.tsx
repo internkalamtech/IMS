@@ -3,7 +3,7 @@
  * Interactive Attendance Calendar — matches the prototype design.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Modal,
@@ -62,14 +62,37 @@ export default function AttendanceCalendarScreen() {
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
+    // Track timeout to allow cleanup on unmount
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
     const load = useCallback(async (y: number, m: number) => {
+        if (!childId) {
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
-        const result = await attendanceRepository.getChildCalendar(childId ?? '1', monthKey(y, m));
+        const result = await attendanceRepository.getChildCalendar(childId, monthKey(y, m));
         setData(result);
         setLoading(false);
     }, [childId]);
 
-    useEffect(() => { load(year, month); }, [year, month, load]);
+    useEffect(() => {
+        if (!childId) {
+            setLoading(false);
+            router.back();
+            return;
+        }
+
+        load(year, month);
+
+        // Cleanup: clear any pending timeouts on unmount
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, [year, month, load, childId, router]);
 
     const prevMonth = () => {
         if (month === 1) { setYear(y => y - 1); setMonth(12); }
@@ -120,7 +143,7 @@ export default function AttendanceCalendarScreen() {
             );
             setSubmitted(true);
             // Close modal and reset form after showing success tick
-            setTimeout(() => {
+            timeoutRef.current = setTimeout(() => {
                 setLeaveModal(false);
                 setSubmitted(false);
                 setLeaveReason('');

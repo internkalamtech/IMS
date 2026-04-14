@@ -16,26 +16,20 @@ const { width } = Dimensions.get('window');
 
 export default function ParentDashboard() {
     const { logout, user } = useAuth();
-    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
+    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
     const router = useRouter();
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
 
+    const handleQuickAction = (action: typeof quickActions[0]) => {
+        if (action.route) {
+            router.push(action.route as Parameters<typeof router.push>[0]);
+        }
+    };
+
     const getStatValue = (label: string, defaultValue: string = '0%') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
-    };
-
-    const pendingHomework = Number(getStatValue('Pending Homework', '5'));
-
-    const handleHomeworkCounterPress = () => {
-        router.push('/academics?initialTab=homework');
-    };
-
-    const handleQuickActionPress = (action: any) => {
-        if (action.route) {
-            router.push(action.route);
-        }
     };
 
     return (
@@ -51,10 +45,10 @@ export default function ParentDashboard() {
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
                             <View>
-                                <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
                                     Welcome, {user?.name?.split(' ')[0] || 'Priya'} 👋
                                 </ThemedText>
-                                <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                <ThemedText style={styles.subtitle} color="primaryForeground">
                                     Track your child&apos;s progress
                                 </ThemedText>
                             </View>
@@ -63,7 +57,7 @@ export default function ParentDashboard() {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Child Info Card - Fully enclosed in blue dashboard */}
+                        {/* Child Info Card - Partially overlapping */}
                         <View style={styles.childCardContainer}>
                             <ThemedCard style={styles.childCard} padding={20}>
                                 <View style={styles.childHeader}>
@@ -92,30 +86,6 @@ export default function ParentDashboard() {
                                         </View>
                                     </View>
                                 </View>
-
-                                {/* Pending Homework Counter Card — Issue #294 */}
-                                <TouchableOpacity
-                                    style={[styles.homeworkCounterCard, { backgroundColor: '#f59e0b15', borderColor: '#f59e0b30' }]}
-                                    onPress={handleHomeworkCounterPress}
-                                    activeOpacity={0.75}
-                                >
-                                    <View style={styles.homeworkCounterLeft}>
-                                        <View style={[styles.homeworkIconBadge, { backgroundColor: '#f59e0b20' }]}>
-                                            <Ionicons name="book-outline" size={18} color="#f59e0b" />
-                                        </View>
-                                        <View>
-                                            <ThemedText style={[styles.homeworkCounterValue, { color: '#f59e0b' }]} type="defaultSemiBold">
-                                                {pendingHomework} Pending
-                                            </ThemedText>
-                                            <ThemedText style={styles.homeworkCounterLabel} lightColor="#666" darkColor="#999">
-                                                Homework assignments
-                                            </ThemedText>
-                                        </View>
-                                    </View>
-                                    <View style={[styles.homeworkCounterArrow, { backgroundColor: '#f59e0b20' }]}>
-                                        <Ionicons name="chevron-forward" size={16} color="#f59e0b" />
-                                    </View>
-                                </TouchableOpacity>
                             </ThemedCard>
                         </View>
                     </SafeAreaView>
@@ -128,38 +98,31 @@ export default function ParentDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickActionPress} />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickAction} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
                         <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-                            <ThemedText style={styles.badgeText} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>3 new</ThemedText>
+                            <ThemedText style={styles.badgeText} color="primaryForeground">3 new</ThemedText>
                         </View>
                     </View>
                     <ThemedCard style={styles.updatesCard} padding={0}>
-                        {[
-                            { icon: 'book', color: '#3b82f6', title: 'New Homework Assigned', subtitle: 'Mathematics - Due on Jan 25', time: '2 hours ago' },
-                            { icon: 'checkmark-circle', color: '#10b981', title: 'Test Results Published', subtitle: 'Science - Score: 92/100', time: '1 day ago' },
-                            { icon: 'calendar', color: '#f59e0b', title: 'Parent-Teacher Meeting', subtitle: 'January 28, 2026 at 3:00 PM', time: '2 days ago' },
-                        ].map((item, index) => (
-                            <View key={index} style={[
+                        {[1, 2].map((item, index) => (
+                            <View key={item} style={[
                                 styles.updateItem,
-                                index !== 2 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
+                                index !== 1 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
                             ]}>
-                                <View style={[styles.updateIcon, { backgroundColor: `${item.color}15` }]}>
-                                    <Ionicons name={item.icon as any} size={20} color={item.color} />
+                                <View style={[styles.updateIcon, { backgroundColor: '#3b82f615' }]}>
+                                    <Ionicons name="mail" size={20} color="#3b82f6" />
                                 </View>
                                 <View style={styles.updateContent}>
-                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">{item.title}</ThemedText>
-                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">{item.subtitle}</ThemedText>
+                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">Fee Due Reminder</ThemedText>
+                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">Due Date: 30th Oct</ThemedText>
                                 </View>
-                                <View>
-                                    <ThemedText style={[styles.updateTime, { fontSize: 11 }]} lightColor="#999" darkColor="#666">{item.time}</ThemedText>
-                                    <TouchableOpacity style={{ marginTop: 4 }}>
-                                        <ThemedText style={styles.viewLink} type="link">View →</ThemedText>
-                                    </TouchableOpacity>
-                                </View>
+                                <TouchableOpacity>
+                                    <ThemedText style={styles.viewLink} type="link">View →</ThemedText>
+                                </TouchableOpacity>
                             </View>
                         ))}
                     </ThemedCard>
@@ -180,7 +143,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
     },
     banner: {
-        paddingBottom: 24,
+        paddingBottom: 80,
     },
     headerContent: {
         flexDirection: 'row',
@@ -202,8 +165,11 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     childCardContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
         paddingHorizontal: 20,
-        paddingBottom: 10,
     },
     childCard: {
         borderRadius: 24,
@@ -258,7 +224,7 @@ const styles = StyleSheet.create({
     mainContent: {
         flex: 1,
         paddingHorizontal: 24,
-        paddingTop: 0,
+        paddingTop: 80, // Offset for the overlapping card
     },
     sectionHeader: {
         flexDirection: 'row',
@@ -333,49 +299,8 @@ const styles = StyleSheet.create({
     updateSubtitle: {
         fontSize: 12,
     },
-    updateTime: {
-        fontSize: 11,
-    },
     viewLink: {
         fontSize: 12,
         fontWeight: '600',
     },
-    // Pending Homework counter card — Issue #294
-    homeworkCounterCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginTop: 12,
-        padding: 14,
-        borderRadius: 16,
-        borderWidth: 1,
-    },
-    homeworkCounterLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        flex: 1,
-    },
-    homeworkIconBadge: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    homeworkCounterValue: {
-        fontSize: 15,
-    },
-    homeworkCounterLabel: {
-        fontSize: 11,
-        marginTop: 1,
-    },
-    homeworkCounterArrow: {
-        width: 28,
-        height: 28,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
 });
-

@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # Application
     app_name: str = "IMS Backend"
     app_version: str = "1.0.0"
-    debug: bool = True
+    debug: bool = False  # Default to False for safety; set DEBUG=true in .env for dev
 
     # Server
     host: str = "0.0.0.0"
@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     # Security
     secret_key: str = "dev-secret-key-change-in-production"
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 1440  # 24 hours for dev (was 30 min)
+    access_token_expire_minutes: int = 30  # Safer default; override via EXPIRY env var if needed
 
     # CORS - stored as string in env, parsed to list
     cors_origins: Union[str, list[str]] = (
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
         "http://localhost:8084,http://localhost:8085,"
         "http://localhost:19000,http://localhost:19006,"
         "exp://localhost:8081,exp://localhost:8082,"
-        "exp://localhost:19000,exp://192.168.0.0/16,"
+        "exp://localhost:19000,"
         "http://192.168.1.1:8000,http://10.0.2.2:8000"
     )
 

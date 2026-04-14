@@ -126,13 +126,18 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
-# Association table linking parents to their children (students)
-parent_student = Table(
-    "parent_student",
+# NOTE: Using the existing 'student_parent_link' table for the parent↔student
+# association to avoid maintaining two sources of truth for the same relationship.
+# The attendance endpoints reference this via the 'parent_student' alias below.
+student_parent_link = Table(
+    "student_parent_link",
     Base.metadata,
     Column("parent_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
     Column("student_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
 )
+
+# Alias for convenience in attendance endpoints
+parent_student = student_parent_link
 
 
 class AttendanceModel(Base):
