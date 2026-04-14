@@ -11,7 +11,8 @@ from app.api.v1.endpoints import (
     health,
     dashboard,
     class_subjects_router,
-    timetable
+    timetable,
+    subjects,
 )
 from app.api.v1.endpoints.payments import router as payments_router
 
