@@ -246,13 +246,21 @@ class StudentInput(BaseModel):
 
 
 class ParentInput(BaseModel):
-    """Parent payload for create-student enrollment APIs."""
+    """Parent payload for create-student enrollment APIs.
+    
+    When creating a new parent via ParentInput in CreateStudentWithParentRequest,
+    email and relationship_type are required fields. They cannot be omitted.
+    """
 
     name: str = Field(..., min_length=1)
     phone: str = Field(..., min_length=7)
-    email: Optional[EmailStr] = None
-    relationship_type: Optional[str] = Field(
-        default=None,
+    email: EmailStr = Field(
+        ..., description="Parent's email address (required, must be unique)"
+    )
+    relationship_type: str = Field(
+        ...,
+        min_length=1,
+        description="Relationship to student (e.g., Mother, Father, Guardian)",
         validation_alias=AliasChoices("relationship_type", "relationshipType"),
         serialization_alias="relationshipType",
     )
@@ -300,8 +308,10 @@ class ParentResponse(BaseModel):
     id: int
     name: str
     phone: str
-    email: Optional[EmailStr] = None
-    relationship_type: Optional[str] = None
+    email: EmailStr = Field(..., description="Parent's email address")
+    relationship_type: str = Field(
+        ..., description="Relationship to student"
+    )
     is_active: bool = True
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
