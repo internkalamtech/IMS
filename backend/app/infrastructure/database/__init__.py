@@ -11,11 +11,8 @@ from app.infrastructure.database.models import (
 )
 
 __all__ = [
-<<<<<<< HEAD
-    "get_db",   
-=======
+
     "get_db",
->>>>>>> dc602061e26d83106ce771e0cd7bdc07e9770a77
     "init_db",
     "close_db",
     "Base",
@@ -24,8 +21,4 @@ __all__ = [
     "StudentModel",
     "FeeStructureModel",
     "PaymentModel",
-<<<<<<< HEAD
 ]
-=======
-]
->>>>>>> dc602061e26d83106ce771e0cd7bdc07e9770a77
