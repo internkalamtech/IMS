@@ -1,5 +1,5 @@
-import { StorageService } from '@/data/local/storage';
 import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { clearStoredAuth, getStoredToken, notifyUnauthorized } from './auth-storage';
 import { getApiBaseUrl } from './api-config';
 import { AuthError, NetworkError } from './error';
 import { Logger } from './logger';
@@ -38,7 +38,7 @@ export class ApiClient {
             async (config: InternalAxiosRequestConfig) => {
                 const requestUrl = config.url ?? '';
                 const isAuthLoginRequest = requestUrl.includes('/auth/login');
-                const token = await StorageService.getItem<string>('auth_token');
+                const token = await getStoredToken();
 
                 if (token && !isAuthLoginRequest) {
                     config.headers.Authorization = `Bearer ${token}`;
@@ -65,6 +65,8 @@ export class ApiClient {
                 if (error.response) {
                     // Server responded with a status code outside of 2xx
                     const status = error.response.status;
+                    const requestUrl = error.config?.url ?? '';
+                    const isAuthLoginRequest = requestUrl.includes('/auth/login');
                     const detail =
                         typeof error.response.data === 'object' &&
                         error.response.data !== null &&
@@ -74,6 +76,11 @@ export class ApiClient {
                             : null;
 
                     if (status === 401) {
+                        if (!isAuthLoginRequest) {
+                            void clearStoredAuth().finally(() => {
+                                notifyUnauthorized();
+                            });
+                        }
                         return Promise.reject(new AuthError(detail || 'Session expired'));
                     }
                     return Promise.reject(

@@ -1,7 +1,8 @@
 import { DriverRepositoryImpl } from '@/data/repositories/driver-repository-impl';
 import { MaintenanceTask } from '@/domain/entities/maintenance-task';
 import { GetDriverMaintenanceUseCase } from '@/domain/usecases/get-driver-maintenance-usecase';
-import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/presentation/hooks/useAuth';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedCard } from '../components/ThemedCard';
 import { ThemedText } from '../components/ThemedText';
@@ -11,16 +12,20 @@ const driverRepository = new DriverRepositoryImpl();
 const getDriverMaintenanceUseCase = new GetDriverMaintenanceUseCase(driverRepository);
 
 export default function MaintenanceScreen() {
+    const { authReady, user } = useAuth();
     const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        void loadTasks();
-    }, []);
+    const loadTasks = useCallback(async (isRefresh: boolean = false) => {
+        if (!authReady || !user) {
+            setError('No token available');
+            setLoading(false);
+            setRefreshing(false);
+            return;
+        }
 
-    const loadTasks = async (isRefresh: boolean = false) => {
         if (isRefresh) {
             setRefreshing(true);
         } else {
@@ -38,7 +43,23 @@ export default function MaintenanceScreen() {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, [authReady, user]);
+
+    useEffect(() => {
+        if (!authReady) {
+            return;
+        }
+
+        if (!user) {
+            setTasks([]);
+            setError('No token available');
+            setLoading(false);
+            setRefreshing(false);
+            return;
+        }
+
+        void loadTasks();
+    }, [authReady, loadTasks, user]);
 
     const getStatusStyle = (status: MaintenanceTask['status']) => {
         switch (status) {

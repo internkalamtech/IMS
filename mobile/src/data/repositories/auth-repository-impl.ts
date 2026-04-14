@@ -1,13 +1,16 @@
 import { api } from '@/core/api-client';
+import {
+    clearStoredAuth,
+    getStoredToken,
+    TOKEN_STORAGE_KEY,
+    USER_STORAGE_KEY,
+} from '@/core/auth-storage';
 import { NetworkError } from '@/core/error';
 import { Logger } from '@/core/logger';
 import { StorageService } from '@/data/local/storage';
 import { DemoCredential } from '@/domain/entities/demo-credential';
 import { User } from '@/domain/entities/user';
 import { AuthRepository } from '@/domain/repositories/auth-repository';
-
-const USER_STORAGE_KEY = 'current_user';
-const TOKEN_STORAGE_KEY = 'auth_token';
 
 export class AuthRepositoryImpl implements AuthRepository {
     async login(email: string, password: string): Promise<User> {
@@ -60,12 +63,18 @@ export class AuthRepositoryImpl implements AuthRepository {
     }
 
     async logout(): Promise<void> {
-        await StorageService.removeItem(USER_STORAGE_KEY);
-        await StorageService.removeItem(TOKEN_STORAGE_KEY);
+        await clearStoredAuth();
         Logger.info('User logged out');
     }
 
     async getCurrentUser(): Promise<User | null> {
+        const token = await getStoredToken();
+
+        if (!token) {
+            await clearStoredAuth();
+            return null;
+        }
+
         return await StorageService.getItem<User>(USER_STORAGE_KEY);
     }
 

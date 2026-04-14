@@ -1,7 +1,8 @@
 import { DriverRepositoryImpl } from '@/data/repositories/driver-repository-impl';
 import { ComplianceDocument } from '@/domain/entities/compliance-document';
 import { GetDriverDocumentsUseCase } from '@/domain/usecases/get-driver-documents-usecase';
-import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/presentation/hooks/useAuth';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Pressable,
@@ -41,16 +42,20 @@ function getComplianceStatus(expiryDate: string): ComplianceStatus {
 }
 
 export default function ComplianceScreen() {
+    const { authReady, user } = useAuth();
     const [documents, setDocuments] = useState<ComplianceDocument[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        void loadDocuments();
-    }, []);
+    const loadDocuments = useCallback(async (isRefresh: boolean = false) => {
+        if (!authReady || !user) {
+            setError('No token available');
+            setLoading(false);
+            setRefreshing(false);
+            return;
+        }
 
-    const loadDocuments = async (isRefresh: boolean = false) => {
         if (isRefresh) {
             setRefreshing(true);
         } else {
@@ -68,7 +73,23 @@ export default function ComplianceScreen() {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, [authReady, user]);
+
+    useEffect(() => {
+        if (!authReady) {
+            return;
+        }
+
+        if (!user) {
+            setDocuments([]);
+            setError('No token available');
+            setLoading(false);
+            setRefreshing(false);
+            return;
+        }
+
+        void loadDocuments();
+    }, [authReady, loadDocuments, user]);
 
     const getStatusStyle = (status: ComplianceStatus) => {
         switch (status) {

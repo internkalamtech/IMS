@@ -14,74 +14,50 @@ import StudentDashboard from './StudentDashboard';
 import TeacherDashboard from './TeacherDashboard';
 
 export default function DashboardSwitcher() {
-    const { logout, user } = useAuth();
-    const { theme } = useTheme();
+  const { logout, user } = useAuth();
+  const { theme } = useTheme();
 
-    if (!user) {
-        return <LoginScreen />;
-    }
+  if (!user) return <LoginScreen />;
 
-    switch (user.role) {
-        case 'admin':
-            return <AdminDashboard />;
-        case 'teacher':
-            return <TeacherDashboard />;
-        case 'parent':
-            return <ParentDashboard />;
-        case 'student':
-            return <StudentDashboard />;
-        case 'driver':
-            return <MaintenanceScreen />;
-        default:
-            return (
-                <ThemedView style={styles.container}>
-                    <View style={styles.content}>
-                        <ThemedCard style={styles.card}>
-                            <ThemedText type="title" style={styles.title}>
-                                Signed in successfully
-                            </ThemedText>
-                            <ThemedText style={styles.body}>
-                                Your account role is `{user.role}`, but this mobile app does not have a dedicated dashboard for it yet.
-                            </ThemedText>
-                            <ThemedText style={[styles.roleChip, { color: theme.colors.primary }]}>
-                                {user.name} - {user.email}
-                            </ThemedText>
-                            <ThemedButton title="Logout" onPress={logout} style={styles.button} />
-                        </ThemedCard>
-                    </View>
-                </ThemedView>
-            );
-    }
+  switch (user.role) {
+    case 'admin':
+      return <AdminDashboard />;
+    case 'teacher':
+      return <TeacherDashboard />;
+    case 'student':
+      return <StudentDashboard />;
+    case 'parent':
+      return <ParentDashboard />;
+    case 'driver':
+      return <MaintenanceScreen />;
+    default:
+      return (
+        <ThemedView style={styles.container}>
+          <View style={styles.content}>
+            <ThemedCard style={styles.card}>
+              <ThemedText type="title" style={styles.title}>
+                Signed in successfully
+              </ThemedText>
+              <ThemedText style={styles.body}>
+                Your account role is `{user.role}`, but no dashboard is available.
+              </ThemedText>
+              <ThemedText style={[styles.roleChip, { color: theme.colors.primary }]}>
+                {user.name} - {user.email}
+              </ThemedText>
+              <ThemedButton title="Logout" onPress={logout} style={styles.button} />
+            </ThemedCard>
+          </View>
+        </ThemedView>
+      );
+  }
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    content: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: 24,
-    },
-    card: {
-        padding: 24,
-        borderRadius: 24,
-    },
-    title: {
-        marginBottom: 12,
-        textAlign: 'center',
-    },
-    body: {
-        textAlign: 'center',
-        marginBottom: 12,
-        lineHeight: 22,
-    },
-    roleChip: {
-        textAlign: 'center',
-        marginBottom: 20,
-        fontWeight: '600',
-    },
-    button: {
-        marginTop: 8,
-    },
+  container: { flex: 1 },
+  content: { flex: 1, justifyContent: 'center', padding: 24 },
+  card: { padding: 24, borderRadius: 24 },
+  title: { marginBottom: 12, textAlign: 'center' },
+  body: { textAlign: 'center', marginBottom: 12, lineHeight: 22 },
+  roleChip: { textAlign: 'center', marginBottom: 20, fontWeight: '600' },
+  button: { marginTop: 8 },
 });
