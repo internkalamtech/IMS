@@ -8,6 +8,7 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RefreshControl,
         ScrollView,
@@ -18,6 +19,7 @@ import { RefreshControl,
        } from "react-native";
 export default function AdminDashboard() {
     const { logout, user } = useAuth();
+    const router = useRouter();
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
 
