@@ -14,11 +14,17 @@ type RetryRequestConfig = InternalAxiosRequestConfig & {
     _retry?: boolean;
 };
 
+/** Callback pair for handling queued requests during token refresh */
+type QueuedRequestCallback = {
+    resolve: (token: string) => void;
+    reject: (error: unknown) => void;
+};
+
 export class ApiClient {
     private static instance: ApiClient;
     private axiosInstance: AxiosInstance;
     private isRefreshing = false;
-    private failedQueue: { resolve: Function; reject: Function }[] = [];
+    private failedQueue: QueuedRequestCallback[] = [];
 
     private constructor() {
         this.axiosInstance = axios.create({
@@ -39,12 +45,14 @@ export class ApiClient {
         return ApiClient.instance;
     }
 
-    private processQueue(error: any, token: string | null = null) {
-        this.failedQueue.forEach((prom) => {
+    private processQueue(error: unknown | null, token: string | null = null): void {
+        this.failedQueue.forEach((callback) => {
             if (error) {
-                prom.reject(error);
+                callback.reject(error);
+            } else if (token) {
+                callback.resolve(token);
             } else {
-                prom.resolve(token);
+                callback.reject(new Error('Token refresh failed: no token available'));
             }
         });
         this.failedQueue = [];
