@@ -24,7 +24,7 @@ router.include_router(users_router)
 router.include_router(auth.router)
 router.include_router(health.router)
 router.include_router(dashboard.router)
-router.include_router(class_subjects_router)
+router.include_router(class_subjects)
 router.include_router(subjects.router)
 router.include_router(enrollment.router)
 
