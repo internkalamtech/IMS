@@ -218,6 +218,198 @@ class UpdateClassSubjectsRequest(BaseModel):
     subjects: List[SubjectInput]
 
 
+# Student & Parent Enrollment Schemas
+
+
+class ParentInput(BaseModel):
+    """Input schema for parent information."""
+
+    name: str = Field(..., min_length=1, max_length=255, description="Parent full name")
+    phone: str = Field(
+        ..., min_length=10, max_length=20, description="Contact phone number"
+    )
+    email: EmailStr = Field(..., description="Parent email address")
+    relationship_type: str = Field(
+        default="Parent",
+        max_length=50,
+        description="Relationship to student (Parent, Guardian, etc.)",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "name": "John Doe",
+                    "phone": "+1-555-123-4567",
+                    "email": "john.doe@example.com",
+                    "relationship_type": "Father",
+                }
+            ]
+        }
+    }
+
+
+class StudentInput(BaseModel):
+    """Input schema for student information."""
+
+    name: str = Field(..., min_length=1, max_length=255, description="Student full name")
+    roll_number: str = Field(
+        ..., min_length=1, max_length=50, description="Unique student roll number"
+    )
+    class_id: int = Field(..., description="ID of the class section")
+    class_name: str = Field(
+        ..., min_length=1, max_length=100, description="Class name/grade"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "name": "Jane Doe",
+                    "roll_number": "A-001",
+                    "class_id": 1,
+                    "class_name": "Grade 6-A",
+                }
+            ]
+        }
+    }
+
+
+class CreateStudentWithParentRequest(BaseModel):
+    """Request schema for creating a student with parent link."""
+
+    student: StudentInput = Field(..., description="Student information")
+    parent: ParentInput = Field(..., description="Parent information")
+    link_existing_parent: bool = Field(
+        default=False,
+        description="If True, link to existing parent by email instead of creating new",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "student": {
+                        "name": "Jane Doe",
+                        "roll_number": "A-001",
+                        "class_id": 1,
+                        "class_name": "Grade 6-A",
+                    },
+                    "parent": {
+                        "name": "John Doe",
+                        "phone": "+1-555-123-4567",
+                        "email": "john.doe@example.com",
+                        "relationship": "Father",
+
+                    },
+                    "link_existing_parent": False,
+                }
+            ]
+        }
+    }
+
+
+class ParentResponse(BaseModel):
+    """Response schema for parent data."""
+
+    id: int
+    name: str
+    phone: str
+    email: str
+    relationship_type: str
+
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "name": "John Doe",
+                    "phone": "+1-555-123-4567",
+                    "email": "john.doe@example.com",
+                    "relationship_type": "Father",
+                    "is_active": True,
+                    "created_at": "2024-02-16T10:30:00",
+                    "updated_at": "2024-02-16T10:30:00",
+                }
+            ]
+        }
+    }
+
+
+class StudentResponse(BaseModel):
+    """Response schema for student data."""
+
+    id: int
+    name: str
+    roll_number: str
+    class_id: Optional[int] = None
+    class_name: str
+    next_due_date: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "name": "Jane Doe",
+                    "roll_number": "A-001",
+                    "class_id": 1,
+                    "class_name": "Grade 6-A",
+                    "next_due_date": None,
+                    "created_at": "2024-02-16T10:30:00",
+                    "updated_at": "2024-02-16T10:30:00",
+                }
+            ]
+        }
+    }
+
+
+class CreateStudentWithParentResponse(BaseModel):
+    """Response schema for student and parent creation."""
+
+    student: StudentResponse
+    parent: ParentResponse
+    message: str = "Student and parent created successfully with link established"
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "student": {
+                        "id": 1,
+                        "name": "Jane Doe",
+                        "roll_number": "A-001",
+                        "class_id": 1,
+                        "class_name": "Grade 6-A",
+                        "next_due_date": None,
+                        "created_at": "2024-02-16T10:30:00",
+                        "updated_at": "2024-02-16T10:30:00",
+                    },
+                    "parent": {
+                        "id": 1,
+                        "name": "John Doe",
+                        "phone": "+1-555-123-4567",
+                        "email": "john.doe@example.com",
+                        "relationship": "Father",
+
+                        "is_active": True,
+                        "created_at": "2024-02-16T10:30:00",
+                        "updated_at": "2024-02-16T10:30:00",
+                    },
+                    "message": "Student and parent created successfully with link established",
+                }
+            ]
+        }
+    }
+
+
+
 # ------------------------------------------------------------------ #
 # Payment schemas
 # ------------------------------------------------------------------ #
@@ -292,7 +484,7 @@ class PaymentCreate(BaseModel):
         return self
 
 
-class StudentResponse(BaseModel):
+class PaymentStudentResponse(BaseModel):
     """Response schema for student data in payment context."""
 
     id: int
@@ -314,6 +506,7 @@ class FeeStructureResponse(BaseModel):
     balance: float
     fee_type: str
     academic_year: str
+    student: PaymentStudentResponse
 
     model_config = {"from_attributes": True}
 
