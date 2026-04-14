@@ -185,6 +185,26 @@ class_subject_link = Table(
 )
 
 
+# Association table for many-to-many relationship between
+# Students and Parents
+student_parent_link = Table(
+    "student_parent_link",
+    Base.metadata,
+    Column(
+        "student_id",
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "parent_id",
+        Integer,
+        ForeignKey("parents.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+
 class StudentModel(Base):
     """
     Student database model.
@@ -199,6 +219,9 @@ class StudentModel(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     roll_number: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
+    )
+    class_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("class_sections.id", ondelete="SET NULL"), nullable=True
     )
     class_name: Mapped[str] = mapped_column(String(100), nullable=False)
     next_due_date: Mapped[datetime | None] = mapped_column(
@@ -220,6 +243,11 @@ class StudentModel(Base):
     )
     payments: Mapped[List["PaymentModel"]] = relationship(
         "PaymentModel", back_populates="student", cascade="all, delete-orphan"
+    )
+    parents: Mapped[List["ParentModel"]] = relationship(
+        "ParentModel",
+        secondary=student_parent_link,
+        back_populates="students",
     )
 
     def __repr__(self) -> str:
@@ -345,3 +373,52 @@ class PaymentModel(Base):
             f"amount={self.amount}, "
             f"status='{self.status}')>"
         )
+
+
+class ParentModel(Base):
+    """
+    Parent database model.
+
+    Represents a parent/guardian with contact information and
+    associations to one or more students.
+    """
+
+    __tablename__ = "parents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    phone: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    email: Mapped[str] = mapped_column(
+        String(255), unique=True, nullable=False, index=True
+    )
+    relationship_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="Parent"
+    )  # Parent, Guardian, etc.
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    students: Mapped[List["StudentModel"]] = relationship(
+        "StudentModel",
+        secondary=student_parent_link,
+        back_populates="parents",
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Parent(id={self.id}, "
+            f"name='{self.name}', "
+            f"email='{self.email}')>"
+        )
+
