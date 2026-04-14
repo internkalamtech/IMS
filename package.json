@@ -22,5 +22,8 @@
         "monorepo"
     ],
     "author": "",
-    "license": "ISC"
+    "license": "ISC",
+    "dependencies": {
+        "babel-plugin-module-resolver": "^5.0.3"
+    }
 }

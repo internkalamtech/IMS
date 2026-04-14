@@ -1,4 +1,4 @@
-import TeacherDashboard from '@/presentation/dashboard/TeacherDashboard';
+import TeacherDashboard from '@/presentation/screens/dashboards/TeacherDashboard';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import LoginScreen from '@/presentation/screens/LoginScreen';

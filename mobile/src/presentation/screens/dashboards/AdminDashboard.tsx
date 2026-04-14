@@ -9,11 +9,8 @@ import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Modal, TextInput, Button, RefreshControl, ScrollView, StatusBar, TouchableOpacity, View, StyleSheet } from "react-native";
+import { RefreshControl, ScrollView, StatusBar, TouchableOpacity, View, StyleSheet } from "react-native";
 export default function AdminDashboard() {
-    const [modalVisible, setModalVisible] = useState(false);
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
     const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
@@ -28,11 +25,6 @@ export default function AdminDashboard() {
         { title: 'Total Students', value: getStatValue('Total Students'), icon: 'people', color: '#fff' },
         { title: 'Total Teachers', value: getStatValue('Total Teachers'), icon: 'school', color: '#fff' },
     ];
-
-function handleSubmit(): void {
-    // TODO: Implement submit logic
-    setModalVisible(false);
-}
 
 return (
     <ThemedView style={styles.container}>
@@ -54,9 +46,6 @@ return (
                                 Institute Management Overview
                             </ThemedText>
                         </View>
-                        <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addIcon}>
-                            <Ionicons name="person-add-outline" size={24} color={theme.colors.primaryForeground} />
-                        </TouchableOpacity>
                         <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
                             <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
                         </TouchableOpacity>
@@ -117,31 +106,6 @@ return (
                     </ThemedCard>
                 </View>
             </ScrollView>
-            <Modal visible={modalVisible} animationType="slide" transparent>
-    <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-
-            <TextInput
-                placeholder="Name"
-                value={name}
-                onChangeText={setName}
-                style={styles.input}
-            />
-
-            <TextInput
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                style={styles.input}
-            />
-
-            <Button title="Submit" onPress={handleSubmit} />
-
-            <Button title="Close" onPress={() => setModalVisible(false)} />
-
-        </View>
-    </View>
-</Modal>
         </ThemedView>
     );
 }
@@ -297,25 +261,4 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '600',
     },
-    modalOverlay: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  backgroundColor: "rgba(0,0,0,0.4)",
-},
-
-modalContent: {
-  backgroundColor: "white",
-  padding: 20,
-  borderRadius: 10,
-  width: "80%",
-},
-
-input: {
-  borderWidth: 1,
-  borderColor: "#ccc",
-  padding: 10,
-  marginBottom: 10,
-  borderRadius: 6,
-},
 });

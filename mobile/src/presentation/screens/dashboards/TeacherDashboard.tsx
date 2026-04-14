@@ -7,11 +7,17 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
 
 const { width } = Dimensions.get('window');
+
+type DashboardData = {
+  totalStudents: number;
+  totalClasses: number;
+  notifications: number;
+};
 
 export default function TeacherDashboard() {
     const { logout, user } = useAuth();
