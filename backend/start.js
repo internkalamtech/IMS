@@ -27,6 +27,7 @@ if (!fs.existsSync(venvPath)) {
 // Run the backend
 console.log('Starting backend...\n');
 const python = spawn(pythonPath, ['run.py'], {
+    cwd: __dirname,
     stdio: 'inherit',
     shell: true,
 });

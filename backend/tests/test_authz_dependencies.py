@@ -4,12 +4,16 @@ from fastapi import HTTPException
 from app.api.authz import require_roles
 from app.domain.entities.user import Role, User, UserRole
 
+
 def _make_user(
     primary_role: UserRole,
     extra_roles: list[UserRole] | None = None,
 ) -> User:
     role_names = extra_roles or []
-    roles = [Role(id=str(i + 1), name=role_name, description=None) for i, role_name in enumerate(role_names)]
+    roles = [
+        Role(id=str(i + 1), name=role_name, description=None)
+        for i, role_name in enumerate(role_names)
+    ]
     return User(
         id="u1",
         name="Test User",

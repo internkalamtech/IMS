@@ -11,8 +11,6 @@ from app.api.dependencies import get_current_user
 from app.api.schemas import (
     LoginRequest,
     LoginResponse,
-    TokenRefreshRequest,
-    TokenRefreshResponse,
     UserResponse,
     ErrorResponse,
     RoleResponse,
