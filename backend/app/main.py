@@ -101,7 +101,6 @@ app.add_middleware(
 # Include API routers
 app.include_router(api_v1_router, prefix="/api")
 
-# Do NOT include trips_router here - it's included in v1/router.py
 
 
 @app.get("/", tags=["Root"])
