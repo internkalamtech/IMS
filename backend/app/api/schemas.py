@@ -414,6 +414,10 @@ class PaymentCreate(BaseModel):
             )
         return self
 
+class AverageMarksResponse(BaseModel):
+    class_name: str
+    average_marks: float
+    average_attendance: float
 
 class PaymentStudentResponse(BaseModel):
     """Response schema for student data in payment context."""
@@ -422,6 +426,8 @@ class PaymentStudentResponse(BaseModel):
     name: str
     roll_number: str
     class_name: str
+    marks: Optional[float] = None
+    attendance: Optional[float] = None
     next_due_date: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
