@@ -11,7 +11,7 @@ Best practices followed:
 """
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -344,4 +344,190 @@ class PaymentModel(Base):
             f"receipt='{self.receipt_number}', "
             f"amount={self.amount}, "
             f"status='{self.status}')>"
+        )
+
+
+class RouteModel(Base):
+    """
+    Route database model.
+
+    Represents a transport route belonging to a branch or organization.
+    A route contains an ordered list of stops (bus pickup points) and
+    can be assigned to multiple students via StudentRouteMappingModel.
+
+    Columns:
+        branch_id: string identifier for the branch (e.g. "BRANCH-01").
+            Stored as a plain string because the IMS does not yet have a
+            dedicated branches table; this avoids a blocking FK dependency.
+        organization_id: optional string identifier for the org/school.
+    """
+
+    __tablename__ = "routes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(
+        String(255), nullable=False, index=True
+    )
+    description: Mapped[Optional[str]] = mapped_column(
+        String(500), nullable=True
+    )
+    # Plain string IDs — no FK to a branches/orgs table yet.
+    # This lets routes be filtered per branch/org without requiring those
+    # entities to exist in the DB first.
+    branch_id: Mapped[str] = mapped_column(
+        String(100), nullable=False, index=True
+    )
+    organization_id: Mapped[Optional[str]] = mapped_column(
+        String(100), nullable=True, index=True
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # One route has many ordered stops.
+    # cascade="all, delete-orphan" means deleting the route also deletes
+    # its stops automatically — no manual cleanup SQL needed.
+    stops: Mapped[List["RouteStopModel"]] = relationship(
+        "RouteStopModel",
+        back_populates="route",
+        cascade="all, delete-orphan",
+        order_by="RouteStopModel.sequence_order",
+    )
+
+    # Student assignments for this route.
+    student_mappings: Mapped[List["StudentRouteMappingModel"]] = relationship(
+        "StudentRouteMappingModel",
+        back_populates="route",
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Route(id={self.id}, name='{self.name}', "
+            f"branch='{self.branch_id}')>"
+        )
+
+
+class RouteStopModel(Base):
+    """
+    Route stop database model.
+
+    Represents a single pickup/drop-off stop on a route, storing its
+    GPS coordinates and the time the vehicle is expected to arrive.
+
+    sequence_order: integer that controls the order stops are visited
+        (e.g. 1 = first stop, 2 = second stop, …). The API sorts stops
+        by this field when returning a route so the frontend always
+        gets them in the correct travel order.
+    arrival_time: stored as a plain string ("HH:MM") because the IMS
+        uses simple time strings rather than full datetime objects for
+        schedule data.
+    """
+
+    __tablename__ = "route_stops"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    route_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("routes.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    # GPS coordinates stored as Floats.
+    # latitude: -90.0 to +90.0, longitude: -180.0 to +180.0
+    latitude: Mapped[float] = mapped_column(Float, nullable=False)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    sequence_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    # "HH:MM" format, e.g. "07:30"
+    arrival_time: Mapped[Optional[str]] = mapped_column(
+        String(10), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+
+    route: Mapped["RouteModel"] = relationship(
+        "RouteModel", back_populates="stops"
+    )
+
+    # Students whose pickup_stop is this stop.
+    student_mappings: Mapped[List["StudentRouteMappingModel"]] = relationship(
+        "StudentRouteMappingModel",
+        back_populates="pickup_stop",
+        # Null out the FK rather than cascade-delete so removing a stop
+        # does not remove the student assignment entirely.
+        passive_deletes=True,
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<RouteStop(id={self.id}, name='{self.name}', "
+            f"order={self.sequence_order})>"
+        )
+
+
+class StudentRouteMappingModel(Base):
+    """
+    Student-to-route mapping model.
+
+    Captures which route a student is assigned to and, optionally,
+    which specific stop they board/alight at.
+
+    Why a separate table (not a column on StudentModel):
+    - A student might use a different route for morning vs. afternoon.
+    - Routes change each academic year; keeping history requires rows,
+      not overwriting a column.
+    - The acceptance criteria explicitly state DELETE must clean up
+      "associated student mappings" — a dedicated table makes that
+      simple: cascade from RouteModel handles it automatically.
+    """
+
+    __tablename__ = "student_route_mappings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    route_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("routes.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    student_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    # The specific stop where this student boards the vehicle.
+    # Nullable — not every school tracks per-stop boarding.
+    pickup_stop_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("route_stops.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+
+    route: Mapped["RouteModel"] = relationship(
+        "RouteModel", back_populates="student_mappings"
+    )
+    student: Mapped["StudentModel"] = relationship("StudentModel")
+    pickup_stop: Mapped[Optional["RouteStopModel"]] = relationship(
+        "RouteStopModel", back_populates="student_mappings"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<StudentRouteMapping(id={self.id}, "
+            f"route={self.route_id}, student={self.student_id})>"
         )
