@@ -89,7 +89,7 @@ If your database was created before transport enrollments were aligned to
 the `students` table, run the migration below once:
 
 ```bash
-psql "$DATABASE_URL" -f app/infrastructure/database/migrations/2026_04_14_align_transport_enrollment_student_fk.sql
+psql "$DATABASE_URL" -f app/infrastructure/database/migrations/align_transport_enrollment_student_fk.sql
 ```
 
 What it does:
