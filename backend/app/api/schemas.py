@@ -268,25 +268,25 @@ class ParentInput(BaseModel):
 
 
 class CreateStudentWithParentRequest(BaseModel):
-    """Create student request with either new parent details or parentId."""
+    """Create student request with parent details.
+    
+    The parent payload is used to either:
+    1. Create a new parent (when link_existing_parent=False)
+    2. Link to an existing parent by email (when link_existing_parent=True)
+    
+    For linking to an existing parent, provide the parent's email in the parent.email field
+    and set link_existing_parent=True.
+    """
 
     student: StudentInput
-    parent: Optional[ParentInput] = None
-    parent_id: Optional[int] = Field(default=None, alias="parentId", gt=0)
+    parent: ParentInput
     link_existing_parent: bool = Field(
         default=False,
         alias="linkExistingParent",
+        description="Set to true to link to an existing parent by email instead of creating a new one",
     )
 
     model_config = {"populate_by_name": True}
-
-    @model_validator(mode="after")
-    def validate_parent_reference(self):
-        has_parent_payload = self.parent is not None
-        has_parent_id = self.parent_id is not None
-        if has_parent_payload == has_parent_id:
-            raise ValueError("Provide exactly one of 'parent' or 'parentId'.")
-        return self
 
 
 class StudentResponse(BaseModel):
