@@ -131,9 +131,7 @@ async def create_payment(
             payment_id=created.id,
         )
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except DatabaseError as e:
         Logger.error(f"Database error creating payment: {e.message}")
         raise HTTPException(
@@ -160,7 +158,7 @@ async def update_payment_status(
     payload: PaymentStatusUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> dict[str, object]:
     """Update the status of a payment record."""
     try:
         repository = DatabasePaymentRepository(db)
@@ -168,9 +166,7 @@ async def update_payment_status(
         updated = await use_case.execute(payment_id, payload.status)
         return {"message": "Payment status updated", "status": updated.status}
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DatabaseError as e:
         Logger.error(f"Database error updating payment: {e.message}")
         raise HTTPException(
@@ -201,7 +197,7 @@ async def list_payments(
     limit: int = 20,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> List[PaymentResponse]:
     """List payments with optional filtering and pagination."""
     try:
         repository = DatabasePaymentRepository(db)
@@ -226,9 +222,7 @@ async def list_payments(
                 reference_number=p.reference_number,
                 receipt_number=p.receipt_number,
                 status=p.status,
-                created_at=(
-                    p.created_at.isoformat() if p.created_at else None
-                ),
+                created_at=(p.created_at.isoformat() if p.created_at else None),
             )
             for p in payments
         ]
@@ -257,16 +251,14 @@ async def student_ledger(
     student_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> dict[str, object]:
     """Get the full payment ledger for a student."""
     try:
         repository = DatabasePaymentRepository(db)
         use_case = GetStudentLedgerUseCase(repository)
         return await use_case.execute(student_id)
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DatabaseError as e:
         Logger.error(f"Database error fetching ledger: {e.message}")
         raise HTTPException(
@@ -354,7 +346,7 @@ async def get_payment_stats(
 async def monthly_revenue(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> List[dict]:
     """Get monthly revenue breakdown."""
     try:
         repository = DatabasePaymentRepository(db)
@@ -383,7 +375,7 @@ async def monthly_revenue(
 async def export_payments(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> StreamingResponse:
     """Export all payment records as a streaming CSV file."""
     repository = DatabasePaymentRepository(db)
     chunk_size = 1000
@@ -410,9 +402,7 @@ async def export_payments(
 
         offset = 0
         while True:
-            payments = await repository.get_all_payments_chunked(
-                offset=offset, limit=chunk_size
-            )
+            payments = await repository.get_all_payments_chunked(offset=offset, limit=chunk_size)
             if not payments:
                 break
 
@@ -438,7 +428,5 @@ async def export_payments(
     return StreamingResponse(
         payment_iterator(),
         media_type="text/csv",
-        headers={
-            "Content-Disposition": "attachment; filename=payments.csv"
-        },
+        headers={"Content-Disposition": "attachment; filename=payments.csv"},
     )

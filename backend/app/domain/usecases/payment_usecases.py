@@ -70,9 +70,7 @@ class UpdatePaymentStatusUseCase:
     def __init__(self, repository: PaymentRepository):
         self.repository = repository
 
-    async def execute(
-        self, payment_id: int, status: str
-    ) -> Optional[PaymentEntity]:
+    async def execute(self, payment_id: int, status: str) -> Optional[PaymentEntity]:
         """
         Update the status of a payment.
 
@@ -86,9 +84,7 @@ class UpdatePaymentStatusUseCase:
         Raises:
             ValueError: If payment not found
         """
-        payment = await self.repository.update_payment_status(
-            payment_id, status
-        )
+        payment = await self.repository.update_payment_status(payment_id, status)
         if not payment:
             raise ValueError(f"Payment with ID {payment_id} not found")
         return payment
@@ -147,13 +143,11 @@ class GetStudentLedgerUseCase:
         payments = await self.repository.get_payments_by_student(student_id)
 
         if not payments:
-            raise ValueError(
-                f"No payments found for student ID {student_id}"
-            )
+            raise ValueError(f"No payments found for student ID {student_id}")
 
         student_class = payments[0].student_class
-        fee_structure: Optional[FeeStructureEntity] = (
-            await self.repository.get_fee_structure(student_class)
+        fee_structure: Optional[FeeStructureEntity] = await self.repository.get_fee_structure(
+            student_class
         )
         total_fee = fee_structure.fee_amount if fee_structure else 0.0
         total_paid = sum(p.amount for p in payments)
@@ -200,12 +194,13 @@ class GetFinancialSummaryUseCase:
         total_collected = await self.repository.get_total_collected()
         class_counts = await self.repository.get_class_student_counts()
 
+        # Fetch all fee structures in one query to avoid N+1
+        all_fee_structures = await self.repository.get_all_fee_structures()
+        fee_map = {fs.student_class: fs.fee_amount for fs in all_fee_structures}
+
         total_collectible = 0.0
         for student_class, count in class_counts:
-            fee_structure = await self.repository.get_fee_structure(
-                student_class
-            )
-            fee_amount = fee_structure.fee_amount if fee_structure else 0.0
+            fee_amount = fee_map.get(student_class, 0.0)
             total_collectible += fee_amount * count
 
         pending = max(total_collectible - total_collected, 0)
@@ -232,9 +227,7 @@ class GetPaymentStatsUseCase:
             Dict with total collected and number of students paid
         """
         total_collected = await self.repository.get_total_collected()
-        students_paid = (
-            await self.repository.get_distinct_students_paid_count()
-        )
+        students_paid = await self.repository.get_distinct_students_paid_count()
 
         return {
             "total_collected": total_collected,

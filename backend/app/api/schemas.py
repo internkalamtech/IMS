@@ -6,7 +6,7 @@ These schemas define the shape of data for API endpoints.
 
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 
 class LoginRequest(BaseModel):
@@ -20,9 +20,7 @@ class LoginRequest(BaseModel):
     )
 
     model_config = {
-        "json_schema_extra": {
-            "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
-        }
+        "json_schema_extra": {"examples": [{"email": "admin@myuser.com", "password": "admin123"}]}
     }
 
 
@@ -30,9 +28,7 @@ class RoleResponse(BaseModel):
     """Response schema for role data."""
 
     id: str
-    name: Literal[
-        "admin", "teacher", "student", "parent", "transport", "driver"
-    ]
+    name: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     description: str | None = None
 
 
@@ -42,9 +38,7 @@ class UserResponse(BaseModel):
     id: str
     name: str
     email: str
-    role: Literal[
-        "admin", "teacher", "student", "parent", "transport", "driver"
-    ]
+    role: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -101,9 +95,7 @@ class ErrorResponse(BaseModel):
 
     detail: str
 
-    model_config = {
-        "json_schema_extra": {"examples": [{"detail": "Error message"}]}
-    }
+    model_config = {"json_schema_extra": {"examples": [{"detail": "Error message"}]}}
 
 
 class DemoCredential(BaseModel):
@@ -141,6 +133,12 @@ class SubjectInput(BaseModel):
 
     id: Optional[int] = None
     name: Optional[str] = None
+
+    @model_validator(mode="after")
+    def require_id_or_name(self) -> "SubjectInput":
+        if self.id is None and not self.name:
+            raise ValueError("SubjectInput must have either 'id' or a non-empty 'name'")
+        return self
 
 
 class UpdateClassSubjectsRequest(BaseModel):

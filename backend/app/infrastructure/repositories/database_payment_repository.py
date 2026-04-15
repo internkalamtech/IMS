@@ -45,33 +45,22 @@ class DatabasePaymentRepository(PaymentRepository):
             await self.db.refresh(new_payment)
             return self._to_entity(new_payment)
         except Exception as e:
-            Logger.error(
-                f"Error creating payment: {e}", exc_info=True
-            )
+            await self.db.rollback()
+            Logger.error(f"Error creating payment: {e}", exc_info=True)
             raise DatabaseError(f"Failed to create payment: {str(e)}")
 
-    async def get_payment_by_id(
-        self, payment_id: int
-    ) -> Optional[PaymentEntity]:
+    async def get_payment_by_id(self, payment_id: int) -> Optional[PaymentEntity]:
         try:
-            result = await self.db.execute(
-                select(Payment).where(Payment.id == payment_id)
-            )
+            result = await self.db.execute(select(Payment).where(Payment.id == payment_id))
             payment = result.scalar_one_or_none()
             return self._to_entity(payment) if payment else None
         except Exception as e:
-            Logger.error(
-                f"Error fetching payment {payment_id}: {e}", exc_info=True
-            )
+            Logger.error(f"Error fetching payment {payment_id}: {e}", exc_info=True)
             raise DatabaseError(f"Failed to fetch payment: {str(e)}")
 
-    async def update_payment_status(
-        self, payment_id: int, status: str
-    ) -> Optional[PaymentEntity]:
+    async def update_payment_status(self, payment_id: int, status: str) -> Optional[PaymentEntity]:
         try:
-            result = await self.db.execute(
-                select(Payment).where(Payment.id == payment_id)
-            )
+            result = await self.db.execute(select(Payment).where(Payment.id == payment_id))
             payment = result.scalar_one_or_none()
             if not payment:
                 return None
@@ -80,12 +69,9 @@ class DatabasePaymentRepository(PaymentRepository):
             await self.db.refresh(payment)
             return self._to_entity(payment)
         except Exception as e:
-            Logger.error(
-                f"Error updating payment status: {e}", exc_info=True
-            )
-            raise DatabaseError(
-                f"Failed to update payment status: {str(e)}"
-            )
+            await self.db.rollback()
+            Logger.error(f"Error updating payment status: {e}", exc_info=True)
+            raise DatabaseError(f"Failed to update payment status: {str(e)}")
 
     async def list_payments(
         self,
@@ -99,51 +85,31 @@ class DatabasePaymentRepository(PaymentRepository):
         try:
             query = select(Payment)
             if name:
-                query = query.where(
-                    Payment.student_name.ilike(f"%{name}%")
-                )
+                query = query.where(Payment.student_name.ilike(f"%{name}%"))
             if roll_number:
                 query = query.where(Payment.roll_number == roll_number)
             if student_class:
-                query = query.where(
-                    Payment.student_class == student_class
-                )
+                query = query.where(Payment.student_class == student_class)
             if status:
                 query = query.where(Payment.status == status)
-            result = await self.db.execute(
-                query.offset(skip).limit(limit)
-            )
+            result = await self.db.execute(query.offset(skip).limit(limit))
             return [self._to_entity(p) for p in result.scalars().all()]
         except Exception as e:
-            Logger.error(
-                f"Error listing payments: {e}", exc_info=True
-            )
+            Logger.error(f"Error listing payments: {e}", exc_info=True)
             raise DatabaseError(f"Failed to list payments: {str(e)}")
 
-    async def get_payments_by_student(
-        self, student_id: int
-    ) -> List[PaymentEntity]:
+    async def get_payments_by_student(self, student_id: int) -> List[PaymentEntity]:
         try:
-            result = await self.db.execute(
-                select(Payment).where(Payment.student_id == student_id)
-            )
+            result = await self.db.execute(select(Payment).where(Payment.student_id == student_id))
             return [self._to_entity(p) for p in result.scalars().all()]
         except Exception as e:
-            Logger.error(
-                f"Error fetching student payments: {e}", exc_info=True
-            )
-            raise DatabaseError(
-                f"Failed to fetch student payments: {str(e)}"
-            )
+            Logger.error(f"Error fetching student payments: {e}", exc_info=True)
+            raise DatabaseError(f"Failed to fetch student payments: {str(e)}")
 
-    async def get_fee_structure(
-        self, student_class: str
-    ) -> Optional[FeeStructureEntity]:
+    async def get_fee_structure(self, student_class: str) -> Optional[FeeStructureEntity]:
         try:
             result = await self.db.execute(
-                select(FeeStructure).where(
-                    FeeStructure.student_class == student_class
-                )
+                select(FeeStructure).where(FeeStructure.student_class == student_class)
             )
             fee = result.scalar_one_or_none()
             if not fee:
@@ -154,26 +120,32 @@ class DatabasePaymentRepository(PaymentRepository):
                 fee_amount=fee.fee_amount,
             )
         except Exception as e:
-            Logger.error(
-                f"Error fetching fee structure: {e}", exc_info=True
-            )
-            raise DatabaseError(
-                f"Failed to fetch fee structure: {str(e)}"
-            )
+            Logger.error(f"Error fetching fee structure: {e}", exc_info=True)
+            raise DatabaseError(f"Failed to fetch fee structure: {str(e)}")
+
+    async def get_all_fee_structures(self) -> List[FeeStructureEntity]:
+        try:
+            result = await self.db.execute(select(FeeStructure))
+            fees = result.scalars().all()
+            return [
+                FeeStructureEntity(
+                    id=fee.id,
+                    student_class=fee.student_class,
+                    fee_amount=fee.fee_amount,
+                )
+                for fee in fees
+            ]
+        except Exception as e:
+            Logger.error(f"Error fetching all fee structures: {e}", exc_info=True)
+            raise DatabaseError(f"Failed to fetch fee structures: {str(e)}")
 
     async def get_total_collected(self) -> float:
         try:
-            result = await self.db.execute(
-                select(func.sum(Payment.amount))
-            )
+            result = await self.db.execute(select(func.sum(Payment.amount)))
             return result.scalar() or 0.0
         except Exception as e:
-            Logger.error(
-                f"Error fetching total collected: {e}", exc_info=True
-            )
-            raise DatabaseError(
-                f"Failed to fetch total collected: {str(e)}"
-            )
+            Logger.error(f"Error fetching total collected: {e}", exc_info=True)
+            raise DatabaseError(f"Failed to fetch total collected: {str(e)}")
 
     async def get_class_student_counts(self) -> List[tuple]:
         try:
@@ -184,61 +156,44 @@ class DatabasePaymentRepository(PaymentRepository):
             result = await self.db.execute(stmt)
             return result.all()
         except Exception as e:
-            Logger.error(
-                f"Error fetching class counts: {e}", exc_info=True
-            )
-            raise DatabaseError(
-                f"Failed to fetch class counts: {str(e)}"
-            )
+            Logger.error(f"Error fetching class counts: {e}", exc_info=True)
+            raise DatabaseError(f"Failed to fetch class counts: {str(e)}")
 
     async def get_distinct_students_paid_count(self) -> int:
         try:
-            result = await self.db.execute(
-                select(func.count(func.distinct(Payment.student_id)))
-            )
+            result = await self.db.execute(select(func.count(func.distinct(Payment.student_id))))
             return result.scalar() or 0
         except Exception as e:
-            Logger.error(
-                f"Error fetching student count: {e}", exc_info=True
-            )
-            raise DatabaseError(
-                f"Failed to fetch student count: {str(e)}"
-            )
+            Logger.error(f"Error fetching student count: {e}", exc_info=True)
+            raise DatabaseError(f"Failed to fetch student count: {str(e)}")
 
     async def get_monthly_revenue(self) -> List[dict]:
         try:
-            stmt = select(
-                extract("month", Payment.created_at).label("month"),
-                func.sum(Payment.amount),
-            ).group_by("month")
+            stmt = (
+                select(
+                    extract("year", Payment.created_at).label("year"),
+                    extract("month", Payment.created_at).label("month"),
+                    func.sum(Payment.amount),
+                )
+                .group_by("year", "month")
+                .order_by("year", "month")
+            )
             result = await self.db.execute(stmt)
             return [
-                {"month": int(month), "revenue": revenue}
-                for month, revenue in result.all()
+                {"year": int(year), "month": int(month), "revenue": revenue}
+                for year, month, revenue in result.all()
             ]
         except Exception as e:
-            Logger.error(
-                f"Error fetching monthly revenue: {e}", exc_info=True
-            )
-            raise DatabaseError(
-                f"Failed to fetch monthly revenue: {str(e)}"
-            )
+            Logger.error(f"Error fetching monthly revenue: {e}", exc_info=True)
+            raise DatabaseError(f"Failed to fetch monthly revenue: {str(e)}")
 
-    async def get_all_payments_chunked(
-        self, offset: int, limit: int
-    ) -> List[PaymentEntity]:
+    async def get_all_payments_chunked(self, offset: int, limit: int) -> List[PaymentEntity]:
         try:
-            result = await self.db.execute(
-                select(Payment).offset(offset).limit(limit)
-            )
+            result = await self.db.execute(select(Payment).offset(offset).limit(limit))
             return [self._to_entity(p) for p in result.scalars().all()]
         except Exception as e:
-            Logger.error(
-                f"Error fetching payments chunk: {e}", exc_info=True
-            )
-            raise DatabaseError(
-                f"Failed to fetch payments chunk: {str(e)}"
-            )
+            Logger.error(f"Error fetching payments chunk: {e}", exc_info=True)
+            raise DatabaseError(f"Failed to fetch payments chunk: {str(e)}")
 
     def _to_entity(self, model: Payment) -> PaymentEntity:
         return PaymentEntity(

@@ -4,7 +4,7 @@ Authentication endpoints.
 This module provides API endpoints for user authentication.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
@@ -17,6 +17,7 @@ from app.api.schemas import (
     DemoCredentialsResponse,
     DemoCredential,
 )
+
 from app.core.errors import AuthenticationError, ValidationError, DatabaseError
 from app.core.logger import Logger
 from app.core.security import create_access_token
@@ -40,8 +41,10 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
     summary="User login",
-    description="Authenticate a user with email and password, "
-    "return user data with JWT access token.",
+    description=(
+        "Authenticate a user with email and password, "
+        "return user data with JWT access token."
+    ),
 )
 async def login(
     request: LoginRequest, db: AsyncSession = Depends(get_db)
@@ -115,17 +118,13 @@ async def login(
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An error occurred during login. "
-            "Please try again later.",
+            detail="An error occurred during login. Please try again later.",
         )
     except Exception as e:
-        Logger.error(
-            f"Unexpected error during login: {str(e)}", exc_info=True
-        )
+        Logger.error(f"Unexpected error during login: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred. "
-            "Please try again later.",
+            detail="An unexpected error occurred. Please try again later.",
         )
 
 

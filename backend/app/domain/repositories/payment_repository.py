@@ -32,9 +32,7 @@ class PaymentRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_payment_by_id(
-        self, payment_id: int
-    ) -> Optional[PaymentEntity]:
+    async def get_payment_by_id(self, payment_id: int) -> Optional[PaymentEntity]:
         """
         Retrieve a payment by its ID.
 
@@ -47,9 +45,7 @@ class PaymentRepository(ABC):
         pass
 
     @abstractmethod
-    async def update_payment_status(
-        self, payment_id: int, status: str
-    ) -> Optional[PaymentEntity]:
+    async def update_payment_status(self, payment_id: int, status: str) -> Optional[PaymentEntity]:
         """
         Update the status of a payment.
 
@@ -89,9 +85,7 @@ class PaymentRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_payments_by_student(
-        self, student_id: int
-    ) -> List[PaymentEntity]:
+    async def get_payments_by_student(self, student_id: int) -> List[PaymentEntity]:
         """
         Retrieve all payments for a specific student.
 
@@ -104,9 +98,7 @@ class PaymentRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_fee_structure(
-        self, student_class: str
-    ) -> Optional[FeeStructureEntity]:
+    async def get_fee_structure(self, student_class: str) -> Optional[FeeStructureEntity]:
         """
         Retrieve fee structure for a given class.
 
@@ -115,6 +107,16 @@ class PaymentRepository(ABC):
 
         Returns:
             FeeStructure entity if found, None otherwise
+        """
+        pass
+
+    @abstractmethod
+    async def get_all_fee_structures(self) -> List[FeeStructureEntity]:
+        """
+        Retrieve all fee structures in a single query.
+
+        Returns:
+            List of all FeeStructure entities
         """
         pass
 
@@ -159,9 +161,7 @@ class PaymentRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_all_payments_chunked(
-        self, offset: int, limit: int
-    ) -> List[PaymentEntity]:
+    async def get_all_payments_chunked(self, offset: int, limit: int) -> List[PaymentEntity]:
         """
         Retrieve payments in chunks for streaming.
 

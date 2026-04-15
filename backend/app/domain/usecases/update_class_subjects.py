@@ -8,21 +8,36 @@ Finally, it updates the class's subjects and commits the changes
 to the database.
 """
 
+from typing import Any, TypedDict
+
+
+class SubjectInput(TypedDict, total=False):
+    id: int
+    name: str
+
+
+class UpdateClassSubjectsResult(TypedDict):
+    message: str
+    class_id: int
+    subjects_count: int
+
 
 class UpdateClassSubjectsUseCase:
 
-    def __init__(self, class_repo, subject_repo, db):
+    def __init__(self, class_repo: Any, subject_repo: Any, db: Any) -> None:
         self.class_repo = class_repo
         self.subject_repo = subject_repo
         self.db = db
 
-    async def execute(self, class_id: int, subjects: list):
+    async def execute(
+        self, class_id: int, subjects: list[SubjectInput]
+    ) -> UpdateClassSubjectsResult:
 
         # 1️⃣ Get class
         class_obj = await self.class_repo.get_by_id(class_id)
 
         if not class_obj:
-            raise Exception("Class not found")
+            raise ValueError("Class not found")
 
         subject_entities = []
 
@@ -34,20 +49,14 @@ class UpdateClassSubjectsUseCase:
                 subject_obj = await self.subject_repo.get_by_id(subject["id"])
 
                 if not subject_obj:
-                    raise Exception(
-                        f"Subject with id {subject['id']} not found"
-                        )
+                    raise ValueError(f"Subject with id {subject['id']} not found")
 
             # If name is provided → find or create
             else:
-                subject_obj = await self.subject_repo.get_by_name(
-                    subject["name"]
-                    )
+                subject_obj = await self.subject_repo.get_by_name(subject["name"])
 
                 if not subject_obj:
-                    subject_obj = await self.subject_repo.create(
-                        subject["name"]
-                        )
+                    subject_obj = await self.subject_repo.create(subject["name"])
 
             subject_entities.append(subject_obj)
 

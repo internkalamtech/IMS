@@ -63,19 +63,13 @@ class UserModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
-        )
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-        )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-        )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -92,11 +86,7 @@ class UserModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<User(id={self.id}, "
-            f"email='{self.email}', "
-            f"name='{self.name}')>"
-        )
+        return f"<User(id={self.id}, " f"email='{self.email}', " f"name='{self.name}')>"
 
 
 class RoleModel(Base):
@@ -110,9 +100,7 @@ class RoleModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    name: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-        )
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
 
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
@@ -195,9 +183,7 @@ class FeeStructure(Base):
     __tablename__ = "fee_structures"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    student_class: Mapped[str] = mapped_column(
-        String(100), unique=True, nullable=False
-    )
+    student_class: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     fee_amount: Mapped[float] = mapped_column(Float, nullable=False)
 
     def __repr__(self) -> str:
@@ -227,19 +213,13 @@ class Payment(Base):
     amount: Mapped[float] = mapped_column(Float, nullable=False)
 
     payment_mode: Mapped[str] = mapped_column(String(50), nullable=False)
-    reference_number: Mapped[str | None] = mapped_column(
-        String(255), nullable=True
-    )
+    reference_number: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    receipt_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False
-    )
+    receipt_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
 
     status: Mapped[str] = mapped_column(String(20), default="Paid")
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     def __repr__(self) -> str:
         return (
