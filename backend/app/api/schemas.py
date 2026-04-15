@@ -130,3 +130,32 @@ class StudentInput(BaseModel):
 class CreateStudentWithParentRequest(BaseModel):
     student: StudentInput
     parent: ParentInput
+    from datetime import datetime
+
+# =========================
+# ✅ ENROLLMENT RESPONSE (FIX FOR TESTS)
+# =========================
+
+class StudentResponse(BaseModel):
+    id: int
+    name: str
+
+    model_config = {
+        "from_attributes": True
+    }
+
+
+class ParentResponse(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+
+    model_config = {
+        "from_attributes": True
+    }
+
+
+class CreateStudentWithParentResponse(BaseModel):
+    student: StudentResponse
+    parent: ParentResponse
+    message: str
