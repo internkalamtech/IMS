@@ -11,15 +11,20 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface ClassData {
   id: number;
+  name: string;
+}
+
+interface FormClassData {
+  id: string;
   name: string;
 }
 
@@ -185,7 +190,7 @@ export default function AddUserScreen() {
 
         {/* Form */}
         <StudentRegistrationForm
-          classes={classes}
+          classes={classes.map(c => ({ id: String(c.id), name: c.name }))}
           onSubmit={handleSubmit}
           submitting={submitting}
           onCancel={handleCancel}
