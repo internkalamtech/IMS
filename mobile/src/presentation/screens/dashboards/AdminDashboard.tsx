@@ -23,12 +23,11 @@ import {
   Text
 } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 const { width } = Dimensions.get('window');
 
 export default function AdminDashboard() {
     const { logout, user } = useAuth();
-    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
+    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
     const [modalVisible, setModalVisible] = useState(false);
     const [name, setName] = useState("");
@@ -70,6 +69,12 @@ alert("API Error")
 
 }
     const quickActions = DASHBOARD_CONFIG.admin.quickActions;
+
+    const handleActionPress = (action: any) => {
+      if (action.title === "Manage Classes") {
+        router.push("/manage-classes"); // ✅ NOT inside tabs
+      }
+    };
 
     const getStatValue = (label: string, defaultValue: string = '0') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
@@ -155,7 +160,7 @@ alert("API Error")
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
