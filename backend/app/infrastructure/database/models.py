@@ -129,3 +129,10 @@ class PaymentModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    # ✅ ONLY NECESSARY FIX
+    student_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False,
+    )
