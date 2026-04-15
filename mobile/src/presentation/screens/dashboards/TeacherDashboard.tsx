@@ -91,7 +91,7 @@ export default function TeacherDashboard() {
                         actions={quickActions}
                          onActionPress={(action) => {
                          if (action.title === "Attendance") {
-                   router.push("/AttendanceScreen");
+                   router.push("/attendance");
     }
   }}
 />

@@ -12,7 +12,9 @@ const TOKEN_STORAGE_KEY = 'auth_token';
 export class AuthRepositoryImpl implements AuthRepository {
     async login(email: string, password: string): Promise<User> {
         try {
-            const response = await api.post('/v1/auth/login', { email, password });
+            console.log("BASE URL:", api.defaults.baseURL);
+            console.log("FULL URL:", api.defaults.baseURL + "/auth/login");
+            const response = await api.post('/auth/login', { email, password });
             const { user, access_token } = response.data;
 
             // Map backend user to domain user if necessary
