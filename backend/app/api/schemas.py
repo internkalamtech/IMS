@@ -342,6 +342,10 @@ class CreateStudentTransportEnrollmentsRequest(BaseModel):
 
     enrollments: List[StudentTransportEnrollmentCreate]
 
+class AverageMarksResponse(BaseModel):
+    class_name: str
+    average_marks: float
+    average_attendance: float
 
 class StudentTransportEnrollmentItem(BaseModel):
     """Created enrollment response item."""
