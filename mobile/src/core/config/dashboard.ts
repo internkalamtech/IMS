@@ -12,7 +12,7 @@ export const DASHBOARD_CONFIG = {
     admin: {
         quickActions: [
             { id: 1, title: 'Manage Users', icon: 'people', color: ColorPalettes.blue[500] },
-            { id: 2, title: 'Manage Classes', icon: 'school', color: ColorPalettes.emerald[500] },
+            { id: 2, title: 'Manage Classes', icon: 'school', color: ColorPalettes.emerald[500], route: '/manage-classes' },
             { id: 3, title: 'Timetable', icon: 'calendar', color: ColorPalettes.indigo[500] },
             { id: 4, title: 'Fee Management', icon: 'cash', color: ColorPalettes.amber[500] },
             { id: 5, title: 'Assign Teachers', icon: 'person-add', color: ColorPalettes.purple[500] },
