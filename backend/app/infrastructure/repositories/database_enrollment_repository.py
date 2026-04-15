@@ -152,7 +152,10 @@ class DatabaseParentRepository(ParentRepository):
             )
             student_model = student_result.scalars().first()
             if not student_model:
-                raise ValidationError(f"Student with ID {student_id} does not exist")
+                raise ValidationError(
+                    f"Student with ID {student_id}"
+                    " does not exist"
+                )
 
             # Verify parent exists
             parent_result = await self.db.execute(
@@ -160,7 +163,10 @@ class DatabaseParentRepository(ParentRepository):
             )
             parent_model = parent_result.scalars().first()
             if not parent_model:
-                raise ValidationError(f"Parent with ID {parent_id} does not exist")
+                raise ValidationError(
+                    f"Parent with ID {parent_id}"
+                    " does not exist"
+                )
 
             # Check if link already exists
             existing_link = await self.db.execute(
@@ -171,7 +177,8 @@ class DatabaseParentRepository(ParentRepository):
             )
             if existing_link.first():
                 Logger.warning(
-                    f"Link between student {student_id} and parent {parent_id} "
+                    f"Link between student {student_id}"
+                    f" and parent {parent_id} "
                     "already exists"
                 )
                 return  # Already linked, no need to link again
@@ -190,7 +197,8 @@ class DatabaseParentRepository(ParentRepository):
             raise
         except Exception as e:
             Logger.error(
-                f"Error linking student {student_id} with parent {parent_id}: {str(e)}"
+                f"Error linking student {student_id}"
+                f" with parent {parent_id}: {str(e)}"
             )
             raise DatabaseError(f"Failed to link student and parent: {str(e)}")
 
@@ -217,7 +225,10 @@ class DatabaseParentRepository(ParentRepository):
                 for student in parent_model.students
             ]
         except Exception as e:
-            Logger.error(f"Error retrieving students for parent {parent_id}: {str(e)}")
+            Logger.error(
+                "Error retrieving students"
+                f" for parent {parent_id}: {str(e)}"
+            )
             raise DatabaseError(f"Failed to retrieve students: {str(e)}")
 
     @staticmethod
@@ -301,7 +312,10 @@ class DatabaseEnrollmentRepository(EnrollmentRepository):
             self.db.add(student_model)
             await self.db.flush()  # Get the ID without committing
 
-            Logger.info(f"Created student {student_model.id} with roll {roll_number}")
+            Logger.info(
+                f"Created student {student_model.id}"
+                f" with roll {roll_number}"
+            )
             return self._map_to_student_entity(student_model)
         except ValidationError:
             raise
@@ -345,7 +359,9 @@ class DatabaseEnrollmentRepository(EnrollmentRepository):
         """
         try:
             result = await self.db.execute(
-                select(StudentModel).where(StudentModel.roll_number == roll_number)
+                select(StudentModel).where(
+                    StudentModel.roll_number == roll_number
+                )
             )
             student_model = result.scalars().first()
             if student_model:
@@ -353,7 +369,8 @@ class DatabaseEnrollmentRepository(EnrollmentRepository):
             return None
         except Exception as e:
             Logger.error(
-                f"Error retrieving student by roll number {roll_number}: {str(e)}"
+                "Error retrieving student"
+                f" by roll number {roll_number}: {str(e)}"
             )
             raise DatabaseError(f"Failed to retrieve student: {str(e)}")
 
@@ -369,7 +386,9 @@ class DatabaseEnrollmentRepository(EnrollmentRepository):
         """
         try:
             result = await self.db.execute(
-                select(ClassSectionModel).where(ClassSectionModel.id == class_id)
+                select(ClassSectionModel).where(
+                    ClassSectionModel.id == class_id
+                )
             )
             return result.scalars().first() is not None
         except Exception as e:

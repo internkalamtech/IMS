@@ -16,7 +16,9 @@ from app.api.schemas import (
 )
 from app.core.errors import ValidationError, DatabaseError
 from app.core.logger import Logger
-from app.domain.usecases.enrollment_usecases import CreateStudentWithParentUseCase
+from app.domain.usecases.enrollment_usecases import (
+    CreateStudentWithParentUseCase,
+)
 from app.infrastructure.database.database import get_db
 from app.infrastructure.repositories.database_enrollment_repository import (
     DatabaseEnrollmentRepository,
@@ -32,14 +34,20 @@ router = APIRouter(prefix="/enrollment", tags=["Enrollment"])
     status_code=status.HTTP_201_CREATED,
     responses={
         400: {"model": ErrorResponse, "description": "Validation error"},
-        409: {"model": ErrorResponse, "description": "Conflict - duplicate student/parent"},
+        409: {
+            "model": ErrorResponse,
+            "description": "Conflict - duplicate student/parent",
+        },
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
     summary="Create Student with Parent Link",
     description=(
-        "Create a new Student user and link to a Parent profile in a single transaction. "
-        "Validates both student and parent information, ensures unique constraints, "
-        "and establishes the relationship between entities."
+        "Create a new Student user and link to a Parent"
+        " profile in a single transaction. "
+        "Validates both student and parent information,"
+        " ensures unique constraints, "
+        "and establishes the relationship"
+        " between entities."
     ),
 )
 async def create_student_with_parent(
@@ -49,7 +57,8 @@ async def create_student_with_parent(
     """
     Create a student with parent link endpoint.
 
-    Creates a new student and links to a parent (new or existing) in a single transaction.
+    Creates a new student and links to a parent (new or existing)
+    in a single transaction.
     Validates:
     - Student basic info (Name, Roll Number)
     - Student class enrollment (Class ID must exist)
@@ -122,7 +131,10 @@ async def create_student_with_parent(
                 created_at=parent.created_at,
                 updated_at=parent.updated_at,
             ),
-            message="Student and parent created successfully with link established",
+            message=(
+                "Student and parent created successfully"
+                " with link established"
+            ),
         )
 
     except ValidationError as e:
@@ -159,7 +171,10 @@ async def create_student_with_parent(
         )
 
     except Exception as e:
-        Logger.error(f"Unexpected error in create student: {str(e)}", exc_info=True)
+        Logger.error(
+            f"Unexpected error in create student: {str(e)}",
+            exc_info=True,
+        )
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

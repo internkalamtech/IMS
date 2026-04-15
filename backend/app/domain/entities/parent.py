@@ -19,9 +19,11 @@ class Parent:
         name: Full name of the parent/guardian
         phone: Contact phone number
         email: Email address (unique, used for communication)
-        relationship_type: Relationship to student (e.g., Father, Mother, Guardian)
+        relationship_type: Relationship to student
+            (e.g., Father, Mother, Guardian)
         is_active: Whether the parent account is active
-        user_id: Associated user account ID (optional, foreign key to users table)
+        user_id: Associated user account ID
+            (optional, foreign key to users table)
         created_at: Timestamp when parent account was created
         updated_at: Timestamp of last update
     """

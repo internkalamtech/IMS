@@ -76,27 +76,38 @@ class CreateStudentWithParentUseCase:
             DatabaseError: If database operations fail
         """
         # Step 1: Validate student information
-        Logger.info(f"Validating student: {student_name}, Roll: {student_roll_number}")
+        Logger.info(
+            f"Validating student: {student_name},"
+            f" Roll: {student_roll_number}"
+        )
         self._validate_student_input(
             student_name, student_roll_number, class_id, class_name
         )
 
         # Step 2: Validate class exists
-        class_exists = await self.enrollment_repo.validate_class_exists(class_id)
+        class_exists = await self.enrollment_repo.validate_class_exists(
+            class_id
+        )
         if not class_exists:
             raise ValidationError(f"Class with ID {class_id} does not exist")
 
         # Step 3: Check if student roll number already exists
-        existing_student = await self.enrollment_repo.get_student_by_roll_number(
-            student_roll_number
+        existing_student = (
+            await self.enrollment_repo.get_student_by_roll_number(
+                student_roll_number
+            )
         )
         if existing_student:
             raise ValidationError(
-                f"Student with roll number '{student_roll_number}' already exists"
+                f"Student with roll number"
+                f" '{student_roll_number}' already exists"
             )
 
         # Step 4: Validate parent information
-        Logger.info(f"Validating parent: {parent_name}, Email: {parent_email}")
+        Logger.info(
+            f"Validating parent: {parent_name},"
+            f" Email: {parent_email}"
+        )
         self._validate_parent_input(
             parent_name, parent_phone, parent_email, parent_relationship_type
         )
@@ -104,7 +115,10 @@ class CreateStudentWithParentUseCase:
         # Step 5: Handle parent - create or link existing
         parent: Parent
         if link_existing_parent:
-            Logger.info(f"Linking to existing parent with email: {parent_email}")
+            Logger.info(
+                "Linking to existing parent"
+                f" with email: {parent_email}"
+            )
             parent = await self.parent_repo.get_parent_by_email(parent_email)
             if not parent:
                 raise ValidationError(
@@ -169,7 +183,10 @@ class CreateStudentWithParentUseCase:
             ValidationError: If validation fails
         """
         if not name or not name.strip():
-            raise ValidationError("Student name is required and cannot be empty")
+            raise ValidationError(
+                "Student name is required"
+                " and cannot be empty"
+            )
 
         if not roll_number or not roll_number.strip():
             raise ValidationError(
@@ -199,7 +216,10 @@ class CreateStudentWithParentUseCase:
             ValidationError: If validation fails
         """
         if not name or not name.strip():
-            raise ValidationError("Parent name is required and cannot be empty")
+            raise ValidationError(
+                "Parent name is required"
+                " and cannot be empty"
+            )
 
         if not phone or not phone.strip():
             raise ValidationError("Parent phone number is required")

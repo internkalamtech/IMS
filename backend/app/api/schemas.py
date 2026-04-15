@@ -155,7 +155,12 @@ class UpdateClassSubjectsRequest(BaseModel):
 class ParentInput(BaseModel):
     """Input schema for parent information."""
 
-    name: str = Field(..., min_length=1, max_length=255, description="Parent full name")
+    name: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="Parent full name",
+    )
     phone: str = Field(
         ..., min_length=10, max_length=20, description="Contact phone number"
     )
@@ -183,9 +188,17 @@ class ParentInput(BaseModel):
 class StudentInput(BaseModel):
     """Input schema for student information."""
 
-    name: str = Field(..., min_length=1, max_length=255, description="Student full name")
+    name: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="Student full name",
+    )
     roll_number: str = Field(
-        ..., min_length=1, max_length=50, description="Unique student roll number"
+        ...,
+        min_length=1,
+        max_length=50,
+        description="Unique student roll number",
     )
     class_id: int = Field(..., description="ID of the class section")
     class_name: str = Field(
@@ -209,11 +222,16 @@ class StudentInput(BaseModel):
 class CreateStudentWithParentRequest(BaseModel):
     """Request schema for creating a student with parent link."""
 
-    student: StudentInput = Field(..., description="Student information")
+    student: StudentInput = Field(
+        ..., description="Student information"
+    )
     parent: ParentInput = Field(..., description="Parent information")
     link_existing_parent: bool = Field(
         default=False,
-        description="If True, link to existing parent by email instead of creating new",
+        description=(
+            "If True, link to existing parent"
+            " by email instead of creating new"
+        ),
     )
 
     model_config = {
@@ -306,7 +324,10 @@ class CreateStudentWithParentResponse(BaseModel):
 
     student: StudentResponse
     parent: ParentResponse
-    message: str = "Student and parent created successfully with link established"
+    message: str = (
+        "Student and parent created successfully"
+        " with link established"
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -333,7 +354,11 @@ class CreateStudentWithParentResponse(BaseModel):
                         "created_at": "2024-02-16T10:30:00",
                         "updated_at": "2024-02-16T10:30:00",
                     },
-                    "message": "Student and parent created successfully with link established",
+                    "message": (
+                        "Student and parent created"
+                        " successfully with"
+                        " link established"
+                    ),
                 }
             ]
         }
@@ -398,7 +423,9 @@ class PaymentCreate(BaseModel):
     }
 
     @model_validator(mode="after")
-    def validate_reference_number_for_digital_payments(self) -> "PaymentCreate":
+    def validate_reference_for_digital_payments(
+        self,
+    ) -> "PaymentCreate":
         """
         Ensure a reference number is supplied for UPI or Card payments.
 
@@ -410,7 +437,8 @@ class PaymentCreate(BaseModel):
             self.reference_number and self.reference_number.strip()
         ):
             raise ValueError(
-                f"reference_number is required for {self.payment_mode} payments."
+                "reference_number is required"
+                f" for {self.payment_mode} payments."
             )
         return self
 
