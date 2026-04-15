@@ -9,7 +9,6 @@ from app.infrastructure.database.models import SubjectModel
 
 
 class SubjectRepository:
-
     def __init__(self, db: AsyncSession):
         self.db = db
 
@@ -18,8 +17,9 @@ class SubjectRepository:
         Fetch subject by ID
         """
 
-        result = await self.db.execute(select(SubjectModel)
-                                       .where(SubjectModel.id == subject_id))
+        result = await self.db.execute(
+            select(SubjectModel).where(SubjectModel.id == subject_id)
+        )
 
         return result.scalar_one_or_none()
 
@@ -28,8 +28,9 @@ class SubjectRepository:
         Fetch subject by name
         """
 
-        result = await self.db.execute(select(SubjectModel)
-                                       .where(SubjectModel.name == name))
+        result = await self.db.execute(
+            select(SubjectModel).where(SubjectModel.name == name)
+        )
 
         return result.scalar_one_or_none()
 

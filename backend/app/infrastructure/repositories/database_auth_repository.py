@@ -128,8 +128,6 @@ class DatabaseAuthRepository(AuthRepository):
             return self._to_domain_entity(user_model)
 
         except Exception as e:
-            from app.core.errors import NotFoundError
-
             if isinstance(e, NotFoundError):
                 raise
             Logger.error(f"Database error getting user: {e}", exc_info=True)

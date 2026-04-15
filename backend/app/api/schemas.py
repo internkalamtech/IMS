@@ -16,12 +16,12 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(
         ..., min_length=6, description="User password (minimum 6 characters)"
-        )
+    )
 
     model_config = {
         "json_schema_extra": {
             "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
-            }
+        }
     }
 
 
@@ -31,7 +31,7 @@ class RoleResponse(BaseModel):
     id: str
     name: Literal[
         "admin", "teacher", "student", "parent", "transport", "driver"
-        ]
+    ]
     description: str | None = None
 
 
@@ -43,7 +43,7 @@ class UserResponse(BaseModel):
     email: str
     role: Literal[
         "admin", "teacher", "student", "parent", "transport", "driver"
-        ]
+    ]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -102,7 +102,7 @@ class ErrorResponse(BaseModel):
 
     model_config = {
         "json_schema_extra": {"examples": [{"detail": "Error message"}]}
-        }
+    }
 
 
 class DemoCredential(BaseModel):
@@ -206,7 +206,9 @@ class PaymentCreate(BaseModel):
     }
 
     @model_validator(mode="after")
-    def validate_reference_number_for_digital_payments(self) -> "PaymentCreate":
+    def validate_reference_number_for_digital_payments(
+        self,
+    ) -> "PaymentCreate":
         """
         Ensure a reference number is supplied for UPI or Card payments.
 
@@ -218,7 +220,7 @@ class PaymentCreate(BaseModel):
             self.reference_number and self.reference_number.strip()
         ):
             raise ValueError(
-                f"reference_number is required for {self.payment_mode} payments."
+                f"reference_number is required for {self.payment_mode}."
             )
         return self
 
@@ -238,6 +240,7 @@ class StudentResponse(BaseModel):
 # ------------------------------------------------------------------ #
 # Fee Management Schemas
 # ------------------------------------------------------------------ #
+
 
 class FeeStructureResponse(BaseModel):
     """Response schema for fee structure data."""

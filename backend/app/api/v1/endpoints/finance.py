@@ -122,7 +122,7 @@ class DummyFeeRepository:
                 description="Tuition fee installment 1",
             ),
         ]
-        return transactions[offset:offset + limit]
+        return transactions[offset: offset + limit]
 
     async def get_transaction_by_receipt(self, receipt_number: str):
         from app.domain.entities.fee import Transaction
@@ -226,7 +226,8 @@ async def get_installments(
     Get installments for a student.
 
     Returns:
-        List[InstallmentResponse]: List of installments with due dates and status
+        List[InstallmentResponse]: List of installments with
+            due dates and status
     """
     repository = DummyFeeRepository()
     use_case = GetInstallmentsUseCaseImpl(repository)
@@ -263,7 +264,8 @@ async def get_receipts(
     Get transaction receipts for a student.
 
     Returns:
-        List[TransactionResponse]: List of paid transactions with receipt details
+        List[TransactionResponse]: List of paid transactions with
+            receipt details
     """
     repository = DummyFeeRepository()
     use_case = GetTransactionHistoryUseCaseImpl(repository)

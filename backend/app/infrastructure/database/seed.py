@@ -20,7 +20,6 @@ from app.core.password import hash_password
 from app.infrastructure.database.database import AsyncSessionLocal, init_db
 from app.infrastructure.database.models import RoleModel, UserModel
 
-
 # Demo users configuration
 DEMO_USERS = [
     {

@@ -18,7 +18,8 @@ class FeeStructure:
     Attributes:
         id: Unique identifier for the fee structure
         student_id: Student associated with this fee structure
-        fee_head: Name of the fee component (e.g., "Tuition Fee", "Transport Fee")
+        fee_head: Name of the fee component (e.g., "Tuition Fee",
+              "Transport Fee")
         total_amount: Total amount for this fee
         is_mandatory: Whether this fee is mandatory or optional
         academic_year: Academic year for this fee

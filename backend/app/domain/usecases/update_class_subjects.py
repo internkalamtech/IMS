@@ -10,7 +10,6 @@ to the database.
 
 
 class UpdateClassSubjectsUseCase:
-
     def __init__(self, class_repo, subject_repo, db):
         self.class_repo = class_repo
         self.subject_repo = subject_repo
@@ -28,7 +27,6 @@ class UpdateClassSubjectsUseCase:
 
         # 2️⃣ Process subjects
         for subject in subjects:
-
             # If ID is provided → existing subject
             if subject.get("id"):
                 subject_obj = await self.subject_repo.get_by_id(subject["id"])
@@ -36,18 +34,18 @@ class UpdateClassSubjectsUseCase:
                 if not subject_obj:
                     raise Exception(
                         f"Subject with id {subject['id']} not found"
-                        )
+                    )
 
             # If name is provided → find or create
             else:
                 subject_obj = await self.subject_repo.get_by_name(
                     subject["name"]
-                    )
+                )
 
                 if not subject_obj:
                     subject_obj = await self.subject_repo.create(
                         subject["name"]
-                        )
+                    )
 
             subject_entities.append(subject_obj)
 
