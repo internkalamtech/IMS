@@ -23,7 +23,8 @@ export default function DriverDashboard() {
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
 
-    const quickActions = DASHBOARD_CONFIG.driver.quickActions;
+    // Safe access to avoid build errors if 'driver' is not yet in DASHBOARD_CONFIG
+    const quickActions = (DASHBOARD_CONFIG as any).driver?.quickActions || [];
 
     const getStatValue = (label: string, defaultValue: string = '0') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
