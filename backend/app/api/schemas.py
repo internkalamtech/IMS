@@ -102,12 +102,14 @@ class UpdateClassSubjectsRequest(BaseModel):
 # =========================
 
 class PaymentCreate(BaseModel):
-    amount: int
+    amount: float
+    student_id: int
 
 
 class PaymentResponse(BaseModel):
     id: int
-    amount: int
+    amount: float
+    student_id: int
 
     model_config = {
         "from_attributes": True
