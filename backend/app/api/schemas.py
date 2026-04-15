@@ -98,7 +98,7 @@ class UpdateClassSubjectsRequest(BaseModel):
 
 
 # =========================
-# ✅ PAYMENT (FIX FOR TEST ERROR)
+# PAYMENT
 # =========================
 
 class PaymentCreate(BaseModel):
@@ -114,8 +114,10 @@ class PaymentResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
-    # =========================
-# ✅ ENROLLMENT (FIX FOR TESTS)
+
+
+# =========================
+# ENROLLMENT (FIXED)
 # =========================
 
 class ParentInput(BaseModel):
@@ -130,10 +132,10 @@ class StudentInput(BaseModel):
 class CreateStudentWithParentRequest(BaseModel):
     student: StudentInput
     parent: ParentInput
-    from datetime import datetime
+
 
 # =========================
-# ✅ ENROLLMENT RESPONSE (FIX FOR TESTS)
+# ENROLLMENT RESPONSE
 # =========================
 
 class StudentResponse(BaseModel):
