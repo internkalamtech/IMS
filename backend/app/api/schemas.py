@@ -114,3 +114,19 @@ class PaymentResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+    # =========================
+# ✅ ENROLLMENT (FIX FOR TESTS)
+# =========================
+
+class ParentInput(BaseModel):
+    name: str
+    email: EmailStr
+
+
+class StudentInput(BaseModel):
+    name: str
+
+
+class CreateStudentWithParentRequest(BaseModel):
+    student: StudentInput
+    parent: ParentInput
