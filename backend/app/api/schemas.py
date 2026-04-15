@@ -230,8 +230,7 @@ class CreateStudentWithParentRequest(BaseModel):
                         "name": "John Doe",
                         "phone": "+1-555-123-4567",
                         "email": "john.doe@example.com",
-                        "relationship": "Father",
-
+                        "relationship_type": "Father",
                     },
                     "link_existing_parent": False,
                 }
@@ -327,8 +326,7 @@ class CreateStudentWithParentResponse(BaseModel):
                         "name": "John Doe",
                         "phone": "+1-555-123-4567",
                         "email": "john.doe@example.com",
-                        "relationship": "Father",
-
+                        "relationship_type": "Father",
                         "is_active": True,
                         "created_at": "2024-02-16T10:30:00",
                         "updated_at": "2024-02-16T10:30:00",

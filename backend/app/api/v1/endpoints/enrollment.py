@@ -92,9 +92,6 @@ async def create_student_with_parent(
             link_existing_parent=request.link_existing_parent,
         )
 
-        # Commit the transaction
-        await db.commit()
-
         Logger.info(
             f"Successfully created student {student.id} "
             f"with parent {parent.id}"
@@ -144,7 +141,6 @@ async def create_student_with_parent(
             else status.HTTP_400_BAD_REQUEST
         )
 
-        await db.rollback()
         raise HTTPException(
             status_code=status_code,
             detail=str(e),
@@ -152,7 +148,6 @@ async def create_student_with_parent(
 
     except DatabaseError as e:
         Logger.error(f"Database error in create student: {str(e)}")
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to process request. Please try again later.",
@@ -160,7 +155,6 @@ async def create_student_with_parent(
 
     except Exception as e:
         Logger.error(f"Unexpected error in create student: {str(e)}", exc_info=True)
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred. Please try again later.",
