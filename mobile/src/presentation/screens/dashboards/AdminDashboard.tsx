@@ -42,7 +42,7 @@ console.log("Submit button clicked")
 
 try {
 
-const response = await fetch("http://localhost:8000/api/v1/v1/users", {
+const response = await fetch("http://localhost:8000/api/v1/users", {
 method: "POST",
 headers: {
 "Content-Type": "application/json"

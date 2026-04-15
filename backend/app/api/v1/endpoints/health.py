@@ -1,9 +1,3 @@
-"""
-Health check endpoint.
-
-Simple endpoint to verify the API is running.
-"""
-
 from fastapi import APIRouter
 
 router = APIRouter(prefix="/health", tags=["Health"])
