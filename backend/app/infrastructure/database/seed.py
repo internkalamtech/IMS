@@ -11,6 +11,7 @@ Following best practices:
 """
 
 import asyncio
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -134,6 +135,37 @@ DEMO_STUDENTS = [
 ]
 
 
+def _student_seed_defaults() -> dict[str, Any]:
+    """Return fallback values for required StudentModel fields in seed data."""
+    defaults: dict[str, Any] = {}
+
+    # If more non-nullable fields are added without defaults,
+    # infer safe numeric/boolean seed values.
+    for column in StudentModel.__table__.columns:
+        if column.nullable or column.primary_key:
+            continue
+        if column.default is not None or column.server_default is not None:
+            continue
+
+        if column.name == "marks":
+            defaults[column.name] = 0.0
+            continue
+
+        try:
+            python_type = column.type.python_type
+        except (AttributeError, NotImplementedError):
+            continue
+
+        if python_type is float:
+            defaults[column.name] = 0.0
+        elif python_type is int:
+            defaults[column.name] = 0
+        elif python_type is bool:
+            defaults[column.name] = False
+
+    return defaults
+
+
 async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     """
     Create roles if they don't exist.
@@ -245,6 +277,7 @@ async def create_class_sections(db: AsyncSession) -> None:
 async def create_demo_students(db: AsyncSession) -> None:
     """Create demo student records in the students table if missing."""
     Logger.info("Creating demo students...")
+    student_defaults = _student_seed_defaults()
 
     class_sections_result = await db.execute(select(ClassSectionModel))
     class_sections = {
@@ -267,13 +300,21 @@ async def create_demo_students(db: AsyncSession) -> None:
             continue
 
         class_section = class_sections.get(student_data["class_name"])
-        student = StudentModel(
-            name=student_data["name"],
-            roll_number=student_data["roll_number"],
-            class_id=class_section.id if class_section else None,
-            class_name=student_data["class_name"],
-            next_due_date=None,
-        )
+        student_payload: dict[str, Any] = {
+            "name": student_data["name"],
+            "roll_number": student_data["roll_number"],
+            "class_id": class_section.id if class_section else None,
+            "class_name": student_data["class_name"],
+            "next_due_date": None,
+        }
+
+        for field_name, default_value in student_defaults.items():
+            student_payload.setdefault(
+                field_name,
+                student_data.get(field_name, default_value),
+            )
+
+        student = StudentModel(**student_payload)
         db.add(student)
         Logger.info(
             "Created student: "
