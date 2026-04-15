@@ -9,7 +9,7 @@ from fastapi import APIRouter
 router = APIRouter(prefix="/health", tags=["Health"])
 
 
-@router.get("/health",
+@router.get("",
     status_code=200,
     summary="Health check",
     description="Check if the API server is running and healthy.",

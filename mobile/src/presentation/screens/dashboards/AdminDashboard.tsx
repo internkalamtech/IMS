@@ -8,6 +8,7 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
+import { router } from 'expo-router';
 import {
   Dimensions,
   RefreshControl,
