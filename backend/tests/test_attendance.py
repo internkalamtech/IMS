@@ -106,7 +106,7 @@ async def test_leave_request_date_validation():
     pass
 
 
-@pytest.integration
+@pytest.mark.integration
 async def test_full_parent_attendance_flow():
     """
     Integration test for complete parent attendance flow:
