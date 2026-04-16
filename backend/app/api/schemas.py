@@ -5,7 +5,7 @@ These schemas define the shape of data for API endpoints.
 """
 
 from pydantic import BaseModel, EmailStr, Field
-from typing import Literal
+from typing import Literal, List   # ✅ added List here
 
 
 class LoginRequest(BaseModel):
@@ -131,3 +131,60 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
+
+
+class CreateUserRequest(BaseModel):
+    """Request schema for creating a new user."""
+
+    name: str = Field(..., min_length=1, max_length=255, description="User's full name")
+    email: EmailStr = Field(..., description="User's email address")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "name": "John Doe",
+                    "email": "john.doe@example.com"
+                }
+            ]
+        }
+    }
+
+
+class CreateUserResponse(BaseModel):
+    """Response schema for user creation endpoint."""
+
+    id: str
+    name: str
+    email: str
+    message: str = "User created successfully"
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "1",
+                    "name": "John Doe",
+                    "email": "john.doe@example.com",
+                    "message": "User created successfully"
+                }
+            ]
+        }
+    }
+
+
+# ================== ✅ ADDED BELOW ==================
+
+class StudentMark(BaseModel):
+    """Schema for individual student marks entry."""
+
+    student_id: int
+    marks: int
+
+
+class MarksCreate(BaseModel):
+    """Schema for creating marks for multiple students."""
+
+    subject_id: int
+    exam_type: str
+    marks: List[StudentMark]
