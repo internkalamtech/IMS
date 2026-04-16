@@ -273,6 +273,8 @@ class StudentModel(Base):
         Integer, ForeignKey("class_sections.id", ondelete="SET NULL"), nullable=True
     )
     class_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    marks: Mapped[float] = mapped_column(nullable=False)
+    attendance: Mapped[float] = mapped_column(nullable=True)
     next_due_date: Mapped[datetime | None] = mapped_column(
         DateTime, nullable=True
     )
