@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
 )
 
-from app.api.core.config import settings
+from app.core.config import settings
 from app.infrastructure.database.models import Base
 
 

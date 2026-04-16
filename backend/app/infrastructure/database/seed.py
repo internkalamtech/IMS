@@ -17,8 +17,8 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.core.logger import Logger
-from app.api.core.password import hash_password
+from app.core.logger import Logger
+from app.core.password import hash_password
 from app.infrastructure.database.database import AsyncSessionLocal, init_db
 from app.infrastructure.database.models import RoleModel, UserModel
 from app.infrastructure.database.models import ExamModel, SubjectModel, StudentModel

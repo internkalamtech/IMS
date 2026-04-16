@@ -11,9 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.v1 import router as api_v1_router
-from app.api.core.config import settings
-from app.api.core.errors import IMSException
-from app.api.core.logger import Logger
+from app.core.config import settings
+from app.core.errors import IMSException
+from app.core.logger import Logger
 from app.infrastructure.database.database import init_db, close_db
 
 
