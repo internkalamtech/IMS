@@ -177,7 +177,7 @@ async def seed_database():
     except Exception as e:
         Logger.error(
             f"Seeding failed: {e}",
-            exc_info=True
+            exc_info=True,
         )
         raise
 
