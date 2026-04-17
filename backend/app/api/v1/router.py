@@ -5,21 +5,35 @@ This module aggregates all v1 API endpoints.
 """
 
 from fastapi import APIRouter
-<<<<<<< HEAD
 
-from app.api.v1.endpoints import auth, dashboard, driver, health
-=======
-from app.api.v1.endpoints import auth, health, dashboard, driver
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
+# ✅ Import all required endpoints
+from app.api.v1.endpoints import (
+    auth,
+    health,
+    dashboard,
+    driver,              # 👈 your feature (IMPORTANT)
+    class_subjects_router,
+    students,
+    subjects,
+    enrollment,
+)
+
+from app.api.v1.endpoints.payments import router as payments_router
 
 # Create v1 router
 router = APIRouter(prefix="/v1")
 
+# ✅ Core routes
 router.include_router(auth.router)
 router.include_router(health.router)
 router.include_router(dashboard.router)
-<<<<<<< HEAD
+
+# ✅ Your driver feature (MUST be present)
 router.include_router(driver.router)
-=======
-router.include_router(driver.router)
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
+
+# ✅ Existing system routes (do NOT remove)
+router.include_router(class_subjects_router)
+router.include_router(payments_router)
+router.include_router(students.router)
+router.include_router(subjects.router)
+router.include_router(enrollment.router)
