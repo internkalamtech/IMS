@@ -46,8 +46,8 @@ export default function DriverDashboard() {
     }, []);
 
     useEffect(() => {
-        loadData();
-    }, []);
+        void loadData();
+    }, [loadData]);
 
     const onRefresh = async () => {
         setRefreshing(true);

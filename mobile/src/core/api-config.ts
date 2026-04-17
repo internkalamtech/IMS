@@ -6,7 +6,6 @@ export const getApiBaseUrl = (): string => {
     const env = process.env.EXPO_PUBLIC_ENV || 'development';
     const configuredUrl = process.env.EXPO_PUBLIC_API_URL;
 
-    // ✅ 1. Production / Staging / Test
     if (['production', 'staging', 'test'].includes(env)) {
         if (configuredUrl) {
             Logger.debug(`[Config] Using ENV API URL: ${configuredUrl}`);
@@ -15,40 +14,30 @@ export const getApiBaseUrl = (): string => {
         Logger.warn(`[Config] Missing EXPO_PUBLIC_API_URL for ${env}`);
     }
 
-    // ✅ 2. WEB (your browser case)
     if (Platform.OS === 'web') {
-<<<<<<< HEAD
-        const url = configuredUrl || 'http://localhost:8000/api/v1';
+        const url = configuredUrl || 'http://127.0.0.1:8000/api/v1';
         Logger.debug(`[Config] Web API URL: ${url}`);
         return url;
-=======
-        // On web, use the loopback IP to avoid hostname resolution issues.
-        return configuredUrl || 'http://127.0.0.1:8000/api/v1';
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
     }
 
-    // ✅ 3. ANDROID EMULATOR
     if (Platform.OS === 'android') {
         const url = configuredUrl || 'http://10.0.2.2:8000/api/v1';
         Logger.debug(`[Config] Android API URL: ${url}`);
         return url;
     }
 
-    // ✅ 4. iOS Simulator
     if (Platform.OS === 'ios') {
         const url = configuredUrl || 'http://localhost:8000/api/v1';
         Logger.debug(`[Config] iOS API URL: ${url}`);
         return url;
     }
 
-    // ✅ 5. REAL DEVICE (same WiFi)
     try {
         const hostUri = Constants.expoConfig?.hostUri;
 
         if (hostUri) {
             const hostIp = hostUri.split(':')[0];
 
-            // ❗ Ignore tunnel domains
             if (!hostUri.includes('ngrok') && !hostUri.includes('expo.dev')) {
                 const url = `http://${hostIp}:8000/api/v1`;
                 Logger.debug(`[Config] Device API URL: ${url}`);
@@ -59,7 +48,6 @@ export const getApiBaseUrl = (): string => {
         Logger.error('[Config] Error detecting device IP', err);
     }
 
-    // ✅ 6. FINAL FALLBACK
     const fallback = configuredUrl || 'http://localhost:8000/api/v1';
     Logger.warn(`[Config] Using fallback API URL: ${fallback}`);
     return fallback;

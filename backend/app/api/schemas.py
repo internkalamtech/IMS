@@ -4,15 +4,10 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
-<<<<<<< HEAD
-from typing import Literal
-from pydantic import BaseModel, EmailStr, Field
-=======
 from datetime import datetime
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
 
 
 class LoginRequest(BaseModel):
@@ -140,7 +135,6 @@ class DashboardResponse(BaseModel):
     stats: list[StatItem]
 
 
-<<<<<<< HEAD
 class DriverDocumentResponse(BaseModel):
     """Response schema for a driver-visible compliance document."""
 
@@ -154,7 +148,8 @@ class DriverMaintenanceResponse(BaseModel):
     title: str
     date: str
     status: Literal["Scheduled", "In Progress", "Completed"]
-=======
+
+
 class SubjectInput(BaseModel):
     """Schema for subject input when updating class subjects."""
 
@@ -512,4 +507,3 @@ class PaymentSummaryResponse(BaseModel):
     total_overdue: float
 
     model_config = {"from_attributes": True}
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89

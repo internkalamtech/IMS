@@ -128,7 +128,6 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
-<<<<<<< HEAD
 class VehicleModel(Base):
     """Vehicle database model used for driver assignments."""
 
@@ -217,7 +216,8 @@ class VehicleMaintenanceTaskModel(Base):
         "VehicleModel",
         back_populates="maintenance_tasks",
     )
-=======
+
+
 class SubjectModel(Base):
     """
     Subject database model.
@@ -514,5 +514,3 @@ class ParentModel(Base):
             f"name='{self.name}', "
             f"email='{self.email}')>"
         )
-
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89

@@ -1,10 +1,7 @@
 import { DriverRepositoryImpl } from '@/data/repositories/driver-repository-impl';
 import { ComplianceDocument } from '@/domain/entities/compliance-document';
 import { GetDriverDocumentsUseCase } from '@/domain/usecases/get-driver-documents-usecase';
-<<<<<<< HEAD
-=======
 import { useAuth } from '@/presentation/hooks/useAuth';
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -19,42 +16,12 @@ import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 
 const driverRepository = new DriverRepositoryImpl();
-<<<<<<< HEAD
 const getDriverDocumentsUseCase = new GetDriverDocumentsUseCase(
     driverRepository
 );
-=======
-const getDriverDocumentsUseCase = new GetDriverDocumentsUseCase(driverRepository);
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
 
 type ComplianceStatus = 'Expired' | 'Expiring Soon' | 'Valid';
 
-function getComplianceStatus(expiryDate: string): ComplianceStatus {
-<<<<<<< HEAD
-    const daysLeft = getDaysLeft(expiryDate);
-=======
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const expiry = new Date(expiryDate);
-    expiry.setHours(0, 0, 0, 0);
-
-    const millisecondsPerDay = 1000 * 60 * 60 * 24;
-    const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / millisecondsPerDay);
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
-
-    if (daysLeft < 0) {
-        return 'Expired';
-    }
-
-    if (daysLeft <= 7) {
-        return 'Expiring Soon';
-    }
-
-    return 'Valid';
-}
-
-<<<<<<< HEAD
 function getDaysLeft(expiryDate: string): number {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -65,6 +32,20 @@ function getDaysLeft(expiryDate: string): number {
     return Math.ceil(
         (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
     );
+}
+
+function getComplianceStatus(expiryDate: string): ComplianceStatus {
+    const daysLeft = getDaysLeft(expiryDate);
+
+    if (daysLeft < 0) {
+        return 'Expired';
+    }
+
+    if (daysLeft <= 7) {
+        return 'Expiring Soon';
+    }
+
+    return 'Valid';
 }
 
 function getCountdownLabel(daysLeft: number): string {
@@ -82,52 +63,41 @@ function getCountdownLabel(daysLeft: number): string {
 }
 
 export default function ComplianceScreen() {
-=======
-export default function ComplianceScreen() {
     const { authReady, user } = useAuth();
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
     const [documents, setDocuments] = useState<ComplianceDocument[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-<<<<<<< HEAD
-    const loadDocuments = useCallback(async (isRefresh = false) => {
-=======
-    const loadDocuments = useCallback(async (isRefresh: boolean = false) => {
-        if (!authReady || !user) {
-            setError('No token available');
-            setLoading(false);
-            setRefreshing(false);
-            return;
-        }
+    const loadDocuments = useCallback(
+        async (isRefresh: boolean = false) => {
+            if (!authReady || !user) {
+                setError('No token available');
+                setLoading(false);
+                setRefreshing(false);
+                return;
+            }
 
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
-        if (isRefresh) {
-            setRefreshing(true);
-        } else {
-            setLoading(true);
-        }
+            if (isRefresh) {
+                setRefreshing(true);
+            } else {
+                setLoading(true);
+            }
 
-        setError(null);
+            setError(null);
 
-        try {
-            const driverDocuments = await getDriverDocumentsUseCase.execute();
-            setDocuments(driverDocuments);
-        } catch (e: any) {
-            setError(e?.message ?? 'Failed to load documents');
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-<<<<<<< HEAD
-    }, []);
-
-    useEffect(() => {
-        void loadDocuments();
-    }, [loadDocuments]);
-=======
-    }, [authReady, user]);
+            try {
+                const driverDocuments = await getDriverDocumentsUseCase.execute();
+                setDocuments(driverDocuments);
+            } catch (e: any) {
+                setError(e?.message ?? 'Failed to load documents');
+            } finally {
+                setLoading(false);
+                setRefreshing(false);
+            }
+        },
+        [authReady, user]
+    );
 
     useEffect(() => {
         if (!authReady) {
@@ -144,7 +114,6 @@ export default function ComplianceScreen() {
 
         void loadDocuments();
     }, [authReady, loadDocuments, user]);
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
 
     const getStatusStyle = (status: ComplianceStatus) => {
         switch (status) {
@@ -162,26 +131,18 @@ export default function ComplianceScreen() {
             <ScrollView
                 contentContainerStyle={styles.content}
                 refreshControl={
-<<<<<<< HEAD
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={() => loadDocuments(true)}
                     />
-=======
-                    <RefreshControl refreshing={refreshing} onRefresh={() => loadDocuments(true)} />
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
                 }
             >
                 <ThemedText type="title" style={styles.heading}>
                     License Compliance
                 </ThemedText>
                 <ThemedText style={styles.subheading}>
-<<<<<<< HEAD
                     Track expiry dates for the documents tied to your assigned
                     vehicle.
-=======
-                    Track expiry dates for the documents tied to your assigned vehicle.
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
                 </ThemedText>
 
                 {loading && (
@@ -193,14 +154,10 @@ export default function ComplianceScreen() {
                 {!loading && error && (
                     <ThemedCard style={styles.messageCard}>
                         <ThemedText style={styles.errorText}>{error}</ThemedText>
-<<<<<<< HEAD
                         <Pressable
                             onPress={() => loadDocuments()}
                             style={styles.retryButton}
                         >
-=======
-                        <Pressable onPress={() => loadDocuments()} style={styles.retryButton}>
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
                             <ThemedText type="link">Retry</ThemedText>
                         </Pressable>
                     </ThemedCard>
@@ -208,7 +165,6 @@ export default function ComplianceScreen() {
 
                 {!loading && !error && documents.length === 0 && (
                     <ThemedCard style={styles.messageCard}>
-<<<<<<< HEAD
                         <ThemedText>
                             No compliance documents found for your assigned
                             vehicle.
@@ -259,32 +215,6 @@ export default function ComplianceScreen() {
                             </ThemedCard>
                         );
                     })}
-=======
-                        <ThemedText>No compliance documents found for your assigned vehicle.</ThemedText>
-                    </ThemedCard>
-                )}
-
-                {!loading && !error && documents.map((document) => {
-                    const status = getComplianceStatus(document.expiryDate);
-
-                    return (
-                        <ThemedCard key={`${document.title}-${document.expiryDate}`} style={styles.card}>
-                            <View style={styles.headerRow}>
-                                <ThemedText type="defaultSemiBold" style={styles.title}>
-                                    {document.title}
-                                </ThemedText>
-                                <View style={[styles.badge, getStatusStyle(status)]}>
-                                    <ThemedText style={styles.badgeText} lightColor="#fff" darkColor="#fff">
-                                        {status}
-                                    </ThemedText>
-                                </View>
-                            </View>
-
-                            <ThemedText style={styles.metaText}>Expiry Date: {document.expiryDate}</ThemedText>
-                        </ThemedCard>
-                    );
-                })}
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
             </ScrollView>
         </ThemedView>
     );

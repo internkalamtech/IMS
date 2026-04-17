@@ -1,20 +1,14 @@
-<<<<<<< HEAD
-import { StorageService } from '@/data/local/storage';
 import axios, {
     AxiosError,
     AxiosInstance,
     AxiosResponse,
-    InternalAxiosRequestConfig
+    InternalAxiosRequestConfig,
 } from 'axios';
-=======
-import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { clearStoredAuth, getStoredToken, notifyUnauthorized } from './auth-storage';
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
 import { getApiBaseUrl } from './api-config';
+import { clearStoredAuth, getStoredToken, notifyUnauthorized } from './auth-storage';
 import { AuthError, NetworkError } from './error';
 import { Logger } from './logger';
 
-// Default configuration
 const API_URL = getApiBaseUrl();
 const TIMEOUT = 10000;
 
@@ -42,25 +36,19 @@ export class ApiClient {
     }
 
     private setupInterceptors() {
-
-        // ✅ REQUEST INTERCEPTOR
         this.axiosInstance.interceptors.request.use(
             async (config: InternalAxiosRequestConfig) => {
-<<<<<<< HEAD
-                const token = await StorageService.getItem<string>('auth_token');
-
-                if (token) {
-=======
                 const requestUrl = config.url ?? '';
                 const isAuthLoginRequest = requestUrl.includes('/auth/login');
                 const token = await getStoredToken();
 
                 if (token && !isAuthLoginRequest) {
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
                     config.headers.Authorization = `Bearer ${token}`;
                 }
 
-                Logger.debug(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
+                Logger.debug(
+                    `[API Request] ${config.method?.toUpperCase()} ${config.url}`
+                );
                 return config;
             },
             (error) => {
@@ -69,10 +57,11 @@ export class ApiClient {
             }
         );
 
-        // ✅ RESPONSE INTERCEPTOR (FIXED)
         this.axiosInstance.interceptors.response.use(
             (response: AxiosResponse) => {
-                Logger.debug(`[API Response] ${response.status} ${response.config.url}`);
+                Logger.debug(
+                    `[API Response] ${response.status} ${response.config.url}`
+                );
                 return response;
             },
             (error: AxiosError) => {
@@ -80,32 +69,9 @@ export class ApiClient {
 
                 if (error.response) {
                     const status = error.response.status;
-<<<<<<< HEAD
-                    const url = error.config?.url || '';
-
-                    // 🔴 FIX: Differentiate LOGIN vs OTHER APIs
-                    if (status === 401) {
-
-                        // 👉 If login API → wrong credentials
-                        if (url.includes('/auth/login')) {
-                            return Promise.reject(
-                                new AuthError('Invalid email or password')
-                            );
-                        }
-
-                        // 👉 Other APIs → session expired
-                        return Promise.reject(
-                            new AuthError('Session expired. Please login again.')
-                        );
-                    }
-
-                    return Promise.reject(
-                        new NetworkError(`Request failed with status ${status}`, status)
-                    );
-
-=======
                     const requestUrl = error.config?.url ?? '';
-                    const isAuthLoginRequest = requestUrl.includes('/auth/login');
+                    const isAuthLoginRequest =
+                        requestUrl.includes('/auth/login');
                     const detail =
                         typeof error.response.data === 'object' &&
                         error.response.data !== null &&
@@ -115,26 +81,35 @@ export class ApiClient {
                             : null;
 
                     if (status === 401) {
-                        if (!isAuthLoginRequest) {
-                            void clearStoredAuth().finally(() => {
-                                notifyUnauthorized();
-                            });
+                        if (isAuthLoginRequest) {
+                            return Promise.reject(
+                                new AuthError(detail || 'Invalid email or password')
+                            );
                         }
-                        return Promise.reject(new AuthError(detail || 'Session expired'));
+
+                        void clearStoredAuth().finally(() => {
+                            notifyUnauthorized();
+                        });
+                        return Promise.reject(
+                            new AuthError(detail || 'Session expired')
+                        );
                     }
+
                     return Promise.reject(
-                        new NetworkError(detail || `Request failed with status ${status}`, status)
+                        new NetworkError(
+                            detail || `Request failed with status ${status}`,
+                            status
+                        )
                     );
->>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
-                } else if (error.request) {
+                }
+
+                if (error.request) {
                     return Promise.reject(
                         new NetworkError('No response received from server')
                     );
-                } else {
-                    return Promise.reject(
-                        new NetworkError(error.message)
-                    );
                 }
+
+                return Promise.reject(new NetworkError(error.message));
             }
         );
     }
