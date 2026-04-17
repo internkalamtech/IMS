@@ -1,4 +1,5 @@
 import { AuthRepositoryImpl } from '@/data/repositories/auth-repository-impl';
+import { subscribeToUnauthorized } from '@/core/auth-storage';
 import { DemoCredential } from '@/domain/entities/demo-credential';
 import { User } from '@/domain/entities/user';
 import { GetDemoCredentialsUseCase } from '@/domain/usecases/get-demo-credentials-usecase';
@@ -9,6 +10,7 @@ interface AuthContextType {
     user: User | null;
     demoCredentials: DemoCredential[];
     loading: boolean;
+    authReady: boolean;
     error: string | null;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
@@ -26,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [demoCredentials, setDemoCredentials] = useState<DemoCredential[]>([]);
     const [loading, setLoading] = useState(true);
+    const [authReady, setAuthReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -33,13 +36,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchDemoCredentials();
     }, []);
 
+    useEffect(() => {
+        return subscribeToUnauthorized(() => {
+            setUser(null);
+            setError('Session expired');
+            setAuthReady(true);
+            setLoading(false);
+        });
+    }, []);
+
     const checkUser = async () => {
         try {
             const currentUser = await authRepository.getCurrentUser();
             setUser(currentUser);
-        } catch (e) {
+        } catch {
             // Ignore error when checking current user
         } finally {
+            setAuthReady(true);
             setLoading(false);
         }
     };
@@ -59,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             const loggedInUser = await loginUseCase.execute(email, password);
             setUser(loggedInUser);
+            setAuthReady(true);
         } catch (e: any) {
             setError(e.message || 'Login failed');
             throw e; // Rethrow to allow component to handle it if needed
@@ -72,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             await authRepository.logout();
             setUser(null);
+            setError(null);
         } catch (e: any) {
             setError(e.message || 'Logout failed');
         } finally {
@@ -85,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 user,
                 demoCredentials,
                 loading,
+                authReady,
                 error,
                 login,
                 logout,

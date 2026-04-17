@@ -17,9 +17,14 @@ export const getApiBaseUrl = (): string => {
 
     // ✅ 2. WEB (your browser case)
     if (Platform.OS === 'web') {
+<<<<<<< HEAD
         const url = configuredUrl || 'http://localhost:8000/api/v1';
         Logger.debug(`[Config] Web API URL: ${url}`);
         return url;
+=======
+        // On web, use the loopback IP to avoid hostname resolution issues.
+        return configuredUrl || 'http://127.0.0.1:8000/api/v1';
+>>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
     }
 
     // ✅ 3. ANDROID EMULATOR

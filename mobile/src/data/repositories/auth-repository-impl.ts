@@ -1,13 +1,16 @@
 import { api } from '@/core/api-client';
+import {
+    clearStoredAuth,
+    getStoredToken,
+    TOKEN_STORAGE_KEY,
+    USER_STORAGE_KEY,
+} from '@/core/auth-storage';
 import { NetworkError } from '@/core/error';
 import { Logger } from '@/core/logger';
 import { StorageService } from '@/data/local/storage';
 import { DemoCredential } from '@/domain/entities/demo-credential';
 import { User } from '@/domain/entities/user';
 import { AuthRepository } from '@/domain/repositories/auth-repository';
-
-const USER_STORAGE_KEY = 'current_user';
-const TOKEN_STORAGE_KEY = 'auth_token';
 
 export class AuthRepositoryImpl implements AuthRepository {
     async login(email: string, password: string): Promise<User> {
@@ -32,20 +35,46 @@ export class AuthRepositoryImpl implements AuthRepository {
             return domainUser;
         } catch (error: any) {
             Logger.error('Login failed', error);
-            if (error.response?.data?.detail) {
-                throw new NetworkError(error.response.data.detail);
+
+            if (error instanceof Error) {
+                throw error;
             }
-            throw error;
+
+            const errorDetail =
+                error &&
+                typeof error === 'object' &&
+                'response' in error &&
+                error.response &&
+                typeof error.response === 'object' &&
+                'data' in error.response &&
+                error.response.data &&
+                typeof error.response.data === 'object' &&
+                'detail' in error.response.data &&
+                typeof error.response.data.detail === 'string'
+                    ? error.response.data.detail
+                    : null;
+
+            if (errorDetail) {
+                throw new NetworkError(errorDetail);
+            }
+
+            throw new NetworkError('Login failed');
         }
     }
 
     async logout(): Promise<void> {
-        await StorageService.removeItem(USER_STORAGE_KEY);
-        await StorageService.removeItem(TOKEN_STORAGE_KEY);
+        await clearStoredAuth();
         Logger.info('User logged out');
     }
 
     async getCurrentUser(): Promise<User | null> {
+        const token = await getStoredToken();
+
+        if (!token) {
+            await clearStoredAuth();
+            return null;
+        }
+
         return await StorageService.getItem<User>(USER_STORAGE_KEY);
     }
 

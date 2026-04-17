@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { StorageService } from '@/data/local/storage';
 import axios, {
     AxiosError,
@@ -5,6 +6,10 @@ import axios, {
     AxiosResponse,
     InternalAxiosRequestConfig
 } from 'axios';
+=======
+import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { clearStoredAuth, getStoredToken, notifyUnauthorized } from './auth-storage';
+>>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
 import { getApiBaseUrl } from './api-config';
 import { AuthError, NetworkError } from './error';
 import { Logger } from './logger';
@@ -41,9 +46,17 @@ export class ApiClient {
         // ✅ REQUEST INTERCEPTOR
         this.axiosInstance.interceptors.request.use(
             async (config: InternalAxiosRequestConfig) => {
+<<<<<<< HEAD
                 const token = await StorageService.getItem<string>('auth_token');
 
                 if (token) {
+=======
+                const requestUrl = config.url ?? '';
+                const isAuthLoginRequest = requestUrl.includes('/auth/login');
+                const token = await getStoredToken();
+
+                if (token && !isAuthLoginRequest) {
+>>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
                     config.headers.Authorization = `Bearer ${token}`;
                 }
 
@@ -67,6 +80,7 @@ export class ApiClient {
 
                 if (error.response) {
                     const status = error.response.status;
+<<<<<<< HEAD
                     const url = error.config?.url || '';
 
                     // 🔴 FIX: Differentiate LOGIN vs OTHER APIs
@@ -89,6 +103,29 @@ export class ApiClient {
                         new NetworkError(`Request failed with status ${status}`, status)
                     );
 
+=======
+                    const requestUrl = error.config?.url ?? '';
+                    const isAuthLoginRequest = requestUrl.includes('/auth/login');
+                    const detail =
+                        typeof error.response.data === 'object' &&
+                        error.response.data !== null &&
+                        'detail' in error.response.data &&
+                        typeof error.response.data.detail === 'string'
+                            ? error.response.data.detail
+                            : null;
+
+                    if (status === 401) {
+                        if (!isAuthLoginRequest) {
+                            void clearStoredAuth().finally(() => {
+                                notifyUnauthorized();
+                            });
+                        }
+                        return Promise.reject(new AuthError(detail || 'Session expired'));
+                    }
+                    return Promise.reject(
+                        new NetworkError(detail || `Request failed with status ${status}`, status)
+                    );
+>>>>>>> 8af8865b070e30b85cf93d3dd14c0890d6c22d89
                 } else if (error.request) {
                     return Promise.reject(
                         new NetworkError('No response received from server')
