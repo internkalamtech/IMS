@@ -1,3 +1,5 @@
+from datetime import date
+
 from app.domain.entities.driver import ComplianceDocument, MaintenanceTask
 from app.domain.usecases.driver_usecases import (
     GetDriverDocumentsUseCase,
@@ -6,11 +8,22 @@ from app.domain.usecases.driver_usecases import (
 
 
 class FakeDriverRepository:
-    async def get_driver_documents(self, user_id: str):
-        return [ComplianceDocument(title="Driving License", expiry_date="2026-04-10")]
+    async def get_driver_documents(self, driver_id: str):
+        return [
+            ComplianceDocument(
+                title="Driving License",
+                expiry_date=date(2026, 4, 10),
+            )
+        ]
 
-    async def get_driver_maintenance(self, user_id: str):
-        return [MaintenanceTask(title="Oil Change", date="2026-03-20", status="Scheduled")]
+    async def get_driver_maintenance_tasks(self, driver_id: str):
+        return [
+            MaintenanceTask(
+                title="Oil Change",
+                scheduled_date=date(2026, 3, 20),
+                status="Scheduled",
+            )
+        ]
 
 
 async def test_get_driver_documents_use_case_returns_documents():
