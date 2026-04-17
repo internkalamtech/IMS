@@ -10,7 +10,6 @@ Following best practices:
 - Transaction management
 """
 
-import asyncio
 from app.infrastructure.database.models import TimetableModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

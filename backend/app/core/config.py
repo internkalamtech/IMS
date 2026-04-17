@@ -1,4 +1,4 @@
-#updated 
+# updated
 """
 Core configuration module for the IMS Backend.
 

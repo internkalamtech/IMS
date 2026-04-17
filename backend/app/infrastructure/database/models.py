@@ -46,20 +46,37 @@ user_roles = Table(
 class UserModel(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
 
     email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
+        String(255),
+        unique=True,
+        index=True,
+        nullable=False,
     )
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    password_hash: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    name: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
 
     is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
+        Boolean,
+        default=True,
+        nullable=False,
     )
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
@@ -76,19 +93,32 @@ class UserModel(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"
+        return (
+            f"<User(id={self.id}, email='{self.email}', "
+            f"name='{self.name}')>"
+        )
 
 
 class RoleModel(Base):
     __tablename__ = "roles"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
-    name: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True,
     )
 
-    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    name: Mapped[str] = mapped_column(
+        String(50),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
+    description: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
 
     users: Mapped[List["UserModel"]] = relationship(
         "UserModel",
@@ -100,29 +130,68 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
+# =========================
+# FIXED TIMETABLE MODEL
+# =========================
 class TimetableModel(Base):
     __tablename__ = "timetable"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
-    teacher_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True,
     )
 
-    subject: Mapped[str] = mapped_column(String(100), nullable=False)
+    teacher_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False,
+    )
 
-    room_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    # class relation column
+    class_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("class_sections.id"),
+        nullable=True,
+    )
 
-    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    subject: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
 
-    end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    room_type: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    start_time: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+    )
+
+    end_time: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+    )
+
+    class_: Mapped["ClassSectionModel"] = relationship(
+        "ClassSectionModel",
+    )
 
 
 class SubjectModel(Base):
     __tablename__ = "subjects"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+    )
+    name: Mapped[str] = mapped_column(
+        String(100),
+        unique=True,
+        nullable=False,
+    )
 
     classes: Mapped[List["ClassSectionModel"]] = relationship(
         "ClassSectionModel",
@@ -134,8 +203,14 @@ class SubjectModel(Base):
 class ClassSectionModel(Base):
     __tablename__ = "class_sections"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+    )
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
 
     subjects: Mapped[List["SubjectModel"]] = relationship(
         "SubjectModel",

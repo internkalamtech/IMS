@@ -13,13 +13,17 @@ class LoginRequest(BaseModel):
 
     email: EmailStr
     password: str = Field(
-        ..., min_length=6, description="User password (minimum 6 characters)"
-        )
+        ...,
+        min_length=6,
+        description="User password (minimum 6 characters)",
+    )
 
     model_config = {
         "json_schema_extra": {
-            "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
-            }
+            "examples": [
+                {"email": "admin@myuser.com", "password": "admin123"}
+            ]
+        }
     }
 
 
@@ -28,8 +32,13 @@ class RoleResponse(BaseModel):
 
     id: str
     name: Literal[
-        "admin", "teacher", "student", "parent", "transport", "driver"
-        ]
+        "admin",
+        "teacher",
+        "student",
+        "parent",
+        "transport",
+        "driver",
+    ]
     description: str | None = None
 
 
@@ -40,8 +49,13 @@ class UserResponse(BaseModel):
     name: str
     email: str
     role: Literal[
-        "admin", "teacher", "student", "parent", "transport", "driver"
-        ]
+        "admin",
+        "teacher",
+        "student",
+        "parent",
+        "transport",
+        "driver",
+    ]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -99,8 +113,10 @@ class ErrorResponse(BaseModel):
     detail: str
 
     model_config = {
-        "json_schema_extra": {"examples": [{"detail": "Error message"}]}
+        "json_schema_extra": {
+            "examples": [{"detail": "Error message"}]
         }
+    }
 
 
 class DemoCredential(BaseModel):

@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime, time
+from datetime import datetime, timedelta, time
 from collections import defaultdict
 from app.infrastructure.repositories import database_teacher_repository
 
@@ -25,7 +25,7 @@ async def get_teacher_timetable(db, teacher_id, view, date_value):
 
     date_value = ensure_date(date_value)
 
-    periods = await database_teacher_repository.get_teacher_timetable(
+    periods = await database_teacher_repository.get_timetable_by_teacher(
         db,
         teacher_id,
     )
@@ -50,14 +50,15 @@ async def get_teacher_timetable(db, teacher_id, view, date_value):
     break_start = datetime.combine(date_value, time(13, 0))
     break_end = datetime.combine(date_value, time(14, 0))
 
+    # =========================
+    # DAY VIEW
+    # =========================
     if view == "day":
 
         events = []
 
         for p in safe_periods:
             if safe_date(p.start_time) == date_value:
-                class_obj = getattr(p, "class_", None)
-                class_name = getattr(class_obj, "name", None) if class_obj else None
 
                 events.append({
                     "type": "regular",
@@ -67,7 +68,10 @@ async def get_teacher_timetable(db, teacher_id, view, date_value):
                         "id": getattr(p, "id", None),
                         "teacher_id": getattr(p, "teacher_id", None),
                         "subject": getattr(p, "subject", None),
-                        "class": class_name,
+
+                        # 🔥 FIX: class is actually subject in your DB
+                        "class": getattr(p, "subject", None),
+
                         "room": getattr(p, "room_type", None),
                     }
                 })
@@ -86,9 +90,9 @@ async def get_teacher_timetable(db, teacher_id, view, date_value):
             end = min(event["end"], end_day)
 
             if current_time < start:
-
                 temp_start = current_time
 
+                # FREE before break
                 if temp_start < break_start:
                     free_end = min(start, break_start)
                     if temp_start < free_end:
@@ -99,6 +103,7 @@ async def get_teacher_timetable(db, teacher_id, view, date_value):
                         })
                     temp_start = free_end
 
+                # BREAK
                 if temp_start < break_end and start > break_start:
                     result.append({
                         "type": "break",
@@ -107,6 +112,7 @@ async def get_teacher_timetable(db, teacher_id, view, date_value):
                     })
                     temp_start = break_end
 
+                # FREE after break
                 if temp_start < start:
                     result.append({
                         "type": "free",
@@ -123,6 +129,7 @@ async def get_teacher_timetable(db, teacher_id, view, date_value):
 
             current_time = max(current_time, end)
 
+        # FINAL FREE SLOT
         if current_time < end_day:
 
             temp_start = current_time
@@ -159,24 +166,29 @@ async def get_teacher_timetable(db, teacher_id, view, date_value):
             "periods": result,
         }
 
+    # =========================
+    # WEEK VIEW
+    # =========================
     elif view == "week":
 
         start_of_week = date_value - timedelta(days=date_value.weekday())
+
         week_map = defaultdict(list)
 
         for p in safe_periods:
+
             p_date = safe_date(p.start_time)
 
             if start_of_week <= p_date <= start_of_week + timedelta(days=6):
-
-                class_obj = getattr(p, "class_", None)
-                class_name = getattr(class_obj, "name", None) if class_obj else None
 
                 week_map[p_date.isoformat()].append({
                     "id": getattr(p, "id", None),
                     "teacher_id": getattr(p, "teacher_id", None),
                     "subject": getattr(p, "subject", None),
-                    "class": class_name,
+
+                    # 🔥 FIX: no class_ relationship exists
+                    "class": getattr(p, "subject", None),
+
                     "room": getattr(p, "room_type", None),
                     "start_time": safe_datetime(p.start_time),
                     "end_time": safe_datetime(p.end_time),
@@ -210,7 +222,3 @@ async def get_teacher_timetable(db, teacher_id, view, date_value):
         "date": date_value.isoformat(),
         "periods": [],
     }
-
-
-async def get_peer_teachers(db, teacher_id: int):
-    return await database_teacher_repository.get_peer_teachers(db, teacher_id)
