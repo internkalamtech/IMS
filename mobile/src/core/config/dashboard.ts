@@ -21,7 +21,7 @@ export const DASHBOARD_CONFIG = {
     },
     teacher: {
         quickActions: [
-            { id: 1, title: 'Attendance', icon: 'checkbox', color: ColorPalettes.emerald[500] },
+            { id: 1, title: 'Attendance', icon: 'checkbox', color: ColorPalettes.emerald[500], route: '/attendance'},
             { id: 2, title: 'Homework', icon: 'book', color: ColorPalettes.blue[500] },
             { id: 3, title: 'Students', icon: 'people', color: ColorPalettes.green[500], route: '/student-directory' },
             { id: 4, title: 'Results', icon: 'school', color: ColorPalettes.amber[500] },
