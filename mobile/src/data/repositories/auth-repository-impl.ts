@@ -71,6 +71,13 @@ export class AuthRepositoryImpl implements AuthRepository {
                     password: "teacher123",
                     description: "Core Roles (Offline Mock)"
                 },
+                {
+                    role: "Driver",
+                    icon: "car-sport",
+                    email: "driver@myuser.com",
+                    password: "driver123",
+                    description: "Transport Roles (Offline Mock)"
+                },
             ];
         }
     }

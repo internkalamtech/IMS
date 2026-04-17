@@ -11,6 +11,7 @@ Following best practices:
 """
 
 import asyncio
+from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +19,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logger import Logger
 from app.core.password import hash_password
 from app.infrastructure.database.database import AsyncSessionLocal, init_db
-from app.infrastructure.database.models import RoleModel, UserModel
+from app.infrastructure.database.models import (
+    DriverVehicleAssignmentModel,
+    RoleModel,
+    UserModel,
+    VehicleComplianceDocumentModel,
+    VehicleMaintenanceTaskModel,
+    VehicleModel,
+)
 
 
 # Demo users configuration
@@ -104,6 +112,52 @@ ROLES = [
     },
 ]
 
+VEHICLES = [
+    {
+        "registration_number": "BUS-101",
+        "display_name": "School Bus 101",
+    }
+]
+
+VEHICLE_DOCUMENTS = [
+    {
+        "registration_number": "BUS-101",
+        "title": "Driving License",
+        "expiry_date": date(2026, 4, 10),
+    },
+    {
+        "registration_number": "BUS-101",
+        "title": "Bus Insurance",
+        "expiry_date": date(2026, 3, 20),
+    },
+    {
+        "registration_number": "BUS-101",
+        "title": "Fitness Certificate",
+        "expiry_date": date(2026, 2, 15),
+    },
+]
+
+VEHICLE_MAINTENANCE_TASKS = [
+    {
+        "registration_number": "BUS-101",
+        "title": "Brake Inspection",
+        "scheduled_date": date(2026, 2, 28),
+        "status": "Completed",
+    },
+    {
+        "registration_number": "BUS-101",
+        "title": "Tire Check",
+        "scheduled_date": date(2026, 3, 15),
+        "status": "In Progress",
+    },
+    {
+        "registration_number": "BUS-101",
+        "title": "Oil Change",
+        "scheduled_date": date(2026, 3, 20),
+        "status": "Scheduled",
+    },
+]
+
 
 async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     """
@@ -186,6 +240,160 @@ async def create_users(
     await db.commit()
 
 
+async def create_vehicles(db: AsyncSession) -> dict[str, VehicleModel]:
+    """Create demo vehicles if they do not exist."""
+
+    Logger.info("Creating demo vehicles...")
+    vehicles_map = {}
+
+    for vehicle_data in VEHICLES:
+        result = await db.execute(
+            select(VehicleModel).where(
+                VehicleModel.registration_number
+                == vehicle_data["registration_number"]
+            )
+        )
+        vehicle = result.scalar_one_or_none()
+
+        if not vehicle:
+            vehicle = VehicleModel(**vehicle_data)
+            db.add(vehicle)
+            Logger.info(
+                "Created vehicle: "
+                f"{vehicle_data['registration_number']}"
+            )
+        else:
+            vehicle.display_name = vehicle_data["display_name"]
+            Logger.info(
+                "Vehicle already exists: "
+                f"{vehicle_data['registration_number']}"
+            )
+
+        vehicles_map[vehicle_data["registration_number"]] = vehicle
+
+    await db.commit()
+    return vehicles_map
+
+
+async def assign_driver_vehicle(
+    db: AsyncSession, vehicles_map: dict[str, VehicleModel]
+) -> None:
+    """Assign the demo driver to the demo bus."""
+
+    result = await db.execute(
+        select(UserModel).where(UserModel.email == "driver@myuser.com")
+    )
+    driver = result.unique().scalar_one_or_none()
+    vehicle = vehicles_map.get("BUS-101")
+
+    if not driver or not vehicle:
+        return
+
+    result = await db.execute(
+        select(DriverVehicleAssignmentModel).where(
+            DriverVehicleAssignmentModel.user_id == driver.id
+        )
+    )
+    assignment = result.scalar_one_or_none()
+
+    if assignment:
+        assignment.vehicle_id = vehicle.id
+        Logger.info("Updated driver vehicle assignment to BUS-101")
+    else:
+        db.add(
+            DriverVehicleAssignmentModel(
+                user_id=driver.id,
+                vehicle_id=vehicle.id,
+            )
+        )
+        Logger.info("Assigned driver@myuser.com to BUS-101")
+
+    await db.commit()
+
+
+async def create_vehicle_documents(
+    db: AsyncSession, vehicles_map: dict[str, VehicleModel]
+) -> None:
+    """Create demo compliance documents for the assigned vehicle."""
+
+    Logger.info("Creating vehicle compliance documents...")
+
+    for document_data in VEHICLE_DOCUMENTS:
+        vehicle = vehicles_map[document_data["registration_number"]]
+        result = await db.execute(
+            select(VehicleComplianceDocumentModel).where(
+                VehicleComplianceDocumentModel.vehicle_id == vehicle.id,
+                VehicleComplianceDocumentModel.title
+                == document_data["title"],
+            )
+        )
+        existing = result.scalar_one_or_none()
+
+        if existing:
+            existing.expiry_date = document_data["expiry_date"]
+            Logger.info(
+                "Vehicle compliance document already exists: "
+                f"{document_data['title']}"
+            )
+            continue
+
+        db.add(
+            VehicleComplianceDocumentModel(
+                vehicle_id=vehicle.id,
+                title=document_data["title"],
+                expiry_date=document_data["expiry_date"],
+            )
+        )
+        Logger.info(
+            "Created vehicle compliance document: "
+            f"{document_data['title']}"
+        )
+
+    await db.commit()
+
+
+async def create_vehicle_maintenance_tasks(
+    db: AsyncSession, vehicles_map: dict[str, VehicleModel]
+) -> None:
+    """Create demo maintenance tasks for the assigned vehicle."""
+
+    Logger.info("Creating vehicle maintenance tasks...")
+
+    for task_data in VEHICLE_MAINTENANCE_TASKS:
+        vehicle = vehicles_map[task_data["registration_number"]]
+        result = await db.execute(
+            select(VehicleMaintenanceTaskModel).where(
+                VehicleMaintenanceTaskModel.vehicle_id == vehicle.id,
+                VehicleMaintenanceTaskModel.title == task_data["title"],
+            )
+        )
+        existing = result.scalar_one_or_none()
+
+        if existing:
+            existing.scheduled_date = task_data["scheduled_date"]
+            existing.status = task_data["status"]
+            Logger.info(
+                "Vehicle maintenance task already exists: "
+                f"{task_data['title']}"
+            )
+            continue
+
+        db.add(
+            VehicleMaintenanceTaskModel(
+                vehicle_id=vehicle.id,
+                title=task_data["title"],
+                scheduled_date=task_data["scheduled_date"],
+                status=task_data["status"],
+            )
+        )
+        Logger.info(
+            "Created vehicle maintenance task: "
+            f"{task_data['title']}"
+        )
+
+    await db.commit()
+
+
 async def seed_database() -> None:
     """
     Main function to seed the database.
@@ -209,6 +417,12 @@ async def seed_database() -> None:
 
             # Create users
             await create_users(db, roles_map)
+
+            # Create driver transport data
+            vehicles_map = await create_vehicles(db)
+            await assign_driver_vehicle(db, vehicles_map)
+            await create_vehicle_documents(db, vehicles_map)
+            await create_vehicle_maintenance_tasks(db, vehicles_map)
 
         Logger.info("Database seeding completed successfully!")
 

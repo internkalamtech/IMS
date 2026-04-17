@@ -50,6 +50,30 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in v.split(",")]
         return v
 
+    @field_validator("debug", mode="before")
+    @classmethod
+    def parse_debug_value(cls, v):
+        """
+        Accept both boolean-like values and common environment names.
+
+        This keeps local startup resilient when shells or IDE profiles set
+        DEBUG to values such as "release" or "development".
+        """
+        if isinstance(v, bool):
+            return v
+
+        if isinstance(v, str):
+            normalized = v.strip().lower()
+            truthy_values = {"1", "true", "yes", "on", "debug", "development"}
+            falsy_values = {"0", "false", "no", "off", "release", "prod", "production"}
+
+            if normalized in truthy_values:
+                return True
+            if normalized in falsy_values:
+                return False
+
+        return v
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

@@ -9,12 +9,13 @@ Following best practices:
 - Indexes for performance
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import List
 
 from sqlalchemy import (
     Boolean,
     Column,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
@@ -116,3 +117,93 @@ class RoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+
+
+class VehicleModel(Base):
+    """Vehicle database model used for driver assignments."""
+
+    __tablename__ = "vehicles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    registration_number: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False, index=True
+    )
+    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    compliance_documents: Mapped[List["VehicleComplianceDocumentModel"]] = (
+        relationship(
+            "VehicleComplianceDocumentModel",
+            back_populates="vehicle",
+            cascade="all, delete-orphan",
+        )
+    )
+    maintenance_tasks: Mapped[List["VehicleMaintenanceTaskModel"]] = (
+        relationship(
+            "VehicleMaintenanceTaskModel",
+            back_populates="vehicle",
+            cascade="all, delete-orphan",
+        )
+    )
+
+    def __repr__(self) -> str:
+        return f"<Vehicle(id={self.id}, reg='{self.registration_number}')>"
+
+
+class DriverVehicleAssignmentModel(Base):
+    """Links a driver user to an assigned vehicle."""
+
+    __tablename__ = "driver_vehicle_assignments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+    vehicle_id: Mapped[int] = mapped_column(
+        ForeignKey("vehicles.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+
+class VehicleComplianceDocumentModel(Base):
+    """Compliance documents required for a vehicle."""
+
+    __tablename__ = "vehicle_compliance_documents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    vehicle_id: Mapped[int] = mapped_column(
+        ForeignKey("vehicles.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    expiry_date: Mapped[date] = mapped_column(Date, nullable=False)
+
+    vehicle: Mapped["VehicleModel"] = relationship(
+        "VehicleModel",
+        back_populates="compliance_documents",
+    )
+
+
+class VehicleMaintenanceTaskModel(Base):
+    """Maintenance tasks scheduled for a vehicle."""
+
+    __tablename__ = "vehicle_maintenance_tasks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    vehicle_id: Mapped[int] = mapped_column(
+        ForeignKey("vehicles.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    scheduled_date: Mapped[date] = mapped_column(Date, nullable=False)
+    status: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    vehicle: Mapped["VehicleModel"] = relationship(
+        "VehicleModel",
+        back_populates="maintenance_tasks",
+    )
