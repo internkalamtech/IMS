@@ -1,38 +1,154 @@
 """
-Repository interface for payment operations.
+Abstract repository interface for payment operations.
 
-Defines the abstract contract for payment data access.
+Defines the contract that all concrete payment repository
+implementations must fulfill.
 """
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List, Optional
 
-from app.domain.entities.payment import FeeStructureEntity, PaymentEntity
+from app.domain.entities.payment import (
+    FeeStructure,
+    Payment,
+    PaymentStatus,
+    PaymentSummary,
+    Student,
+)
 
 
 class PaymentRepository(ABC):
     """
     Abstract repository for payment operations.
 
-    Defines the contract for payment data access.
-    Concrete implementations are provided in the infrastructure layer.
+    Concrete implementations (e.g. database-backed) are provided in
+    the infrastructure layer.
     """
 
+    # ------------------------------------------------------------------ #
+    # Student operations
+    # ------------------------------------------------------------------ #
+
     @abstractmethod
-    async def create_payment(self, payment: PaymentEntity) -> PaymentEntity:
+    async def get_student_by_id(self, student_id: int) -> Optional[Student]:
         """
-        Persist a new payment record.
+        Retrieve a student by their ID.
 
         Args:
-            payment: Payment entity to create
+            student_id: Unique identifier of the student
 
         Returns:
-            Created payment entity with assigned ID
+            Student entity if found, None otherwise
         """
         pass
 
     @abstractmethod
-    async def get_payment_by_id(self, payment_id: int) -> Optional[PaymentEntity]:
+    async def list_students(
+        self,
+        name: Optional[str] = None,
+        roll_number: Optional[str] = None,
+        class_name: Optional[str] = None,
+        status: Optional[PaymentStatus] = None,
+    ) -> List[Student]:
+        """
+        List students with optional filters.
+
+        Args:
+            name: Partial name to filter by
+            roll_number: Exact roll number to filter by
+            class_name: Class name to filter by
+            status: Payment status to filter by
+
+        Returns:
+            List of matching Student entities
+        """
+        pass
+
+    @abstractmethod
+    async def update_student_next_due_date(
+        self, student_id: int, next_due_date: Optional[datetime]
+    ) -> None:
+        """
+        Update the next payment due date for a student.
+
+        Args:
+            student_id: ID of the student to update
+            next_due_date: New next due date (datetime or None)
+        """
+        pass
+
+    # ------------------------------------------------------------------ #
+    # Fee structure operations
+    # ------------------------------------------------------------------ #
+
+    @abstractmethod
+    async def get_fee_structure_by_id(
+        self, fee_structure_id: int
+    ) -> Optional[FeeStructure]:
+        """
+        Retrieve a fee structure by its ID.
+
+        Args:
+            fee_structure_id: Unique identifier of the fee structure
+
+        Returns:
+            FeeStructure entity if found, None otherwise
+        """
+        pass
+
+    @abstractmethod
+    async def update_fee_structure_paid(
+        self, fee_structure_id: int, additional_amount: float
+    ) -> FeeStructure:
+        """
+        Increment the amount_paid on a fee structure record.
+
+        Args:
+            fee_structure_id: ID of the fee structure to update
+            additional_amount: Amount to add to the existing paid amount
+
+        Returns:
+            Updated FeeStructure entity
+        """
+        pass
+
+    # ------------------------------------------------------------------ #
+    # Payment operations
+    # ------------------------------------------------------------------ #
+
+    @abstractmethod
+    async def create_payment(
+        self,
+        student_id: int,
+        fee_structure_id: int,
+        receipt_number: str,
+        amount: float,
+        payment_mode: str,
+        status: str,
+        reference_number: Optional[str] = None,
+        remarks: Optional[str] = None,
+    ) -> Payment:
+        """
+        Persist a new payment transaction.
+
+        Args:
+            student_id: ID of the student making the payment
+            fee_structure_id: ID of the associated fee structure
+            receipt_number: Unique formatted receipt number
+            amount: Payment amount
+            payment_mode: Mode of payment (Cash, UPI, Card)
+            status: Payment status (Paid, Partial, etc.)
+            reference_number: Reference number for UPI/Card payments
+            remarks: Optional remarks
+
+        Returns:
+            Created Payment entity
+        """
+        pass
+
+    @abstractmethod
+    async def get_payment_by_id(self, payment_id: int) -> Optional[Payment]:
         """
         Retrieve a payment by its ID.
 
@@ -45,131 +161,47 @@ class PaymentRepository(ABC):
         pass
 
     @abstractmethod
-    async def update_payment_status(self, payment_id: int, status: str) -> Optional[PaymentEntity]:
-        """
-        Update the status of a payment.
-
-        Args:
-            payment_id: Unique identifier of the payment
-            status: New status value
-
-        Returns:
-            Updated payment entity if found, None otherwise
-        """
-        pass
-
-    @abstractmethod
     async def list_payments(
         self,
-        name: Optional[str] = None,
-        roll_number: Optional[str] = None,
-        student_class: Optional[str] = None,
+        student_id: Optional[int] = None,
         status: Optional[str] = None,
         skip: int = 0,
-        limit: int = 20,
-    ) -> List[PaymentEntity]:
+        limit: int = 100,
+    ) -> List[Payment]:
         """
         List payments with optional filters and pagination.
 
         Args:
-            name: Filter by student name (partial match)
-            roll_number: Filter by roll number
-            student_class: Filter by class
+            student_id: Filter by student ID
             status: Filter by payment status
-            skip: Number of records to skip
-            limit: Maximum records to return
+            skip: Number of records to skip (pagination)
+            limit: Maximum records to return (pagination)
 
         Returns:
-            List of matching payment entities
+            List of Payment entities
         """
         pass
 
     @abstractmethod
-    async def get_payments_by_student(self, student_id: int) -> List[PaymentEntity]:
+    async def get_payment_summary(self) -> PaymentSummary:
         """
-        Retrieve all payments for a specific student.
+        Compute aggregated payment statistics across all students.
+
+        Returns:
+            PaymentSummary with totals for collectible, collected,
+            pending, and overdue amounts
+        """
+        pass
+
+    @abstractmethod
+    async def receipt_number_exists(self, receipt_number: str) -> bool:
+        """
+        Check whether a receipt number already exists in the database.
 
         Args:
-            student_id: Unique identifier of the student
+            receipt_number: Receipt number to check
 
         Returns:
-            List of payment entities
-        """
-        pass
-
-    @abstractmethod
-    async def get_fee_structure(self, student_class: str) -> Optional[FeeStructureEntity]:
-        """
-        Retrieve fee structure for a given class.
-
-        Args:
-            student_class: Class/grade name
-
-        Returns:
-            FeeStructure entity if found, None otherwise
-        """
-        pass
-
-    @abstractmethod
-    async def get_all_fee_structures(self) -> List[FeeStructureEntity]:
-        """
-        Retrieve all fee structures in a single query.
-
-        Returns:
-            List of all FeeStructure entities
-        """
-        pass
-
-    @abstractmethod
-    async def get_total_collected(self) -> float:
-        """
-        Get the total amount collected across all payments.
-
-        Returns:
-            Total collected amount
-        """
-        pass
-
-    @abstractmethod
-    async def get_class_student_counts(self) -> List[tuple]:
-        """
-        Get student counts grouped by class.
-
-        Returns:
-            List of (class_name, student_count) tuples
-        """
-        pass
-
-    @abstractmethod
-    async def get_distinct_students_paid_count(self) -> int:
-        """
-        Get the count of distinct students who have made payments.
-
-        Returns:
-            Count of students who paid
-        """
-        pass
-
-    @abstractmethod
-    async def get_monthly_revenue(self) -> List[dict]:
-        """
-        Get monthly revenue data.
-
-        Returns:
-            List of dicts with 'month' and 'revenue' keys
-        """
-        pass
-
-    @abstractmethod
-    async def get_all_payments_chunked(self, offset: int, limit: int) -> List[PaymentEntity]:
-        """
-        Retrieve payments in chunks for streaming.
-
-        Args:
-            offset: Records to skip
-            limit: Maximum records to return
-
-        Returns:
-            List of payment entities
+            True if the receipt number exists, False otherwise
         """
         pass

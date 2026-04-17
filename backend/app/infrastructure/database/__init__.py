@@ -4,9 +4,11 @@ from app.infrastructure.database.database import close_db, get_db, init_db
 from app.infrastructure.database.models import (
     Base,
     ClassSectionModel,
-    FeeStructure,
-    Payment,
+    FeeStructureModel,
+    ParentModel,
+    PaymentModel,
     RoleModel,
+    StudentModel,
     SubjectModel,
     UserModel,
 )
@@ -20,6 +22,9 @@ __all__ = [
     "RoleModel",
     "SubjectModel",
     "ClassSectionModel",
-    "FeeStructure",
-    "Payment",
+    "StudentModel",
+    "FeeStructureModel",
+    "PaymentModel",
+    "ParentModel",
 ]
+

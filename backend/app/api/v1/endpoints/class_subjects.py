@@ -44,3 +44,4 @@ async def update_class_subjects(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     return result
+
