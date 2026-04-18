@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View, TouchableOpacity, Text } from "react-nati
 import { Ionicons } from "@expo/vector-icons";
 import { QuickActionGrid } from "@/presentation/components/dashboard/QuickActionGrid";
 import { RecentUpdates } from "@/presentation/components/dashboard/RecentUpdates";
-import { API_BASE_URL } from "@/config/api";
+//import { API_BASE_URL } from "@/core/config/api";
 
 const actions = [
     { id: 1, title: "Timetable", icon: "calendar-outline", color: "#3B82F6" },
@@ -21,10 +21,10 @@ const Teacher2Dashboard = () => {
     useEffect(() => {
         const fetchUpdates = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/teacher2/updates/1`);
-                const json = await res.json();
+                //const res = await fetch(`${API_BASE_URL}/teacher2/updates/1`);
+                //const json = await res.json();
 
-                setUpdates(Array.isArray(json?.data) ? json.data : []);
+                //setUpdates(Array.isArray(json?.data) ? json.data : []);
             } catch (e) {
                 console.log("API error:", e);
             } finally {
