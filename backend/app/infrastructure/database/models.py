@@ -202,15 +202,74 @@ class PaymentModel(Base):
 
 
 # =========================
-# ✅ TRIP MODEL (FIXED ERROR)
+# 🚍 TRIP MODELS (FULLY FIXED)
 # =========================
 
 class TripModel(Base):
     __tablename__ = "trips"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    driver_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    route_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    vehicle_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    trip_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    status: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    scheduled_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    total_students: Mapped[int] = mapped_column(Integer, default=0)
+    boarded_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class TripStopModel(Base):
+    __tablename__ = "trip_stops"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    trip_id: Mapped[int] = mapped_column(Integer, ForeignKey("trips.id", ondelete="CASCADE"))
+
+    stop_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    location_name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    scheduled_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_arrival: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_departure: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    expected_students: Mapped[int] = mapped_column(Integer, default=0)
+    boarded_students: Mapped[int] = mapped_column(Integer, default=0)
+
+    status: Mapped[str] = mapped_column(String(50), default="PENDING")
+    notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class StudentBoardingModel(Base):
+    __tablename__ = "student_boardings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    trip_id: Mapped[int] = mapped_column(Integer, ForeignKey("trips.id", ondelete="CASCADE"))
+    stop_id: Mapped[int] = mapped_column(Integer, ForeignKey("trip_stops.id", ondelete="CASCADE"))
+
+    student_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    student_name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    status: Mapped[str] = mapped_column(String(50), default="PENDING")
+
+    boarding_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=datetime.utcnow)
