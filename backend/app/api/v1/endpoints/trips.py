@@ -88,7 +88,6 @@ async def create_trip(
         # Save to database
         repo = DatabaseTripRepository(db)
         created_trip = await repo.create_trip(trip)
-        await db.commit()
 
         Logger.info(f"Trip created successfully with ID: {created_trip.id}")
 
