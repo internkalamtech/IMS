@@ -12,31 +12,96 @@ from typing import List, Literal, Optional
 
 class LoginRequest(BaseModel):
     email: EmailStr
+<<<<<<< HEAD
     password: str = Field(..., min_length=6)
 
     model_config = {
         "json_schema_extra": {
             "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
+=======
+    password: str = Field(
+        ...,
+        min_length=6,
+        description="User password (minimum 6 characters)",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "email": "admin@myuser.com",
+                    "password": "admin123",
+                }
+            ]
+>>>>>>> 108e7a58ce795d7ea23ae909095c1d92aad03e60
         }
     }
 
 
 class RoleResponse(BaseModel):
     id: str
+<<<<<<< HEAD
     name: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     description: Optional[str] = None
+=======
+    name: Literal[
+        "admin",
+        "teacher",
+        "student",
+        "parent",
+        "transport",
+        "driver",
+    ]
+    description: str | None = None
+>>>>>>> 108e7a58ce795d7ea23ae909095c1d92aad03e60
 
 
 class UserResponse(BaseModel):
     id: str
     name: str
     email: str
+<<<<<<< HEAD
     role: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     roles: List[RoleResponse]
     avatarUrl: Optional[str] = None
 
 
 class LoginResponse(BaseModel):
+=======
+    role: Literal["admin",
+                  "teacher",
+                  "student",
+                  "parent",
+                  "transport",
+                  "driver"]
+    roles: list[RoleResponse]
+    avatarUrl: str | None = None
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "1",
+                    "name": "Admin User",
+                    "email": "admin@myuser.com",
+                    "role": "admin",
+                    "roles": [
+                        {
+                            "id": "1",
+                            "name": "admin",
+                            "description": "Administrator",
+                        }
+                    ],
+                    "avatarUrl": None,
+                }
+            ]
+        }
+    }
+
+
+class LoginResponse(BaseModel):
+    """Response schema for login endpoint."""
+>>>>>>> 108e7a58ce795d7ea23ae909095c1d92aad03e60
     user: UserResponse
     access_token: str
     token_type: str = "bearer"
@@ -45,6 +110,16 @@ class LoginResponse(BaseModel):
 class ErrorResponse(BaseModel):
     detail: str
 
+<<<<<<< HEAD
+=======
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {"detail": "Error message"}
+            ]
+        }
+    }
+>>>>>>> 108e7a58ce795d7ea23ae909095c1d92aad03e60
 
 # =========================
 # DEMO / DASHBOARD
@@ -158,4 +233,301 @@ class ParentResponse(BaseModel):
 class CreateStudentWithParentResponse(BaseModel):
     student: StudentResponse
     parent: ParentResponse
+<<<<<<< HEAD
     message: str
+=======
+    message: str = "Student and parent created successfully with link established"
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "student": {
+                        "id": 1,
+                        "name": "Jane Doe",
+                        "roll_number": "A-001",
+                        "class_id": 1,
+                        "class_name": "Grade 6-A",
+                        "next_due_date": None,
+                        "created_at": "2024-02-16T10:30:00",
+                        "updated_at": "2024-02-16T10:30:00",
+                    },
+                    "parent": {
+                        "id": 1,
+                        "name": "John Doe",
+                        "phone": "+1-555-123-4567",
+                        "email": "john.doe@example.com",
+                        "relationship": "Father",
+
+                        "is_active": True,
+                        "created_at": "2024-02-16T10:30:00",
+                        "updated_at": "2024-02-16T10:30:00",
+                    },
+                    "message": "Student and parent created successfully with link established",
+                }
+            ]
+        }
+    }
+
+
+
+# ------------------------------------------------------------------ #
+# Payment schemas
+# ------------------------------------------------------------------ #
+
+PaymentMode = Literal["Cash", "UPI", "Card"]
+PaymentStatus = Literal["Paid", "Partial", "Pending", "Failed", "Overdue"]
+
+
+class PaymentCreate(BaseModel):
+    """
+    Request schema for recording a new payment transaction.
+
+    Validation rules:
+    - ``amount`` must be a positive number.
+    - ``reference_number`` is **required** when ``payment_mode`` is
+      ``"UPI"`` or ``"Card"``; it remains optional for ``"Cash"``.
+    """
+
+    student_id: int = Field(
+        ..., description="ID of the student making the payment"
+    )
+    fee_structure_id: int = Field(
+        ..., description="ID of the fee structure being paid against"
+    )
+    amount: float = Field(
+        ..., gt=0, description="Payment amount (must be > 0)"
+    )
+    payment_mode: PaymentMode = Field(
+        ..., description="Mode of payment: Cash, UPI, or Card"
+    )
+    reference_number: Optional[str] = Field(
+        None,
+        description=(
+            "Transaction reference number. "
+            "Required for UPI and Card payments, optional for Cash."
+        ),
+    )
+    remarks: Optional[str] = Field(
+        None, max_length=500, description="Optional remarks or notes"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "student_id": 1,
+                    "fee_structure_id": 1,
+                    "amount": 5000.00,
+                    "payment_mode": "UPI",
+                    "reference_number": "UPI123456789",
+                    "remarks": "Monthly fee \u2013 April",
+                }
+            ]
+        }
+    }
+
+    @model_validator(mode="after")
+    def validate_reference_number_for_digital_payments(
+        self,
+    ) -> "PaymentCreate":
+        """
+        Ensure a reference number is supplied for UPI or Card payments.
+
+        Raises:
+            ValueError: If payment_mode is UPI or Card but
+                        reference_number is absent or blank.
+        """
+        if self.payment_mode in ("UPI", "Card") and not (
+            self.reference_number and self.reference_number.strip()
+        ):
+            raise ValueError(
+                f"reference_number is required for "
+                f"{self.payment_mode} payments."
+            )
+        return self
+
+class AverageMarksResponse(BaseModel):
+    class_name: str
+    average_marks: float
+    average_attendance: float
+
+class PaymentStudentResponse(BaseModel):
+    """Response schema for student data in payment context."""
+
+    id: int
+    name: str
+    roll_number: str
+    class_name: str
+    marks: Optional[float] = None
+    attendance: Optional[float] = None
+    next_due_date: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
+
+
+class FeeStructureResponse(BaseModel):
+    """Response schema for fee structure data."""
+
+    id: int
+    student_id: int
+    total_fee: float
+    amount_paid: float
+    balance: float
+    fee_type: str
+    academic_year: str
+    student: PaymentStudentResponse
+
+    model_config = {"from_attributes": True}
+
+
+class PaymentResponse(BaseModel):
+    """Response schema for a single payment transaction."""
+
+    id: int
+    student_id: int
+    fee_structure_id: int
+    receipt_number: str
+    amount: float
+    payment_mode: PaymentMode
+    reference_number: Optional[str] = None
+    status: PaymentStatus
+    remarks: Optional[str] = None
+    payment_date: datetime
+
+    model_config = {
+        "from_attributes": True,
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "student_id": 1,
+                    "fee_structure_id": 1,
+                    "receipt_number": "REC-2024-A3F7",
+                    "amount": 5000.00,
+                    "payment_mode": "UPI",
+                    "reference_number": "UPI123456789",
+                    "status": "Paid",
+                    "remarks": "Monthly fee - April",
+                    "payment_date": "2024-04-01T10:00:00",
+                }
+            ]
+        },
+    }
+
+
+class PaymentSummaryResponse(BaseModel):
+    """Response schema for aggregated payment statistics."""
+
+    total_collectible: float
+    total_collected: float
+    total_pending: float
+    total_overdue: float
+
+    model_config = {"from_attributes": True}
+
+    
+# ============ TRIP SCHEMAS ============
+
+
+class TripCreateRequest(BaseModel):
+    """Request body for creating a trip."""
+
+    driver_id: int
+    route_id: str
+    vehicle_id: str
+    trip_type: str  # "pickup" or "drop_off"
+    scheduled_start: datetime
+    total_students: int
+
+
+class TripUpdateStatusRequest(BaseModel):
+    """Request body for updating trip status."""
+
+    status: str  # "scheduled", "in_progress", "completed"
+
+
+class TripResponse(BaseModel):
+    """Response model for a trip."""
+
+    id: int
+    driver_id: int
+    route_id: str
+    vehicle_id: str
+    trip_type: str
+    status: str
+    scheduled_start: datetime
+    actual_start: datetime | None = None
+    actual_end: datetime | None = None
+    total_students: int
+    boarded_count: int
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class TripStopCreateRequest(BaseModel):
+    """Request body for creating a trip stop."""
+
+    stop_sequence: int
+    location_name: str
+    latitude: float
+    longitude: float
+    scheduled_time: datetime
+    expected_students: int
+
+
+class TripStopUpdateRequest(BaseModel):
+    """Request body for updating trip stop status."""
+
+    status: str
+    boarded_students: int | None = None
+
+
+class TripStopResponse(BaseModel):
+    """Response model for a trip stop."""
+
+    id: int
+    trip_id: int
+    stop_sequence: int
+    location_name: str
+    latitude: float
+    longitude: float
+    scheduled_time: datetime
+    actual_arrival: datetime | None = None
+    actual_departure: datetime | None = None
+    expected_students: int
+    boarded_students: int
+    status: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class StudentBoardingCreateRequest(BaseModel):
+    """Request body for logging student boarding."""
+
+    student_id: int
+    student_name: str
+    status: str
+
+
+class StudentBoardingResponse(BaseModel):
+    """Response model for a boarding record."""
+
+    id: int
+    trip_id: int
+    stop_id: int
+    student_id: int
+    student_name: str
+    status: str
+    boarding_time: datetime | None = None
+    created_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
+>>>>>>> 108e7a58ce795d7ea23ae909095c1d92aad03e60

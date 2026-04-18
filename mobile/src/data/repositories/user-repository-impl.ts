@@ -1,7 +1,11 @@
 import { api } from '@/core/api-client';
 import { Logger } from '@/core/logger';
+<<<<<<< HEAD
 import { CreateUserInput, DashboardData, UserRepository } from '@/domain/repositories/user-repository';
 
+=======
+import { DashboardData, UserRepository } from '@/domain/repositories/user-repository';
+>>>>>>> 108e7a58ce795d7ea23ae909095c1d92aad03e60
 export class UserRepositoryImpl implements UserRepository {
     async getDashboardData(role: string): Promise<DashboardData> {
         try {
@@ -9,8 +13,6 @@ export class UserRepositoryImpl implements UserRepository {
             return response.data;
         } catch (error) {
             Logger.error('Failed to fetch dashboard data', error);
-
-            // Fallback for demo stability
             return {
                 role: `${role.charAt(0).toUpperCase()}${role.slice(1)} (Offline)`,
                 stats: [
@@ -20,6 +22,7 @@ export class UserRepositoryImpl implements UserRepository {
             };
         }
     }
+<<<<<<< HEAD
 
     async createUser(userData: CreateUserInput): Promise<void> {
         try {
@@ -32,3 +35,6 @@ export class UserRepositoryImpl implements UserRepository {
     }
 }
 
+=======
+}
+>>>>>>> 108e7a58ce795d7ea23ae909095c1d92aad03e60

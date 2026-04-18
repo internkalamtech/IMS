@@ -21,7 +21,10 @@ from sqlalchemy.ext.asyncio import (
 
 from app.core.config import settings
 from app.infrastructure.database.models import Base
+<<<<<<< HEAD
 from app.infrastructure.database import models
+=======
+>>>>>>> 108e7a58ce795d7ea23ae909095c1d92aad03e60
 
 # Create async engine with connection pooling
 engine = create_async_engine(
