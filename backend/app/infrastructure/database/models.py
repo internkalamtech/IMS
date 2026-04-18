@@ -62,20 +62,15 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
     email: Mapped[str] = mapped_column(
         String(255), unique=True, index=True, nullable=False
-        )
+    )
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-
-    is_active: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-        )
-
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
-        )
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
@@ -109,11 +104,9 @@ class RoleModel(Base):
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
     name: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
-        )
-
+    )
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Relationships
@@ -234,8 +227,7 @@ class_subject_link = Table(
 )
 
 
-# Association table for many-to-many relationship between
-# Students and Parents
+# Association table for many-to-many relationship between students and parents
 student_parent_link = Table(
     "student_parent_link",
     Base.metadata,
@@ -259,7 +251,7 @@ class StudentModel(Base):
     Student database model.
 
     Represents a student enrolled in the school, including their fee
-    status and next payment due date.
+    status, parent links, and next payment due date.
     """
 
     __tablename__ = "students"
@@ -270,14 +262,14 @@ class StudentModel(Base):
         String(50), unique=True, nullable=False, index=True
     )
     class_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("class_sections.id", ondelete="SET NULL"), nullable=True
+        Integer,
+        ForeignKey("class_sections.id", ondelete="SET NULL"),
+        nullable=True,
     )
     class_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    marks: Mapped[float] = mapped_column(nullable=False)
-    attendance: Mapped[float] = mapped_column(nullable=True)
-    next_due_date: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True
-    )
+    marks: Mapped[float | None] = mapped_column(Float, nullable=True)
+    attendance: Mapped[float | None] = mapped_column(Float, nullable=True)
+    next_due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
@@ -290,10 +282,17 @@ class StudentModel(Base):
 
     # Relationships
     fee_structures: Mapped[List["FeeStructureModel"]] = relationship(
-        "FeeStructureModel", back_populates="student", cascade="all, delete-orphan"
+        "FeeStructureModel",
+        back_populates="student",
+        cascade="all, delete-orphan",
     )
     payments: Mapped[List["PaymentModel"]] = relationship(
         "PaymentModel", back_populates="student", cascade="all, delete-orphan"
+    )
+    boardings: Mapped[List["StudentBoardingModel"]] = relationship(
+        "StudentBoardingModel",
+        back_populates="student",
+        cascade="all, delete-orphan",
     )
     parents: Mapped[List["ParentModel"]] = relationship(
         "ParentModel",
@@ -325,9 +324,7 @@ class FeeStructureModel(Base):
     )
     total_fee: Mapped[float] = mapped_column(Float, nullable=False)
     amount_paid: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
-    fee_type: Mapped[str] = mapped_column(
-        String(100), nullable=False, default="Tuition"
-    )
+    fee_type: Mapped[str] = mapped_column(String(100), nullable=False, default="Tuition")
     academic_year: Mapped[str] = mapped_column(
         String(20), nullable=False, default="2024-25"
     )
@@ -386,19 +383,49 @@ class PaymentModel(Base):
         String(50), unique=True, nullable=False, index=True
     )
     amount: Mapped[float] = mapped_column(Float, nullable=False)
-    payment_mode: Mapped[str] = mapped_column(
-        String(20), nullable=False
-    )  # Cash, UPI, Card
-    reference_number: Mapped[str | None] = mapped_column(
-        String(100), nullable=True
-    )
-    status: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="Paid"
-    )  # Paid, Partial, Pending, Failed, Overdue
+    payment_mode: Mapped[str] = mapped_column(String(20), nullable=False)
+    reference_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="Paid")
     remarks: Mapped[str | None] = mapped_column(String(500), nullable=True)
     payment_date: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
+
+    # Relationships
+    student: Mapped["StudentModel"] = relationship(
+        "StudentModel", back_populates="payments"
+    )
+    fee_structure: Mapped["FeeStructureModel"] = relationship(
+        "FeeStructureModel", back_populates="payments"
+    )
+
+
+# ============ TRANSPORT MODELS ============
+
+
+class TripModel(Base):
+    """
+    Trip database model.
+
+    Represents a vehicle trip assigned to a driver.
+    """
+
+    __tablename__ = "trips"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    driver_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    route_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    vehicle_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    trip_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="scheduled")
+    scheduled_start: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    actual_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    total_students: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    boarded_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
@@ -410,18 +437,110 @@ class PaymentModel(Base):
     )
 
     # Relationships
-    student: Mapped["StudentModel"] = relationship(
-        "StudentModel", back_populates="payments"
+    driver: Mapped["UserModel"] = relationship("UserModel")
+    stops: Mapped[List["TripStopModel"]] = relationship(
+        "TripStopModel", back_populates="trip", cascade="all, delete-orphan"
     )
-    fee_structure: Mapped["FeeStructureModel"] = relationship(
-        "FeeStructureModel", back_populates="payments"
+    boardings: Mapped[List["StudentBoardingModel"]] = relationship(
+        "StudentBoardingModel", back_populates="trip", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
         return (
-            f"<Payment(id={self.id}, "
-            f"receipt='{self.receipt_number}', "
-            f"amount={self.amount}, "
+            f"<Trip(id={self.id}, "
+            f"driver_id={self.driver_id}, "
+            f"status='{self.status}')>"
+        )
+
+
+class TripStopModel(Base):
+    """
+    Trip Stop database model.
+
+    Represents a specific stop within a trip.
+    """
+
+    __tablename__ = "trip_stops"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    trip_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("trips.id", ondelete="CASCADE"), nullable=False
+    )
+    stop_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    location_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    latitude: Mapped[float] = mapped_column(Float, nullable=False)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    scheduled_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    actual_arrival: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_departure: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    expected_students: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    boarded_students: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    trip: Mapped["TripModel"] = relationship("TripModel", back_populates="stops")
+
+    def __repr__(self) -> str:
+        return (
+            f"<TripStop(id={self.id}, "
+            f"location='{self.location_name}', "
+            f"sequence={self.stop_sequence})>"
+        )
+
+
+class StudentBoardingModel(Base):
+    """
+    Student Boarding database model.
+
+    Tracks which students board/alight during a trip.
+    """
+
+    __tablename__ = "student_boardings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
+    )
+    trip_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("trips.id", ondelete="CASCADE"), nullable=False
+    )
+    stop_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("trip_stops.id", ondelete="CASCADE"), nullable=False
+    )
+    student_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    boarding_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    trip: Mapped["TripModel"] = relationship("TripModel", back_populates="boardings")
+    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="boardings")
+    stop: Mapped["TripStopModel"] = relationship("TripStopModel")
+
+    def __repr__(self) -> str:
+        return (
+            f"<StudentBoarding(id={self.id}, "
+            f"student_id={self.student_id}, "
+            f"trip_id={self.trip_id}, "
             f"status='{self.status}')>"
         )
 
@@ -447,7 +566,7 @@ class ParentModel(Base):
     )
     relationship_type: Mapped[str] = mapped_column(
         String(50), nullable=False, default="Parent"
-    )  # Parent, Guardian, etc.
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
@@ -472,4 +591,3 @@ class ParentModel(Base):
             f"name='{self.name}', "
             f"email='{self.email}')>"
         )
-
