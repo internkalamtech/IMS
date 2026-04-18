@@ -1,3 +1,4 @@
+
 import { useTheme } from '@/core/theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
@@ -10,22 +11,19 @@ export default function TabLayout() {
             screenOptions={{
                 headerShown: false,
                 tabBarActiveTintColor: theme.colors.primary,
-                tabBarInactiveTintColor: '#A0A0A0',
+                tabBarInactiveTintColor: theme.colors.mutedForeground,
                 tabBarStyle: {
                     backgroundColor: theme.colors.card,
                     borderTopColor: theme.colors.border,
                     elevation: 0,
                     shadowOpacity: 0,
-                    height: 65,
-                    paddingBottom: 5,
-                    paddingTop: 5,
+                    height: 60,
+                    paddingBottom: theme.spacing[2.5],
                 },
                 tabBarLabelStyle: {
-                    fontSize: 11,
-                    fontWeight: '600',
-                    textAlign: 'center',
-                },
-                tabBarLabelPosition: 'below-icon', // ✅ forces text below icon
+                    fontSize: theme.fontSize.xs,
+                    fontWeight: '500',
+                }
             }}
         >
             <Tabs.Screen
@@ -33,11 +31,7 @@ export default function TabLayout() {
                 options={{
                     title: 'Home',
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons
-                            name={focused ? 'home' : 'home-outline'}
-                            size={26}
-                            color={color}
-                        />
+                        <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
                     ),
                 }}
             />
@@ -46,24 +40,7 @@ export default function TabLayout() {
                 options={{
                     title: 'Alerts',
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons
-                            name={focused ? 'notifications' : 'notifications-outline'}
-                            size={26}
-                            color={color}
-                        />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="homework"
-                options={{
-                    title: 'Homework',
-                    tabBarIcon: ({ color, focused }) => (
-                        <Ionicons
-                            name={focused ? 'book' : 'book-outline'}
-                            size={26}
-                            color={color}
-                        />
+                        <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={color} />
                     ),
                 }}
             />
@@ -72,11 +49,7 @@ export default function TabLayout() {
                 options={{
                     title: 'Profile',
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons
-                            name={focused ? 'person' : 'person-outline'}
-                            size={26}
-                            color={color}
-                        />
+                        <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
                     ),
                 }}
             />
