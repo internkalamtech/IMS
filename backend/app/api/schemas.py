@@ -15,13 +15,20 @@ class LoginRequest(BaseModel):
 
     email: EmailStr
     password: str = Field(
-        ..., min_length=6, description="User password (minimum 6 characters)"
-        )
+        ...,
+        min_length=6,
+        description="User password (minimum 6 characters)",
+    )
 
     model_config = {
         "json_schema_extra": {
-            "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
-            }
+            "examples": [
+                {
+                    "email": "admin@myuser.com",
+                    "password": "admin123",
+                }
+            ]
+        }
     }
 
 
@@ -30,8 +37,13 @@ class RoleResponse(BaseModel):
 
     id: str
     name: Literal[
-        "admin", "teacher", "student", "parent", "transport", "driver"
-        ]
+        "admin",
+        "teacher",
+        "student",
+        "parent",
+        "transport",
+        "driver",
+    ]
     description: str | None = None
 
 
@@ -41,9 +53,12 @@ class UserResponse(BaseModel):
     id: str
     name: str
     email: str
-    role: Literal[
-        "admin", "teacher", "student", "parent", "transport", "driver"
-        ]
+    role: Literal["admin",
+                  "teacher",
+                  "student",
+                  "parent",
+                  "transport",
+                  "driver"]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -71,7 +86,6 @@ class UserResponse(BaseModel):
 
 class LoginResponse(BaseModel):
     """Response schema for login endpoint."""
-
     user: UserResponse
     access_token: str
     token_type: str = "bearer"
@@ -101,8 +115,12 @@ class ErrorResponse(BaseModel):
     detail: str
 
     model_config = {
-        "json_schema_extra": {"examples": [{"detail": "Error message"}]}
+        "json_schema_extra": {
+            "examples": [
+                {"detail": "Error message"}
+            ]
         }
+    }
 
 
 class DemoCredential(BaseModel):
@@ -398,7 +416,9 @@ class PaymentCreate(BaseModel):
     }
 
     @model_validator(mode="after")
-    def validate_reference_number_for_digital_payments(self) -> "PaymentCreate":
+    def validate_reference_number_for_digital_payments(
+        self,
+    ) -> "PaymentCreate":
         """
         Ensure a reference number is supplied for UPI or Card payments.
 
@@ -410,7 +430,8 @@ class PaymentCreate(BaseModel):
             self.reference_number and self.reference_number.strip()
         ):
             raise ValueError(
-                f"reference_number is required for {self.payment_mode} payments."
+                f"reference_number is required for "
+                f"{self.payment_mode} payments."
             )
         return self
 
@@ -475,7 +496,7 @@ class PaymentResponse(BaseModel):
                     "payment_mode": "UPI",
                     "reference_number": "UPI123456789",
                     "status": "Paid",
-                    "remarks": "Monthly fee \u2013 April",
+                    "remarks": "Monthly fee - April",
                     "payment_date": "2024-04-01T10:00:00",
                 }
             ]
