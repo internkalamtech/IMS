@@ -36,7 +36,6 @@ class_subject_link = Table(
     Column("subject_id", Integer, ForeignKey("subjects.id", ondelete="CASCADE"), primary_key=True),
 )
 
-# ✅ FROM MAIN (many-to-many student-parent)
 student_parent_link = Table(
     "student_parent_link",
     Base.metadata,
@@ -53,19 +52,13 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False
-    )
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     roles: Mapped[List["RoleModel"]] = relationship(
         "RoleModel",
@@ -79,9 +72,7 @@ class RoleModel(Base):
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     users: Mapped[List["UserModel"]] = relationship(
@@ -122,7 +113,7 @@ class ClassSectionModel(Base):
 
 
 # =========================
-# STUDENT MODEL (MAIN VERSION)
+# STUDENT MODEL
 # =========================
 
 class StudentModel(Base):
@@ -130,9 +121,7 @@ class StudentModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    roll_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    roll_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     class_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("class_sections.id", ondelete="SET NULL"),
@@ -143,15 +132,8 @@ class StudentModel(Base):
     attendance: Mapped[float | None] = mapped_column(Float, nullable=True)
     next_due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     parents: Mapped[List["ParentModel"]] = relationship(
         "ParentModel",
@@ -161,7 +143,7 @@ class StudentModel(Base):
 
 
 # =========================
-# PARENT MODEL (MAIN VERSION)
+# PARENT MODEL
 # =========================
 
 class ParentModel(Base):
@@ -173,23 +155,12 @@ class ParentModel(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
-    email: Mapped[str] = mapped_column(
-        String(255), unique=True, nullable=False, index=True
-    )
-    relationship_type: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="Parent"
-    )
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    relationship_type: Mapped[str] = mapped_column(String(50), nullable=False, default="Parent")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     students: Mapped[List["StudentModel"]] = relationship(
         "StudentModel",
@@ -228,3 +199,18 @@ class PaymentModel(Base):
     )
 
     student: Mapped["StudentModel"] = relationship("StudentModel")
+
+
+# =========================
+# ✅ TRIP MODEL (FIXED ERROR)
+# =========================
+
+class TripModel(Base):
+    __tablename__ = "trips"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

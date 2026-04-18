@@ -80,16 +80,6 @@ async def general_exception_handler(request: Request, exc: Exception):
 # Request logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-<<<<<<< HEAD
-    try:
-        Logger.info(f"{request.method} {request.url.path}")
-        response = await call_next(request)
-        Logger.info(f"{request.method} {request.url.path} - {response.status_code}")
-        return response
-    except Exception as e:
-        Logger.error(f"Middleware error: {e}")
-        raise
-=======
     """Log all HTTP requests."""
     Logger.info(f"{request.method} {request.url.path}")
     response = await call_next(request)
@@ -98,7 +88,6 @@ async def log_requests(request: Request, call_next):
         f"{response.status_code}"
     )
     return response
->>>>>>> 108e7a58ce795d7ea23ae909095c1d92aad03e60
 
 
 # Configure CORS
@@ -112,7 +101,6 @@ app.add_middleware(
 
 # Include API routers
 app.include_router(api_v1_router, prefix="/api")
-
 
 
 @app.get("/", tags=["Root"])

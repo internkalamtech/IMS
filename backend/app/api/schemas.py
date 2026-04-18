@@ -2,9 +2,9 @@
 Pydantic schemas for API request/response models.
 """
 
-from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field
 from typing import List, Literal, Optional
+from datetime import datetime
 
 
 # =========================
@@ -41,7 +41,7 @@ class RoleResponse(BaseModel):
         "transport",
         "driver",
     ]
-    description: str | None = None
+    description: Optional[str] = None
 
 
 class UserResponse(BaseModel):
@@ -56,8 +56,8 @@ class UserResponse(BaseModel):
         "transport",
         "driver",
     ]
-    roles: list[RoleResponse]
-    avatarUrl: str | None = None
+    roles: List[RoleResponse]
+    avatarUrl: Optional[str] = None
 
     model_config = {
         "json_schema_extra": {
@@ -141,6 +141,23 @@ class UpdateClassSubjectsRequest(BaseModel):
 
 
 # =========================
+# PAYMENT (basic)
+# =========================
+
+class PaymentCreate(BaseModel):
+    amount: float
+    student_id: int
+
+
+class PaymentResponse(BaseModel):
+    id: int
+    amount: float
+    student_id: int
+
+    model_config = {"from_attributes": True}
+
+
+# =========================
 # ENROLLMENT
 # =========================
 
@@ -176,42 +193,86 @@ class ParentResponse(BaseModel):
 class CreateStudentWithParentResponse(BaseModel):
     student: StudentResponse
     parent: ParentResponse
-    message: str = "Student and parent created successfully with link established"
+    message: str
 
 
 # =========================
-# PAYMENT (FINAL VERSION ONLY)
+# TRIP SCHEMAS (FIXED ERROR)
 # =========================
 
-PaymentMode = Literal["Cash", "UPI", "Card"]
-PaymentStatus = Literal["Paid", "Partial", "Pending", "Failed", "Overdue"]
+class TripCreateRequest(BaseModel):
+    driver_id: int
+    route_id: str
+    vehicle_id: str
+    trip_type: str
+    scheduled_start: datetime
+    total_students: int
 
 
-class PaymentCreate(BaseModel):
-    student_id: int
-    fee_structure_id: int
-    amount: float = Field(..., gt=0)
-    payment_mode: PaymentMode
-    reference_number: Optional[str] = None
-    remarks: Optional[str] = None
-
-    @model_validator(mode="after")
-    def validate_reference_number(self):
-        if self.payment_mode in ("UPI", "Card") and not self.reference_number:
-            raise ValueError("reference_number required for digital payments")
-        return self
+class TripUpdateStatusRequest(BaseModel):
+    status: str
 
 
-class PaymentResponse(BaseModel):
+class TripResponse(BaseModel):
     id: int
+    driver_id: int
+    route_id: str
+    vehicle_id: str
+    trip_type: str
+    status: str
+    scheduled_start: datetime
+    actual_start: datetime | None = None
+    actual_end: datetime | None = None
+    total_students: int
+    boarded_count: int
+
+    model_config = {"from_attributes": True}
+
+
+class TripStopCreateRequest(BaseModel):
+    stop_sequence: int
+    location_name: str
+    latitude: float
+    longitude: float
+    scheduled_time: datetime
+    expected_students: int
+
+
+class TripStopUpdateRequest(BaseModel):
+    status: str
+    boarded_students: int | None = None
+
+
+class TripStopResponse(BaseModel):
+    id: int
+    trip_id: int
+    stop_sequence: int
+    location_name: str
+    latitude: float
+    longitude: float
+    scheduled_time: datetime
+    actual_arrival: datetime | None = None
+    actual_departure: datetime | None = None
+    expected_students: int
+    boarded_students: int
+    status: str
+
+    model_config = {"from_attributes": True}
+
+
+class StudentBoardingCreateRequest(BaseModel):
     student_id: int
-    fee_structure_id: int
-    receipt_number: str
-    amount: float
-    payment_mode: PaymentMode
-    reference_number: Optional[str]
-    status: PaymentStatus
-    remarks: Optional[str]
-    payment_date: datetime
+    student_name: str
+    status: str
+
+
+class StudentBoardingResponse(BaseModel):
+    id: int
+    trip_id: int
+    stop_id: int
+    student_id: int
+    student_name: str
+    status: str
+    boarding_time: datetime | None = None
 
     model_config = {"from_attributes": True}

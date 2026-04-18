@@ -8,9 +8,6 @@ from app.infrastructure.database.models import (
     StudentModel,
     FeeStructureModel,
     PaymentModel,
-    TripModel,
-    TripStopModel,
-    StudentBoardingModel,
 )
 
 __all__ = [
@@ -23,7 +20,4 @@ __all__ = [
     "StudentModel",
     "FeeStructureModel",
     "PaymentModel",
-    "TripModel",
-    "TripStopModel",
-    "StudentBoardingModel",
 ]
