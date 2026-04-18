@@ -149,6 +149,63 @@ class UpdateClassSubjectsRequest(BaseModel):
     subjects: List[SubjectInput]
 
 
+# ============ PAYMENT SCHEMAS ============
+
+PaymentMode = Literal["Cash", "UPI", "Card"]
+PaymentStatus = Literal["Paid", "Partial", "Pending", "Failed", "Overdue"]
+
+
+class PaymentCreate(BaseModel):
+    """Request schema for recording a payment."""
+
+    student_id: int
+    fee_structure_id: int
+    amount: float
+    payment_mode: PaymentMode
+    reference_number: str | None = None
+    remarks: str | None = None
+
+
+class PaymentResponse(BaseModel):
+    """Response schema for a payment record."""
+
+    id: int
+    student_id: int
+    fee_structure_id: int
+    receipt_number: str
+    amount: float
+    payment_mode: PaymentMode
+    reference_number: str | None = None
+    status: PaymentStatus
+    remarks: str | None = None
+    payment_date: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PaymentSummaryResponse(BaseModel):
+    """Response schema for aggregated payment totals."""
+
+    total_collectible: float
+    total_collected: float
+    total_pending: float
+    total_overdue: float
+
+
+class StudentResponse(BaseModel):
+    """Response schema for student payment listings."""
+
+    id: int
+    name: str
+    roll_number: str
+    class_name: str
+    next_due_date: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
+
 # ============ TRIP SCHEMAS ============
 
 class TripCreateRequest(BaseModel):
