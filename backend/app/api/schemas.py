@@ -15,12 +15,19 @@ class LoginRequest(BaseModel):
 
     email: EmailStr
     password: str = Field(
-        ..., min_length=6, description="User password (minimum 6 characters)"
+        ...,
+        min_length=6,
+        description="User password (minimum 6 characters)",
     )
 
     model_config = {
         "json_schema_extra": {
-            "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
+            "examples": [
+                {
+                    "email": "admin@myuser.com",
+                    "password": "admin123",
+                }
+            ]
         }
     }
 
@@ -29,7 +36,14 @@ class RoleResponse(BaseModel):
     """Response schema for role data."""
 
     id: str
-    name: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
+    name: Literal[
+        "admin",
+        "teacher",
+        "student",
+        "parent",
+        "transport",
+        "driver",
+    ]
     description: str | None = None
 
 
@@ -39,7 +53,12 @@ class UserResponse(BaseModel):
     id: str
     name: str
     email: str
-    role: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
+    role: Literal["admin",
+                  "teacher",
+                  "student",
+                  "parent",
+                  "transport",
+                  "driver"]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -67,7 +86,6 @@ class UserResponse(BaseModel):
 
 class LoginResponse(BaseModel):
     """Response schema for login endpoint."""
-
     user: UserResponse
     access_token: str
     token_type: str = "bearer"
@@ -96,7 +114,13 @@ class ErrorResponse(BaseModel):
 
     detail: str
 
-    model_config = {"json_schema_extra": {"examples": [{"detail": "Error message"}]}}
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {"detail": "Error message"}
+            ]
+        }
+    }
 
 
 class DemoCredential(BaseModel):
@@ -129,13 +153,6 @@ class DashboardResponse(BaseModel):
     stats: list[StatItem]
 
 
-class UserCreate(BaseModel):
-    """Request schema for creating a user."""
-
-    name: str
-    email: EmailStr
-
-
 class SubjectInput(BaseModel):
     """Schema for subject input when updating class subjects."""
 
@@ -148,6 +165,9 @@ class UpdateClassSubjectsRequest(BaseModel):
 
     class_id: int
     subjects: List[SubjectInput]
+
+
+# Student & Parent Enrollment Schemas
 
 
 class ParentInput(BaseModel):
@@ -228,7 +248,8 @@ class CreateStudentWithParentRequest(BaseModel):
                         "name": "John Doe",
                         "phone": "+1-555-123-4567",
                         "email": "john.doe@example.com",
-                        "relationship_type": "Father",
+                        "relationship": "Father",
+
                     },
                     "link_existing_parent": False,
                 }
@@ -245,6 +266,7 @@ class ParentResponse(BaseModel):
     phone: str
     email: str
     relationship_type: str
+
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -268,22 +290,16 @@ class ParentResponse(BaseModel):
 
 
 class StudentResponse(BaseModel):
-    """Response schema for student data.
-
-    This shared shape supports enrollment, student listing, and payment
-    endpoints by making the extra fields optional.
-    """
+    """Response schema for student data."""
 
     id: int
     name: str
     roll_number: str
-    class_name: str
     class_id: Optional[int] = None
-    marks: Optional[float] = None
-    attendance: Optional[float] = None
+    class_name: str
     next_due_date: Optional[datetime] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
 
     model_config = {
         "json_schema_extra": {
@@ -329,7 +345,8 @@ class CreateStudentWithParentResponse(BaseModel):
                         "name": "John Doe",
                         "phone": "+1-555-123-4567",
                         "email": "john.doe@example.com",
-                        "relationship_type": "Father",
+                        "relationship": "Father",
+
                         "is_active": True,
                         "created_at": "2024-02-16T10:30:00",
                         "updated_at": "2024-02-16T10:30:00",
@@ -341,27 +358,42 @@ class CreateStudentWithParentResponse(BaseModel):
     }
 
 
-# ============ PAYMENT SCHEMAS ============
+
+# ------------------------------------------------------------------ #
+# Payment schemas
+# ------------------------------------------------------------------ #
 
 PaymentMode = Literal["Cash", "UPI", "Card"]
 PaymentStatus = Literal["Paid", "Partial", "Pending", "Failed", "Overdue"]
 
 
 class PaymentCreate(BaseModel):
-    """Request schema for recording a payment."""
+    """
+    Request schema for recording a new payment transaction.
 
-    student_id: int = Field(..., description="ID of the student making the payment")
+    Validation rules:
+    - ``amount`` must be a positive number.
+    - ``reference_number`` is **required** when ``payment_mode`` is
+      ``"UPI"`` or ``"Card"``; it remains optional for ``"Cash"``.
+    """
+
+    student_id: int = Field(
+        ..., description="ID of the student making the payment"
+    )
     fee_structure_id: int = Field(
         ..., description="ID of the fee structure being paid against"
     )
-    amount: float = Field(..., gt=0, description="Payment amount (must be > 0)")
+    amount: float = Field(
+        ..., gt=0, description="Payment amount (must be > 0)"
+    )
     payment_mode: PaymentMode = Field(
         ..., description="Mode of payment: Cash, UPI, or Card"
     )
     reference_number: Optional[str] = Field(
         None,
         description=(
-            "Transaction reference number. Required for UPI and Card payments, optional for Cash."
+            "Transaction reference number. "
+            "Required for UPI and Card payments, optional for Cash."
         ),
     )
     remarks: Optional[str] = Field(
@@ -374,10 +406,10 @@ class PaymentCreate(BaseModel):
                 {
                     "student_id": 1,
                     "fee_structure_id": 1,
-                    "amount": 5000.0,
+                    "amount": 5000.00,
                     "payment_mode": "UPI",
                     "reference_number": "UPI123456789",
-                    "remarks": "Monthly fee - April",
+                    "remarks": "Monthly fee \u2013 April",
                 }
             ]
         }
@@ -387,20 +419,26 @@ class PaymentCreate(BaseModel):
     def validate_reference_number_for_digital_payments(
         self,
     ) -> "PaymentCreate":
+        """
+        Ensure a reference number is supplied for UPI or Card payments.
+
+        Raises:
+            ValueError: If payment_mode is UPI or Card but
+                        reference_number is absent or blank.
+        """
         if self.payment_mode in ("UPI", "Card") and not (
             self.reference_number and self.reference_number.strip()
         ):
             raise ValueError(
-                f"reference_number is required for {self.payment_mode} payments."
+                f"reference_number is required for "
+                f"{self.payment_mode} payments."
             )
         return self
-
 
 class AverageMarksResponse(BaseModel):
     class_name: str
     average_marks: float
     average_attendance: float
-
 
 class PaymentStudentResponse(BaseModel):
     """Response schema for student data in payment context."""
@@ -432,7 +470,7 @@ class FeeStructureResponse(BaseModel):
 
 
 class PaymentResponse(BaseModel):
-    """Response schema for a payment record."""
+    """Response schema for a single payment transaction."""
 
     id: int
     student_id: int
@@ -440,9 +478,9 @@ class PaymentResponse(BaseModel):
     receipt_number: str
     amount: float
     payment_mode: PaymentMode
-    reference_number: str | None = None
+    reference_number: Optional[str] = None
     status: PaymentStatus
-    remarks: str | None = None
+    remarks: Optional[str] = None
     payment_date: datetime
 
     model_config = {
@@ -454,7 +492,7 @@ class PaymentResponse(BaseModel):
                     "student_id": 1,
                     "fee_structure_id": 1,
                     "receipt_number": "REC-2024-A3F7",
-                    "amount": 5000.0,
+                    "amount": 5000.00,
                     "payment_mode": "UPI",
                     "reference_number": "UPI123456789",
                     "status": "Paid",
@@ -467,14 +505,16 @@ class PaymentResponse(BaseModel):
 
 
 class PaymentSummaryResponse(BaseModel):
-    """Response schema for aggregated payment totals."""
+    """Response schema for aggregated payment statistics."""
 
     total_collectible: float
     total_collected: float
     total_pending: float
     total_overdue: float
 
+    model_config = {"from_attributes": True}
 
+    
 # ============ TRIP SCHEMAS ============
 
 

@@ -2,26 +2,15 @@
 
 from app.api.v1.endpoints import (
     auth,
-    class_subjects,
-    dashboard,
-	enrollment,
     health,
-    payments,
-	students,
-	subjects,
+	enrollment,
     trips,
-	user,
 )
-
+from .class_subjects import router as class_subjects_router
 __all__ = [
     "auth",
-    "class_subjects",
-    "dashboard",
-	"enrollment",
     "health",
-    "payments",
-	"students",
-	"subjects",
+	"enrollment",
+    "class_subjects_router",
     "trips",
-	"user",
 ]

@@ -3,7 +3,6 @@ Domain entities - Pure business objects.
 """
 
 from app.domain.entities.user import User, Role, UserRole
-from app.domain.entities.parent import Parent
 from app.domain.entities.payment import Payment, Student, FeeStructure, PaymentSummary
 from app.domain.entities.trip import Trip, TripStatus, TripType
 from app.domain.entities.trip_stop import TripStop, StopStatus
@@ -13,7 +12,6 @@ __all__ = [
     "User",
     "Role",
     "UserRole",
-    "Parent",
     "Payment",
     "Student",
     "FeeStructure",
