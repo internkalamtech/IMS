@@ -32,6 +32,11 @@ class TripRepository(ABC):
         """Get all trips for a driver."""
         pass
 
+    @abstractmethod
+    async def get_today_trips(self, driver_id: str) -> List[Trip]:
+        """Get all trips for a driver scheduled for today."""
+        pass
+
 
 class TripStopRepository(ABC):
     """Abstract repository for TripStop operations."""

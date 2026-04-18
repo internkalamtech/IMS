@@ -1,27 +1,27 @@
 """API v1 endpoints."""
 
 from app.api.v1.endpoints import (
-	auth,
-	class_subjects,
-	dashboard,
+    auth,
+    class_subjects,
+    dashboard,
 	enrollment,
-	health,
-	payments,
+    health,
+    payments,
 	students,
 	subjects,
-	trips,
+    trips,
 	user,
 )
 
 __all__ = [
-	"auth",
-	"class_subjects",
-	"dashboard",
+    "auth",
+    "class_subjects",
+    "dashboard",
 	"enrollment",
-	"health",
-	"payments",
+    "health",
+    "payments",
 	"students",
 	"subjects",
-	"trips",
+    "trips",
 	"user",
 ]
