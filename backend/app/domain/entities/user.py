@@ -10,9 +10,7 @@ from typing import Literal
 
 
 # Type alias for user roles
-UserRole = Literal[
-    "admin", "teacher", "student", "parent", "transport", "driver"
-]
+UserRole = Literal["admin", "teacher", "student", "parent", "transport", "driver"]
 
 
 @dataclass
