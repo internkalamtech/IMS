@@ -18,7 +18,13 @@ class SubjectRepository:
         Fetch subject by ID
         """
 
+<<<<<<< HEAD
         result = await self.db.execute(select(SubjectModel).where(SubjectModel.id == subject_id))
+=======
+        result = await self.db.execute(
+            select(SubjectModel).where(SubjectModel.id == subject_id)
+        )
+>>>>>>> 57e362124b6e97fdef8de061d0f42b2d20ed09dc
 
         return result.scalar_one_or_none()
 
@@ -27,7 +33,13 @@ class SubjectRepository:
         Fetch subject by name
         """
 
+<<<<<<< HEAD
         result = await self.db.execute(select(SubjectModel).where(SubjectModel.name == name))
+=======
+        result = await self.db.execute(
+            select(SubjectModel).where(SubjectModel.name == name)
+        )
+>>>>>>> 57e362124b6e97fdef8de061d0f42b2d20ed09dc
 
         return result.scalar_one_or_none()
 

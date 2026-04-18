@@ -134,7 +134,10 @@ async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     return roles_map
 
 
-async def create_users(db: AsyncSession, roles_map: dict[str, RoleModel]) -> None:
+async def create_users(
+    db: AsyncSession,
+    roles_map: dict[str, RoleModel],
+) -> None:
     """
     Create demo users if they don't exist.
 

@@ -23,5 +23,3 @@ async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db)):
         "name": user.name,
         "email": user.email
     }
-
-

@@ -81,7 +81,10 @@ async def log_requests(request: Request, call_next):
     """Log all HTTP requests."""
     Logger.info(f"{request.method} {request.url.path}")
     response = await call_next(request)
-    Logger.info(f"{request.method} {request.url.path} - {response.status_code}")
+    Logger.info(
+        f"{request.method} {request.url.path} - "
+        f"{response.status_code}"
+    )
     return response
 
 

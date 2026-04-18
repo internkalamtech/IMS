@@ -9,18 +9,18 @@ import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Modal,
-        TextInput,
-        Button,
-        RefreshControl,
+import { useRouter } from 'expo-router';
+import { RefreshControl,
         ScrollView,
         StatusBar,
         TouchableOpacity,
         View,
+        Modal,
+        TextInput,
+        Button,
         StyleSheet,
         Dimensions,
        } from "react-native";
-import { useRouter } from 'expo-router';
 const { width } = Dimensions.get('window');
 
 export default function AdminDashboard() {
@@ -28,16 +28,17 @@ export default function AdminDashboard() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const { logout, user } = useAuth();
+    const router = useRouter();
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
-    const router = useRouter();
     const quickActions = DASHBOARD_CONFIG.admin.quickActions;
 
     const handleActionPress = (action: any) => {
       if (action.title === "Manage Classes") {
         router.push("/manage-classes"); // ✅ NOT inside tabs
-      }
-    };
+      setModalVisible(true);
+  }
+};
 
     const getStatValue = (label: string, defaultValue: string = '0') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
@@ -62,30 +63,27 @@ const handleSubmit = async () => {
         console.error("Failed to create user", error);
     }
 };
-
 return (
     <ThemedView style={styles.container}>
-        <StatusBar barStyle={isDark ? "light-content" : "light-content"} />
-        <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
-        >
-            {/* Blue Banner Header */}
+            <StatusBar barStyle={ theme.dark ? "light-content" : "dark-content" } backgroundColor={theme.colors.background} />
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
+            >
+            {/* Blue Banner Header */} 
             <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
                 <SafeAreaView edges={['top']}>
                     <View style={styles.headerContent}>
                         <View>
-                            <ThemedText style={styles.userName} type="title" color="primaryForeground">
-                                {user?.name || 'Admin'}
+                            <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                    {user?.name || 'Admin'}
                             </ThemedText>
-                            <ThemedText style={styles.subtitle} color="primaryForeground">
+                            <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground}
+                             darkColor={theme.colors.primaryForeground}>
                                 Institute Management Overview
                             </ThemedText>
                         </View>
-                        <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addIcon}>
-                            <Ionicons name="person-add-outline" size={24} color={theme.colors.primaryForeground} />
-                        </TouchableOpacity>
                         <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
                             <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
                         </TouchableOpacity>
@@ -99,8 +97,10 @@ return (
                                         <Ionicons name={stat.icon as any} size={24} color={theme.colors.primaryForeground} />
                                     </View>
                                     <View>
-                                        <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{stat.value}</ThemedText>
-                                        <ThemedText style={styles.bannerStatTitle} color="primaryForeground">{stat.title}</ThemedText>
+                                        <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>{stat.value}</ThemedText>
+                                        <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                            {stat.title}
+                                        </ThemedText>
                                     </View>
                                 </View>
                             ))}
@@ -128,7 +128,7 @@ return (
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
                         <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-                            <ThemedText style={styles.badgeText} color="primaryForeground">3 new</ThemedText>
+                            <ThemedText style={styles.badgeText} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >3 new</ThemedText>
                         </View>
                     </View>
                     <ThemedCard style={styles.updatesCard} padding={0}>
@@ -180,7 +180,6 @@ return (
         </ThemedView>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -205,11 +204,9 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
     },
     userName: {
-        fontSize: 28,
-        fontWeight: '700',
+        marginBottom: 4,
     },
     subtitle: {
-        fontSize: 16,
         marginTop: 4,
     },
     logoutIcon: {
@@ -240,11 +237,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     bannerStatValue: {
-        fontSize: 22,
-        fontWeight: '700',
+        marginBottom: 4,
     },
     bannerStatTitle: {
-        fontSize: 12,
+        marginTop: 4,
     },
     mainContent: {
         flex: 1,
@@ -260,20 +256,16 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     sectionTitle: {
-        fontSize: 20,
-        fontWeight: '700',
+        marginBottom: 4,
     },
     badge: {
-        backgroundColor: '#2563eb',
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 12,
         marginLeft: 12,
     },
     badgeText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: '600',
+        marginTop: 2,
     },
     quickActionsGrid: {
         flexDirection: 'row',
@@ -295,9 +287,8 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     quickActionLabel: {
-        fontSize: 12,
+        marginTop: 8,
         textAlign: 'center',
-        fontWeight: '500',
     },
     updatesCard: {
         borderRadius: 24,
@@ -321,18 +312,15 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     updateTitle: {
-        fontSize: 15,
         marginBottom: 2,
     },
     updateSubtitle: {
-        fontSize: 13,
         marginBottom: 4,
     },
     updateTime: {
-        fontSize: 11,
+        marginTop: 4,
     },
     viewLink: {
-        fontSize: 13,
         fontWeight: '600',
     },
     modalOverlay: {
