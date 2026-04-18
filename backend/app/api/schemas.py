@@ -1,11 +1,19 @@
 # =========================
-# ENROLLMENT (✅ FIXED)
+# IMPORTS (FIXED)
+# =========================
+
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional
+
+
+# =========================
+# ENROLLMENT
 # =========================
 
 class ParentInput(BaseModel):
     name: str
     email: EmailStr
-    phone: str = Field(..., min_length=10)
+    phone: str = Field(..., min_length=10, max_length=15)
     relationship_type: str = "Parent"
 
 
