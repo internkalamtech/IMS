@@ -6,26 +6,26 @@ const DEFAULT_PORT = '8000';
 const API_VERSION = 'api/v1';
 
 /**
- * Dynamically determines the API gateway URL based on the current environment and platform.
- * 
- * Logic:
- * 1. If EXPO_PUBLIC_ENV is 'production', 'staging', or 'test', uses EXPO_PUBLIC_API_URL.
- * 2. In 'development':
- *    - Web: Uses 'localhost' or EXPO_PUBLIC_API_URL.
- *    - Native: Detects the host machine's IP address using Expo Constants to allow
- *      connection to a local backend from physical devices and emulators.
- */
+ * Dynamically determines the API gateway URL based on the current environment and platform.
+ *
+ * Logic:
+ * 1. If EXPO_PUBLIC_ENV is 'production', 'staging', or 'test', uses EXPO_PUBLIC_API_URL.
+ * 2. In 'development':
+ *    - Web: Uses 'localhost' or EXPO_PUBLIC_API_URL.
+ *    - Native: Detects the host machine's IP address using Expo Constants to allow
+ *      connection to a local backend from physical devices and emulators.
+ */
 export const getApiBaseUrl = (): string => {
     const env = process.env.EXPO_PUBLIC_ENV || 'development';
     const configuredUrl = process.env.EXPO_PUBLIC_API_URL;
 
-    // 1. Production/Staging/Test priority
-    if (['production', 'staging', 'test'].includes(env)) {
-        if (configuredUrl) {
-            return configuredUrl;
-        }
-        Logger.warn(`[Config] EXPO_PUBLIC_ENV is ${env} but EXPO_PUBLIC_API_URL is missing.`);
-    }
+    // 1. Production/Staging/Test priority
+    if (['production', 'staging', 'test'].includes(env)) {
+        if (configuredUrl) {
+            return configuredUrl;
+        }
+        Logger.warn(`[Config] EXPO_PUBLIC_ENV is ${env} but EXPO_PUBLIC_API_URL is missing.`);
+    }
 
     // 2. Web Development
     if (Platform.OS === 'web') {
@@ -35,7 +35,6 @@ export const getApiBaseUrl = (): string => {
 
     // 3. Native Development (iOS/Android)
     try {
-        // If user has explicitly configured an API URL, use it (takes priority over auto-detection)
         if (configuredUrl) {
             Logger.debug(`[Config] Using configured API URL: ${configuredUrl}`);
             return configuredUrl;
@@ -44,26 +43,23 @@ export const getApiBaseUrl = (): string => {
         const hostUri = Constants.expoConfig?.hostUri;
 
         if (!hostUri) {
-            // Fallback for emulators if hostUri is not available
             const fallbackHost = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
             const url = `http://${fallbackHost}:${DEFAULT_PORT}/${API_VERSION}`;
             Logger.debug(`[Config] No hostUri found, using fallback: ${url}`);
             return url;
         }
 
-        // Detect if we are using an Expo tunnel (ngrok, expo.direct)
         const isTunnel = hostUri.includes('ngrok.io') || hostUri.includes('expo.direct');
 
         if (isTunnel) {
-            // In tunnel mode, the hostUri DOES NOT correspond to the backend IP.
-            // Warn user and use a fallback
             const fallbackHost = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
             const url = `http://${fallbackHost}:${DEFAULT_PORT}/${API_VERSION}`;
-            Logger.warn(`[Config] Tunnel detected. hostUri is ${hostUri}. Using fallback: ${url}. For physical devices, please set EXPO_PUBLIC_API_URL in .env.`);
+            Logger.warn(
+                `[Config] Tunnel detected. hostUri is ${hostUri}. Using fallback: ${url}. For physical devices, please set EXPO_PUBLIC_API_URL in .env.`
+            );
             return url;
         }
 
-        // Get the IP from hostUri (e.g., "192.168.1.5:8081" -> "192.168.1.5")
         const hostIp = hostUri.split(':')[0];
         const dynamicUrl = `http://${hostIp}:${DEFAULT_PORT}/${API_VERSION}`;
 
