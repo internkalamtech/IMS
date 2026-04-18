@@ -4,6 +4,7 @@ import AdminDashboard from './AdminDashboard';
 import ParentDashboard from './ParentDashboard';
 import StudentDashboard from './StudentDashboard';
 import Teacher2Dashboard from './Teacher2Dashboard';
+import DriverDashboard from './DriverDashboard';
 
 export default function DashboardSwitcher() {
     const { user } = useAuth();
@@ -21,6 +22,8 @@ export default function DashboardSwitcher() {
             return <ParentDashboard />;
         case 'student':
             return <StudentDashboard />;
+        case 'driver':
+            return <DriverDashboard />;
         default:
             return <LoginScreen />;
     }
