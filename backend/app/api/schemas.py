@@ -289,6 +289,39 @@ class ParentResponse(BaseModel):
     }
 
 
+class StaffCreate(BaseModel):
+    """Request schema for creating a staff user."""
+
+    name: str = Field(..., min_length=1, max_length=255, description="Full name")
+    email: EmailStr = Field(..., description="Staff email")
+    phone: str = Field(..., min_length=7, max_length=20, description="Contact phone")
+    role: Literal["admin", "teacher", "transport", "driver"] = Field(
+        ..., description="Staff role"
+    )
+
+    # Role-specific optional fields
+    subjects: Optional[List[str]] = Field(None, description="List of subjects (for teachers)")
+    class_assigned_id: Optional[int] = Field(None, description="Class section id assigned to teacher")
+    license: Optional[str] = Field(None, description="Driver license number (for drivers)")
+
+
+class StaffResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone: str
+    role: str
+    subjects: Optional[List[str]] = None
+    class_assigned_id: Optional[int] = None
+    class_assigned_name: Optional[str] = None
+    license: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class StudentResponse(BaseModel):
     """Response schema for student data."""
 
