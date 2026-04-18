@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect, useState } from 'react';
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get('window');
 
@@ -21,6 +22,7 @@ type DashboardData = {
 
 export default function TeacherDashboard() {
     const { logout, user } = useAuth();
+    const router = useRouter();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
     const displayName =
@@ -119,7 +121,14 @@ export default function TeacherDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Teacher Tools</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid
+                         actions={quickActions}
+                         onActionPress={(action) => {
+                          if (action.route) {
+                           router.push(action.route as any);
+                          }
+                           }}
+                         />
 
                     {/* Upcoming Classes */}
                     <View style={styles.sectionHeader}>

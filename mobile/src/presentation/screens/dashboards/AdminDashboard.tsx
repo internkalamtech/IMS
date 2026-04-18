@@ -24,6 +24,8 @@ export default function AdminDashboard() {
     const handleActionPress = (action: any) => {
       if (action.title === "Manage Classes") {
         router.push("/manage-classes"); // ✅ NOT inside tabs
+      } else if (action.title === "Manage Users") {
+        router.push("/add-user"); // ✅ Navigate to add user screen
       }
     };
 
