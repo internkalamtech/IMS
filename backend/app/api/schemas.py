@@ -1,7 +1,5 @@
 """
 Pydantic schemas for API request/response models.
-
-These schemas define the shape of data for API endpoints.
 """
 
 from pydantic import BaseModel, EmailStr, Field
@@ -26,7 +24,7 @@ class LoginRequest(BaseModel):
 class RoleResponse(BaseModel):
     id: str
     name: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
-    description: str | None = None
+    description: Optional[str] = None
 
 
 class UserResponse(BaseModel):
@@ -34,8 +32,8 @@ class UserResponse(BaseModel):
     name: str
     email: str
     role: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
-    roles: list[RoleResponse]
-    avatarUrl: str | None = None
+    roles: List[RoleResponse]
+    avatarUrl: Optional[str] = None
 
 
 class LoginResponse(BaseModel):
@@ -57,11 +55,11 @@ class DemoCredential(BaseModel):
     icon: str
     email: str
     password: str
-    description: str | None = None
+    description: Optional[str] = None
 
 
 class DemoCredentialsResponse(BaseModel):
-    credentials: list[DemoCredential]
+    credentials: List[DemoCredential]
 
 
 class StatItem(BaseModel):
@@ -71,7 +69,7 @@ class StatItem(BaseModel):
 
 class DashboardResponse(BaseModel):
     role: str
-    stats: list[StatItem]
+    stats: List[StatItem]
 
 
 # =========================
@@ -80,7 +78,7 @@ class DashboardResponse(BaseModel):
 
 class UserCreate(BaseModel):
     name: str
-    email: str
+    email: EmailStr
 
 
 # =========================
@@ -117,7 +115,7 @@ class PaymentResponse(BaseModel):
 
 
 # =========================
-# ENROLLMENT (FIXED)
+# ENROLLMENT
 # =========================
 
 class ParentInput(BaseModel):

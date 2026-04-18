@@ -107,8 +107,23 @@ class ClassSectionModel(Base):
 
 
 # =========================
-# ✅ REQUIRED FOR TESTS
+# ✅ ENROLLMENT MODELS (FIXED)
 # =========================
+
+class ParentModel(Base):
+    __tablename__ = "parents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+
+    # relationship
+    students: Mapped[List["StudentModel"]] = relationship(
+        "StudentModel",
+        back_populates="parent",
+        cascade="all, delete",
+    )
+
 
 class StudentModel(Base):
     __tablename__ = "students"
@@ -116,6 +131,21 @@ class StudentModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
 
+    parent_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("parents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    parent: Mapped["ParentModel"] = relationship(
+        "ParentModel",
+        back_populates="students",
+    )
+
+
+# =========================
+# PAYMENT MODELS
+# =========================
 
 class FeeStructureModel(Base):
     __tablename__ = "fee_structures"
@@ -130,9 +160,10 @@ class PaymentModel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    # ✅ ONLY NECESSARY FIX
     student_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("students.id", ondelete="CASCADE"),
         nullable=False,
     )
+
+    student: Mapped["StudentModel"] = relationship("StudentModel")
