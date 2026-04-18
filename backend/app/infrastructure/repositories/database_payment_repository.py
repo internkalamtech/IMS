@@ -409,14 +409,10 @@ class DatabasePaymentRepository(PaymentRepository):
             overdue_result = await self.db.execute(
                 select(
                     func.coalesce(
-<<<<<<< HEAD
-                        func.sum(FeeStructureModel.total_fee - FeeStructureModel.amount_paid),
-=======
                         func.sum(
                             FeeStructureModel.total_fee
                             - FeeStructureModel.amount_paid
                         ),
->>>>>>> 57e362124b6e97fdef8de061d0f42b2d20ed09dc
                         0,
                     )
                 )

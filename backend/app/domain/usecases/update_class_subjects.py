@@ -34,16 +34,6 @@ class UpdateClassSubjectsUseCase:
                 subject_obj = await self.subject_repo.get_by_id(subject["id"])
 
                 if not subject_obj:
-<<<<<<< HEAD
-                    raise Exception(f"Subject with id {subject['id']} not found")
-
-            # If name is provided → find or create
-            else:
-                subject_obj = await self.subject_repo.get_by_name(subject["name"])
-
-                if not subject_obj:
-                    subject_obj = await self.subject_repo.create(subject["name"])
-=======
                     raise Exception(
                         f"Subject with id {subject['id']} not found"
                     )
@@ -58,7 +48,6 @@ class UpdateClassSubjectsUseCase:
                     subject_obj = await self.subject_repo.create(
                         subject["name"]
                     )
->>>>>>> 57e362124b6e97fdef8de061d0f42b2d20ed09dc
 
             subject_entities.append(subject_obj)
 
