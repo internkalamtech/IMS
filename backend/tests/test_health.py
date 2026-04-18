@@ -14,7 +14,9 @@ from app.main import app
 async def test_health_check():
     """Test that the health check endpoint returns healthy status."""
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
+    async with AsyncClient(
+        transport=transport, base_url="http://test"
+    ) as client:
         response = await client.get("/api/v1/health")
 
     assert response.status_code == 200
@@ -27,7 +29,9 @@ async def test_health_check():
 async def test_root_endpoint():
     """Test that the root endpoint returns API information."""
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
+    async with AsyncClient(
+        transport=transport, base_url="http://test"
+    ) as client:
         response = await client.get("/")
 
     assert response.status_code == 200
