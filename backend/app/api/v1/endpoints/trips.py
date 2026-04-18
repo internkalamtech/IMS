@@ -109,14 +109,12 @@ async def create_trip(
 
     except ValueError as e:
         Logger.error(f"Invalid trip type: {e}")
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid trip data: {str(e)}",
         )
     except Exception as e:
         Logger.error(f"Error creating trip: {e}", exc_info=True)
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create trip",
@@ -231,8 +229,6 @@ async def update_trip_status(
                 detail=f"Trip with ID {trip_id} not found",
             )
 
-        await db.commit()
-
         Logger.info(f"Trip {trip_id} status updated to {request.status}")
 
         return TripResponse(
@@ -253,7 +249,6 @@ async def update_trip_status(
 
     except ValueError as e:
         Logger.error(f"Invalid status: {e}")
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid status: {str(e)}",
@@ -262,7 +257,6 @@ async def update_trip_status(
         raise
     except Exception as e:
         Logger.error(f"Error updating trip status: {e}", exc_info=True)
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update trip status",
@@ -380,7 +374,6 @@ async def create_stop(
 
         repo = DatabaseTripStopRepository(db)
         created_stop = await repo.create_stop(stop)
-        await db.commit()
 
         Logger.info(f"Stop created with ID: {created_stop.id}")
 
@@ -403,7 +396,6 @@ async def create_stop(
 
     except Exception as e:
         Logger.error(f"Error creating stop: {e}", exc_info=True)
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create stop",
@@ -516,8 +508,6 @@ async def update_stop_status(
         if request.boarded_students is not None:
             stop.boarded_students = request.boarded_students
 
-        await db.commit()
-
         Logger.info(f"Stop {stop_id} status updated to {request.status}")
 
         return TripStopResponse(
@@ -539,7 +529,6 @@ async def update_stop_status(
 
     except ValueError as e:
         Logger.error(f"Invalid stop status: {e}")
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid status: {str(e)}",
@@ -548,7 +537,6 @@ async def update_stop_status(
         raise
     except Exception as e:
         Logger.error(f"Error updating stop status: {e}", exc_info=True)
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to update stop status",
@@ -610,8 +598,6 @@ async def log_student_boarding(
         repo = DatabaseStudentBoardingRepository(db)
         created_boarding = await repo.create_boarding(boarding)
 
-        await db.commit()
-
         Logger.info(
             f"Boarding logged successfully with ID: {created_boarding.id}"
         )
@@ -629,14 +615,12 @@ async def log_student_boarding(
 
     except ValueError as e:
         Logger.error(f"Invalid boarding status: {e}")
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid status: {str(e)}",
         )
     except Exception as e:
         Logger.error(f"Error logging boarding: {e}", exc_info=True)
-        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to log boarding",

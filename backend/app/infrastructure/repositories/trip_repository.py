@@ -50,7 +50,7 @@ class DatabaseTripRepository(TripRepository):
     Handles creation, retrieval, and status updates for trips.
     """
 
-    def __init__(self, db_session: AsyncSession):
+    def __init__(self, db_session: AsyncSession) -> None:
         """
         Initialize repository with database session.
 
@@ -323,7 +323,7 @@ class DatabaseTripStopRepository(TripStopRepository):
     Manages creation and retrieval of trip stops with status tracking.
     """
 
-    def __init__(self, db_session: AsyncSession):
+    def __init__(self, db_session: AsyncSession) -> None:
         """Initialize repository with database session."""
         self.db = db_session
 
@@ -530,7 +530,7 @@ class DatabaseStudentBoardingRepository(StudentBoardingRepository):
     Manages logging and retrieval of student boarding events.
     """
 
-    def __init__(self, db_session: AsyncSession):
+    def __init__(self, db_session: AsyncSession) -> None:
         """Initialize repository with database session."""
         self.db = db_session
 

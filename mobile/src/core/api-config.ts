@@ -6,6 +6,14 @@ const DEFAULT_PORT = '8000';
 const API_VERSION = 'api/v1';
 
 /**
+ * Appends the API version path to a base URL if it's not already present.
+ */
+const normalizeUrl = (url: string): string => {
+    const trimmed = url.replace(/\/$/, '');
+    return trimmed.endsWith(API_VERSION) ? trimmed : `${trimmed}/${API_VERSION}`;
+};
+
+/**
  * Dynamically determines the API gateway URL based on the current environment and platform.
  * 
  * Logic:
@@ -22,7 +30,7 @@ export const getApiBaseUrl = (): string => {
     // 1. Production/Staging/Test priority
     if (['production', 'staging', 'test'].includes(env)) {
         if (configuredUrl) {
-            return configuredUrl;
+            return normalizeUrl(configuredUrl);
         }
         Logger.warn(`[Config] EXPO_PUBLIC_ENV is ${env} but EXPO_PUBLIC_API_URL is missing.`);
     }
@@ -30,7 +38,9 @@ export const getApiBaseUrl = (): string => {
     // 2. Web Development
     if (Platform.OS === 'web') {
         // On web, if configuredUrl is set (e.g. to a local IP), use it, otherwise localhost
-        return configuredUrl || `http://localhost:${DEFAULT_PORT}/${API_VERSION}`;
+        return configuredUrl
+            ? normalizeUrl(configuredUrl)
+            : `http://localhost:${DEFAULT_PORT}/${API_VERSION}`;
     }
 
     // 3. Native Development (iOS/Android)
@@ -38,7 +48,7 @@ export const getApiBaseUrl = (): string => {
         // If user has explicitly configured an API URL, use it (takes priority over auto-detection)
         if (configuredUrl) {
             Logger.debug(`[Config] Using configured API URL: ${configuredUrl}`);
-            return configuredUrl;
+            return normalizeUrl(configuredUrl);
         }
 
         const hostUri = Constants.expoConfig?.hostUri;
@@ -71,6 +81,8 @@ export const getApiBaseUrl = (): string => {
         return dynamicUrl;
     } catch (error) {
         Logger.error('[Config] Error detecting dynamic API URL', error);
-        return configuredUrl || `http://10.0.2.2:${DEFAULT_PORT}/${API_VERSION}`;
+        return configuredUrl
+            ? normalizeUrl(configuredUrl)
+            : `http://10.0.2.2:${DEFAULT_PORT}/${API_VERSION}`;
     }
 };

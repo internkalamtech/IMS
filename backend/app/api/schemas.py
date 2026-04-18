@@ -7,7 +7,7 @@ These schemas define the shape of data for API endpoints.
 from datetime import datetime
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
 
 class LoginRequest(BaseModel):
@@ -160,10 +160,27 @@ class PaymentCreate(BaseModel):
 
     student_id: int
     fee_structure_id: int
-    amount: float
+    amount: float = Field(..., gt=0, description="Payment amount (must be > 0)")
     payment_mode: PaymentMode
-    reference_number: str | None = None
+    reference_number: str | None = Field(
+        None,
+        description=(
+            "Transaction reference number. "
+            "Required for UPI and Card payments, optional for Cash."
+        ),
+    )
     remarks: str | None = None
+
+    @model_validator(mode="after")
+    def validate_reference_number_for_digital_payments(self) -> "PaymentCreate":
+        """Ensure a reference number is supplied for UPI or Card payments."""
+        if self.payment_mode in ("UPI", "Card") and not (
+            self.reference_number and self.reference_number.strip()
+        ):
+            raise ValueError(
+                f"reference_number is required for {self.payment_mode} payments."
+            )
+        return self
 
 
 class PaymentResponse(BaseModel):
@@ -180,8 +197,7 @@ class PaymentResponse(BaseModel):
     remarks: str | None = None
     payment_date: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PaymentSummaryResponse(BaseModel):
@@ -202,8 +218,7 @@ class StudentResponse(BaseModel):
     class_name: str
     next_due_date: datetime | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ============ TRIP SCHEMAS ============
@@ -239,8 +254,7 @@ class TripResponse(BaseModel):
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TripStopCreateRequest(BaseModel):
@@ -276,8 +290,7 @@ class TripStopResponse(BaseModel):
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class StudentBoardingCreateRequest(BaseModel):
@@ -298,5 +311,4 @@ class StudentBoardingResponse(BaseModel):
     boarding_time: datetime | None = None
     created_at: datetime | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

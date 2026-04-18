@@ -326,6 +326,20 @@ class PaymentModel(Base):
     payment_date: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    student: Mapped["StudentModel"] = relationship(
+        "StudentModel", back_populates="payments"
+    )
+    fee_structure: Mapped["FeeStructureModel"] = relationship(
+        "FeeStructureModel", back_populates="payments"
+    )
 
 
 # ============ TRANSPORT MODELS ============
@@ -343,20 +357,32 @@ class TripModel(Base):
     driver_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
-    vehicle_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    route_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    vehicle_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    route_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    trip_type: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="pickup"
+    )  # pickup, drop_off
 
     status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="scheduled"
     )  # scheduled, in_progress, completed, cancelled
 
-    start_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    end_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    scheduled_start: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    actual_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    total_students: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    boarded_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
     )
 
     # Relationships
@@ -389,20 +415,39 @@ class TripStopModel(Base):
     trip_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("trips.id", ondelete="CASCADE"), nullable=False
     )
-    stop_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    sequence_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    stop_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    location_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    latitude: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+
+    scheduled_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_arrival: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_departure: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    expected_students: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    boarded_students: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="pending"
-    )  # pending, reached, skipped
+    )  # pending, in_progress, completed
 
-    arrival_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
 
     # Relationships
     trip: Mapped["TripModel"] = relationship("TripModel", back_populates="stops")
 
     def __repr__(self) -> str:
-        return f"<TripStop(id={self.id}, name='{self.stop_name}', order={self.sequence_order})>"
+        return f"<TripStop(id={self.id}, name='{self.location_name}', sequence={self.stop_sequence})>"
 
 
 class StudentBoardingModel(Base):
@@ -421,10 +466,27 @@ class StudentBoardingModel(Base):
     trip_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("trips.id", ondelete="CASCADE"), nullable=False
     )
+    stop_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("trip_stops.id", ondelete="CASCADE"), nullable=False
+    )
+    student_name: Mapped[str] = mapped_column(String(255), nullable=False)
 
     status: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="pending"
-    )  # pending, boarded, alighted, absent
+        String(20), nullable=False, default="boarded"
+    )  # boarded, no_show, marked_absent
+
+    boarding_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
 
     # Relationships
     trip: Mapped["TripModel"] = relationship("TripModel", back_populates="boardings")
