@@ -1,0 +1,61 @@
+{
+  "module": "Transport Management",
+  "epic": {
+    "id": "EPIC_TRANSPORT_COMPLIANCE",
+    "type": "epic",
+    "title": "Transport Compliance & Document Management",
+    "body": "Centralized system to track, manage, and monitor the validity of critical legal and safety documents for vehicles and drivers, ensuring full regulatory compliance through real-time status tracking and automated expiry calculation.",
+    "labels": ["epic", "transport", "compliance"],
+    "features": [
+      {
+        "id": "FEATURE_DOCUMENT_LIFECYCLE",
+        "type": "feature",
+        "title": "Document Lifecycle Management",
+        "body": "Enables administrators to perform full CRUD operations on compliance documents including insurance, pollution certificates, fitness certificates, and licenses.",
+        "labels": ["feature", "documents", "management"],
+        "stories": [
+          {
+            "id": "STORY_DOCUMENT_TRACKING_INTERFACE",
+            "type": "story",
+            "title": "Compliance Document Dashboard and List View",
+            "body": "As a transport manager, I want to view a categorized list of all compliance documents with their current validity status so I can identify items requiring attention.",
+            "labels": ["story", "compliance", "frontend"],
+            "acceptanceCriteria": [
+              "List: Display cards for documents including Type, Vehicle/Owner Name, Doc Number, and Expiry Date.",
+              "Filtering: Provide tabs to filter documents by status: 'All', 'Expiring' (within 30 days), and 'Expired'.",
+              "Search: Enable real-time search by vehicle name, document type, or document number.",
+              "Analytics: Display summary cards showing total, valid, expiring, and expired counts.",
+              "Visual Cues: Use color-coded badges (Green/Orange/Red) and icons based on document status."
+            ]
+          },
+          {
+            "id": "STORY_DOCUMENT_UPLOAD_EDIT",
+            "type": "story",
+            "title": "Document Upload and Modification Workflow",
+            "body": "As a transport manager, I want to upload new documents and edit existing record details to keep the compliance database current.",
+            "labels": ["story", "compliance", "frontend"],
+            "acceptanceCriteria": [
+              "Upload: Form to capture Vehicle Name, Document Type (Insurance, License, Tax, etc.), Doc Number, Issue Date, and Expiry Date.",
+              "File Support: Support for drag-and-drop or click-to-upload for images and PDFs with a preview mechanism.",
+              "Edit: Ability to modify metadata for existing records using a pre-populated form.",
+              "Validation: Ensure mandatory fields like vehicle name, type, and expiry date are provided before saving."
+            ]
+          },
+          {
+            "id": "STORY_COMPLIANCE_DATA_SERVICE",
+            "type": "story",
+            "title": "Compliance Document Persistence and Processing",
+            "body": "Backend API to store document metadata, handle file uploads, and calculate expiry status logic.",
+            "labels": ["story", "compliance", "backend"],
+            "acceptanceCriteria": [
+              "POST/PUT: Endpoints to save document metadata and handle binary file storage/retrieval.",
+              "Logic: Automatically compute 'days left' and status (Valid/Expiring-Soon/Expired) based on the current date vs. the provided expiry date.",
+              "GET: Retrieve filtered lists of documents based on branch or organizational scope.",
+              "Download: Secure endpoint to retrieve and download stored document files."
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

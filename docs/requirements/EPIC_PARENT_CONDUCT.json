@@ -1,0 +1,79 @@
+{
+  "module": "Student Conduct & Communication",
+  "epic": {
+    "id": "EPIC_PARENT_CONDUCT",
+    "type": "epic",
+    "title": "Parent Conduct & Behavioral Oversight Module",
+    "body": "Enables parents to monitor behavioral feedback, disciplinary remarks, and academic attitude logs for their children, facilitating a two-way communication channel between home and school.",
+    "labels": ["epic", "conduct", "parent-portal"],
+    "features": [
+      {
+        "id": "FEATURE_CONDUCT_MONITORING",
+        "type": "feature",
+        "title": "Behavioral Remarks & Timeline",
+        "body": "Provides parents with a chronological view of remarks posted by teachers regarding their child's conduct, attitude, and disciplinary incidents.",
+        "labels": ["feature", "conduct", "parent"],
+        "stories": [
+          {
+            "id": "STORY_CONDUCT_TIMELINE_UI",
+            "type": "story",
+            "title": "Student Conduct Timeline Interface",
+            "body": "As a parent, I want to view a timeline of behavioral remarks for my child so I can stay informed about their school conduct.",
+            "labels": ["story", "conduct", "frontend"],
+            "acceptanceCriteria": [
+              "List: Chronological list of remarks showing the Author (Teacher), Category, and Date.",
+              "Categorization: Visual labels for 'Academic', 'Discipline', and 'Attitude' types.",
+              "Details: Expandable cards to view the full text of the remark.",
+              "Context: Dynamic update of remarks when switching between different child profiles on the dashboard."
+            ]
+          },
+          {
+            "id": "STORY_CONDUCT_DATA_SERVICE",
+            "type": "story",
+            "title": "Conduct Remark Retrieval API",
+            "body": "API endpoints to fetch behavioral logs and remarks scoped to the children linked to the authenticated parent.",
+            "labels": ["story", "conduct", "backend"],
+            "acceptanceCriteria": [
+              "List: GET endpoint to retrieve all remarks for a specific studentId.",
+              "Security: Restrict data access to verified parent accounts associated with the student.",
+              "Filtering: Support server-side filtering by category (Academic/Discipline/Attitude)."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_PARENT_FEEDBACK",
+        "type": "feature",
+        "title": "Two-way Conduct Communication",
+        "body": "Allows parents to acknowledge and respond to remarks posted by teachers to ensure collaborative student development.",
+        "labels": ["feature", "communication", "parent"],
+        "stories": [
+          {
+            "id": "STORY_CONDUCT_REPLY_UI",
+            "type": "story",
+            "title": "Parent Feedback & Acknowledgement Interface",
+            "body": "Interface for parents to add comments or acknowledgements to specific behavioral remarks.",
+            "labels": ["story", "conduct", "frontend"],
+            "acceptanceCriteria": [
+              "Create: Form to add a parent comment/reply to a specific teacher remark.",
+              "Interaction: Display a threaded view of teacher remarks and subsequent parent replies.",
+              "Acknowledgement: Visual indicator showing if a parent has read/viewed a critical disciplinary remark."
+            ]
+          },
+          {
+            "id": "STORY_CONDUCT_INTERACTION_BACKEND",
+            "type": "story",
+            "title": "Remark Interaction & Feedback API",
+            "body": "API logic to handle parent replies and update the status of conduct remarks.",
+            "labels": ["story", "conduct", "backend"],
+            "acceptanceCriteria": [
+              "Create: POST endpoint for parents to add replies to an existing remark ID.",
+              "Update: PUT/PATCH endpoint to mark a remark as 'Acknowledged' by the parent.",
+              "Delete: Ability for a parent to delete their own replies/comments."
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

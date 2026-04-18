@@ -1,0 +1,79 @@
+{
+  "module": "Academic Management",
+  "epic": {
+    "id": "EPIC_PARENT_TIMETABLE",
+    "type": "epic",
+    "title": "Parent Timetable Module",
+    "body": "Provides parents with a clear view of their children's weekly and daily schedules, enabling them to monitor academic commitments, teacher assignments, and classroom locations for multiple children.",
+    "labels": ["epic", "academics", "parent-portal"],
+    "features": [
+      {
+        "id": "FEATURE_PARENT_SCHEDULE_VIEW",
+        "type": "feature",
+        "title": "Multi-Child Timetable Visibility",
+        "body": "Interface for parents to switch between their children's profiles and view their specific class schedules in both daily and weekly formats.",
+        "labels": ["feature", "timetable", "parent"],
+        "stories": [
+          {
+            "id": "STORY_FE_PARENT_TIMETABLE_LIST",
+            "type": "story",
+            "title": "Child-Specific Timetable View",
+            "body": "As a parent, I want to view the timetable for my selected child so I can know their subjects, teachers, and room numbers for the day.",
+            "labels": ["story", "timetable", "frontend"],
+            "acceptanceCriteria": [
+              "List: Display a timeline of class slots for the selected child.",
+              "Child Context: Header must display the name of the child (e.g., 'Aarav Kumar') whose timetable is being viewed.",
+              "Details: Each slot must show the Time, Subject, Teacher Name, and Room/Lab number.",
+              "Visual Cues: Use color-coding to distinguish between regular academic periods and 'BREAK' slots.",
+              "Navigation: Include a back button to return to the Parent Dashboard."
+            ]
+          },
+          {
+            "id": "STORY_FE_TIMETABLE_TOGGLES",
+            "type": "story",
+            "title": "Daily & Weekly View Toggling",
+            "body": "As a parent, I want to switch between a detailed daily view and a broad weekly overview of my child's schedule.",
+            "labels": ["story", "timetable", "frontend"],
+            "acceptanceCriteria": [
+              "Toggle: Provide 'Daily' and 'Weekly' buttons to switch view modes.",
+              "Weekly Grid: In weekly mode, show a scrollable or grid-based layout representing all school days (Monday-Saturday).",
+              "Date Navigation: Allow parents to move between dates using 'Previous' and 'Next' chevron buttons."
+            ]
+          },
+          {
+            "id": "STORY_BE_PARENT_TIMETABLE_API",
+            "type": "story",
+            "title": "Parent-Scoped Timetable Retrieval (Read)",
+            "body": "API endpoints to serve timetable data specifically for the children linked to the authenticated parent's account.",
+            "labels": ["story", "timetable", "backend"],
+            "acceptanceCriteria": [
+              "List: GET endpoint to fetch timetable records for a specific childId.",
+              "Security: Ensure the parent is authorized to view the requested child's data based on the parent-child mapping.",
+              "Metadata: Serve period IDs, subject names, teacher names, and room locations as a structured JSON array."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_PARENT_QUICK_ACCESS",
+        "type": "feature",
+        "title": "Dashboard Timetable Integration",
+        "body": "Quick-access entry points from the main parent dashboard to the timetable module based on the currently selected child.",
+        "labels": ["feature", "dashboard", "parent"],
+        "stories": [
+          {
+            "id": "STORY_FE_DASHBOARD_TIMETABLE_LINK",
+            "type": "story",
+            "title": "Dashboard to Timetable Navigation",
+            "body": "As a parent, I want to click a 'Timetable' action on my dashboard to see the schedule for my currently active child profile.",
+            "labels": ["story", "dashboard", "frontend"],
+            "acceptanceCriteria": [
+              "Action Link: Implement a 'Timetable' quick-action button on the Parent Dashboard.",
+              "Context Passing: Clicking the action must navigate to the timetable screen with the `childName` and `mode='parent'` props correctly set."
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "module": "Academic Management",
+  "epic": {
+    "id": "EPIC_TEACHER_TIMETABLE",
+    "type": "epic",
+    "title": "Teacher Timetable & Schedule Module",
+    "body": "Provides teachers with personal schedule visibility and cross-functional views of classroom utilization and peer schedules to coordinate academic activities.",
+    "labels": ["epic", "academics", "teacher-portal"],
+    "features": [
+      {
+        "id": "FEATURE_TEACHER_SCHEDULE_VIEW",
+        "type": "feature",
+        "title": "Personal & Peer Schedule Management",
+        "body": "Teachers can view their assigned class periods, monitor free slots, and check the availability/schedules of other teachers within their assigned classes.",
+        "labels": ["feature", "timetable", "teacher"],
+        "stories": [
+          {
+            "id": "STORY_TEACHER_TIMETABLE_LIST",
+            "type": "story",
+            "title": "View Personal Weekly Schedule",
+            "body": "As a teacher, I want to list and filter my own periods by day and week so I can prepare for my daily classes and identify my free periods.",
+            "labels": ["story", "timetable", "frontend", "teacher"],
+            "acceptanceCriteria": [
+              "List: Display a timeline of periods for the logged-in teacher.",
+              "Filter: Toggle between 'Day' and 'Week' view modes.",
+              "Details: Display Subject, Class (e.g., 7A, 8B), Room Number, and specific Time range for each period.",
+              "Visualization: Differentiate 'Regular Periods', 'BREAKS', and 'Free Periods' using distinct color coding."
+            ]
+          },
+          {
+            "id": "STORY_PEER_SCHEDULE_LOOKUP",
+            "type": "story",
+            "title": "View Peer Teacher Schedules",
+            "body": "As a teacher, I want to view the schedules of other teachers who teach the same classes as me to coordinate multidisciplinary activities or substitutions.",
+            "labels": ["story", "timetable", "frontend"],
+            "acceptanceCriteria": [
+              "List/Update: Ability to switch the view from 'My Classes' to 'Other Teachers'.",
+              "Filter: Dropdown to select a specific peer teacher from a list of related colleagues.",
+              "Search: Ability to filter peer schedules by specific class and day."
+            ]
+          },
+          {
+            "id": "STORY_TEACHER_TIMETABLE_BACKEND",
+            "type": "story",
+            "title": "Teacher-Specific Timetable Retrieval (Backend)",
+            "body": "Backend API to fetch timetable records filtered by the authenticated teacher's ID and associated metadata.",
+            "labels": ["story", "timetable", "backend"],
+            "acceptanceCriteria": [
+              "GET: Endpoint to retrieve all periods assigned to a teacher across all classes.",
+              "GET: Endpoint to list peer teachers mapped to the same organizational branch or class group.",
+              "Read: Ensure data includes period ID, subject, room type, and start/end timestamps."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_ROOM_CLASS_VISIBILITY",
+        "type": "feature",
+        "title": "Classroom & Lab Allocation View",
+        "body": "Provides visibility into where a teacher needs to be (Classroom vs Lab) based on the subject and room type assignment.",
+        "labels": ["feature", "timetable", "resources"],
+        "stories": [
+          {
+            "id": "STORY_RESOURCE_TYPE_DISPLAY",
+            "type": "story",
+            "title": "Differentiate Classroom and Lab Assignments",
+            "body": "As a teacher, I want to see the specific room type (e.g., Lab 3 vs Room 201) to ensure I have the right resources ready for the session.",
+            "labels": ["story", "timetable", "frontend"],
+            "acceptanceCriteria": [
+              "Display: Each period card must show the Room/Lab name and an associated location icon.",
+              "Metadata: Distinguish between 'classroom' and 'lab' room types in the period details."
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

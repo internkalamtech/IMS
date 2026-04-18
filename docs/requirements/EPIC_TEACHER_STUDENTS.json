@@ -1,0 +1,141 @@
+{
+  "module": "Student Management",
+  "epic": {
+    "id": "EPIC_TEACHER_STUDENTS",
+    "type": "epic",
+    "title": "Teacher Student Management & Profile Module",
+    "body": "Provides teachers with a comprehensive view of their students, including class-wise analytics, search capabilities, and detailed individual profiles covering academic performance, attendance, and conduct.",
+    "labels": ["epic", "students", "teacher-portal"],
+    "features": [
+      {
+        "id": "FEATURE_STUDENT_LIST_ANALYTICS",
+        "type": "feature",
+        "title": "Class-wise Student Analytics & Search",
+        "body": "Interface for teachers to browse students by class and view aggregate performance metrics.",
+        "labels": ["feature", "students", "analytics"],
+        "stories": [
+          {
+            "id": "STORY_FE_STUDENT_LIST_UI",
+            "type": "story",
+            "title": "Student List & Search Interface",
+            "body": "Implement the student directory UI including class dropdown, search bar, and student cards/list with navigation to profiles.",
+            "labels": ["story", "students", "frontend"],
+            "acceptanceCriteria": [
+              "Dropdown to select class (e.g., 7A, 8B) triggers list refresh",
+              "Search bar filters students by name or roll number in real-time",
+              "Each student card displays name, roll number, and avatar",
+              "Clicking a student navigates to the detailed profile view"
+            ]
+          },
+          {
+            "id": "STORY_FE_CLASS_METRICS_DASHBOARD",
+            "type": "story",
+            "title": "Class Analytics Cards",
+            "body": "Build the top-level summary cards showing aggregate data for the selected class.",
+            "labels": ["story", "students", "frontend"],
+            "acceptanceCriteria": [
+              "Display 'Total Students' card with count",
+              "Display 'Avg Marks' card with percentage",
+              "Display 'Avg Attendance' card with percentage",
+              "Cards update dynamically based on the selected class"
+            ]
+          },
+          {
+            "id": "STORY_BE_STUDENT_DATA_API",
+            "type": "story",
+            "title": "Student Directory & Analytics API",
+            "body": "API endpoints to serve student lists and calculated metrics for the teacher's classes.",
+            "labels": ["story", "students", "backend"],
+            "acceptanceCriteria": [
+              "GET endpoint to retrieve students by classId (List operation)",
+              "GET endpoint to return calculated averages (marks/attendance) for a specific class",
+              "Ensure results are scoped only to classes assigned to the requesting teacher"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_STUDENT_PROFILE_DETAILS",
+        "type": "feature",
+        "title": "360-Degree Student Profile",
+        "body": "Detailed view of an individual student's records including personal info, exams, and attendance.",
+        "labels": ["feature", "students", "profile"],
+        "stories": [
+          {
+            "id": "STORY_FE_PROFILE_STRUCTURE",
+            "type": "story",
+            "title": "Profile Header & Navigation Tabs",
+            "body": "Implement the core layout of the student profile page with personal info and tab switching.",
+            "labels": ["story", "students", "frontend"],
+            "acceptanceCriteria": [
+              "Header displays profile picture, name, roll number, and parent contact details",
+              "Navigation tabs for: Overview, Exams, Attendance, and Conduct",
+              "Overview tab shows quick status cards (Current Rank, Attendance %)"
+            ]
+          },
+          {
+            "id": "STORY_FE_ACADEMIC_HISTORY_VIEWS",
+            "type": "story",
+            "title": "Exam Results & Attendance History UI",
+            "body": "Build the detailed views for exam performance cards and attendance logs.",
+            "labels": ["story", "students", "frontend"],
+            "acceptanceCriteria": [
+              "Exams tab shows cards with Total Marks, Obtained Marks, and Subject-wise breakdown",
+              "Attendance tab shows a chronological list of recent status records (Present/Absent/Late) with dates",
+              "Data is displayed via read-only lists and tables"
+            ]
+          },
+          {
+            "id": "STORY_BE_STUDENT_HISTORY_API",
+            "type": "story",
+            "title": "Student Performance & History API",
+            "body": "Endpoints to serve specific historical data for a single student.",
+            "labels": ["story", "students", "backend"],
+            "acceptanceCriteria": [
+              "GET endpoint for student personal/contact overview",
+              "GET endpoint for exam result history (multi-exam support)",
+              "GET endpoint for detailed attendance logs (list operation)"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FEATURE_STUDENT_CONDUCT",
+        "type": "feature",
+        "title": "Behavioral Remarks & Conduct",
+        "body": "Management of behavioral feedback and teacher-parent communication.",
+        "labels": ["feature", "students", "conduct"],
+        "stories": [
+          {
+            "id": "STORY_FE_CONDUCT_MANAGEMENT",
+            "type": "story",
+            "title": "Conduct Timeline & Remark CRUD UI",
+            "body": "Implementation of the behavioral remarks timeline and the ability to add/edit/delete remarks.",
+            "labels": ["story", "students", "frontend"],
+            "acceptanceCriteria": [
+              "Timeline view of all historical remarks (List)",
+              "Create: Modal to add new remark with Type (Academic/Discipline/Attitude) and Text",
+              "Update: Ability to edit an existing remark author by the teacher",
+              "Delete: Ability to remove a remark with confirmation prompt",
+              "Threaded View: Option to expand remarks to see comments"
+            ]
+          },
+          {
+            "id": "STORY_BE_REMARK_CRUD_API",
+            "type": "story",
+            "title": "Behavioral Remarks API",
+            "body": "Full CRUD API for managing student conduct records and feedback threads.",
+            "labels": ["story", "students", "backend"],
+            "acceptanceCriteria": [
+              "POST to create new remark",
+              "GET to list remarks for a specific studentId",
+              "PUT/PATCH to update remark content",
+              "DELETE to remove a remark",
+              "POST/GET endpoints for comment threads on individual remarks"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
