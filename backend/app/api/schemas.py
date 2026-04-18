@@ -279,8 +279,8 @@ class TripStopResponse(BaseModel):
     trip_id: int
     stop_sequence: int
     location_name: str
-    latitude: float
-    longitude: float
+    latitude: float | None = None
+    longitude: float | None = None
     scheduled_time: datetime
     actual_arrival: datetime | None = None
     actual_departure: datetime | None = None

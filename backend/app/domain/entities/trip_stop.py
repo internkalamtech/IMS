@@ -22,11 +22,11 @@ class TripStop:
     trip_id: str
     stop_sequence: int
     location_name: str
-    latitude: float
-    longitude: float
     scheduled_time: datetime
     expected_students: int
-    
+
+    latitude: float | None = None
+    longitude: float | None = None
     actual_arrival: datetime | None = None
     actual_departure: datetime | None = None
     boarded_students: int = 0

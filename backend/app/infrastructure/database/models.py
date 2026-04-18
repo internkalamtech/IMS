@@ -417,8 +417,8 @@ class TripStopModel(Base):
     )
     stop_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
     location_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    latitude: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-    longitude: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     scheduled_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     actual_arrival: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
