@@ -513,3 +513,108 @@ class PaymentSummaryResponse(BaseModel):
     total_overdue: float
 
     model_config = {"from_attributes": True}
+
+    
+# ============ TRIP SCHEMAS ============
+
+
+class TripCreateRequest(BaseModel):
+    """Request body for creating a trip."""
+
+    driver_id: int
+    route_id: str
+    vehicle_id: str
+    trip_type: str  # "pickup" or "drop_off"
+    scheduled_start: datetime
+    total_students: int
+
+
+class TripUpdateStatusRequest(BaseModel):
+    """Request body for updating trip status."""
+
+    status: str  # "scheduled", "in_progress", "completed"
+
+
+class TripResponse(BaseModel):
+    """Response model for a trip."""
+
+    id: int
+    driver_id: int
+    route_id: str
+    vehicle_id: str
+    trip_type: str
+    status: str
+    scheduled_start: datetime
+    actual_start: datetime | None = None
+    actual_end: datetime | None = None
+    total_students: int
+    boarded_count: int
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class TripStopCreateRequest(BaseModel):
+    """Request body for creating a trip stop."""
+
+    stop_sequence: int
+    location_name: str
+    latitude: float
+    longitude: float
+    scheduled_time: datetime
+    expected_students: int
+
+
+class TripStopUpdateRequest(BaseModel):
+    """Request body for updating trip stop status."""
+
+    status: str
+    boarded_students: int | None = None
+
+
+class TripStopResponse(BaseModel):
+    """Response model for a trip stop."""
+
+    id: int
+    trip_id: int
+    stop_sequence: int
+    location_name: str
+    latitude: float
+    longitude: float
+    scheduled_time: datetime
+    actual_arrival: datetime | None = None
+    actual_departure: datetime | None = None
+    expected_students: int
+    boarded_students: int
+    status: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class StudentBoardingCreateRequest(BaseModel):
+    """Request body for logging student boarding."""
+
+    student_id: int
+    student_name: str
+    status: str
+
+
+class StudentBoardingResponse(BaseModel):
+    """Response model for a boarding record."""
+
+    id: int
+    trip_id: int
+    stop_id: int
+    student_id: int
+    student_name: str
+    status: str
+    boarding_time: datetime | None = None
+    created_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
