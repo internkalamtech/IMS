@@ -395,7 +395,7 @@ class DocumentResponse(DocumentBase):
 
 
 # ------------------------------------------------------------------ #
-# Payment and student schemas
+# Payment schemas
 # ------------------------------------------------------------------ #
 
 PaymentMode = Literal["Cash", "UPI", "Card"]
@@ -435,18 +435,37 @@ class PaymentCreate(BaseModel):
         None, max_length=500, description="Optional remarks or notes"
     )
 
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "student_id": 1,
+                    "fee_structure_id": 1,
+                    "amount": 5000.00,
+                    "payment_mode": "UPI",
+                    "reference_number": "UPI123456789",
+                    "remarks": "Monthly fee \u2013 April",
+                }
+            ]
+        }
+    }
+
     @model_validator(mode="after")
     def validate_reference_number_for_digital_payments(
-        
         self,
     ) -> "PaymentCreate":
-        """Ensure a reference number is supplied for UPI or Card payments."""
+        """
+        Ensure a reference number is supplied for UPI or Card payments.
+
+        Raises:
+            ValueError: If payment_mode is UPI or Card but
+                        reference_number is absent or blank.
+        """
         if self.payment_mode in ("UPI", "Card") and not (
             self.reference_number and self.reference_number.strip()
         ):
             raise ValueError(
-                "reference_number is required for "
-                f""
+                f"reference_number is required for "
                 f"{self.payment_mode} payments."
             )
         return self
@@ -486,7 +505,7 @@ class FeeStructureResponse(BaseModel):
 
 
 class PaymentResponse(BaseModel):
-    """Response schema for a payment record."""
+    """Response schema for a single payment transaction."""
 
     id: int
     student_id: int
@@ -634,13 +653,3 @@ class StudentBoardingResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
-
-class StudentResponse(BaseModel):
-    """Response schema for student payment listings."""
-
-    id: int
-    name: str
-    roll_number: str
-    class_name: str
-    next_due_date: Optional[datetime] = None

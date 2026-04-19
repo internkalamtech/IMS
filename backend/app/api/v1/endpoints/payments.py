@@ -57,12 +57,9 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
     responses={
         400: {"model": ErrorResponse, "description": "Validation error"},
         401: {"model": ErrorResponse, "description": "Unauthorized"},
-        404: {
-            
+        404: {   
             "model": ErrorResponse,
-           
-            "description": "Student or fee structure not found"
-        ,
+            "description": "Student or fee structure not found",
         },
         500: {
             "model": ErrorResponse,
