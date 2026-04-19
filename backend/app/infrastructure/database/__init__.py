@@ -8,8 +8,11 @@ from app.infrastructure.database.models import (
     ParentModel,
     PaymentModel,
     RoleModel,
+    StudentBoardingModel,
     StudentModel,
     SubjectModel,
+    TripModel,
+    TripStopModel,
     UserModel,
 )
 
@@ -26,5 +29,8 @@ __all__ = [
     "FeeStructureModel",
     "PaymentModel",
     "ParentModel",
+    "TripModel",
+    "TripStopModel",
+    "StudentBoardingModel",
 ]
 
