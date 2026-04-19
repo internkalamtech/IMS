@@ -3,16 +3,12 @@ import { ScrollView, StyleSheet, View, TouchableOpacity, Text } from "react-nati
 import { Ionicons } from "@expo/vector-icons";
 import { QuickActionGrid } from "@/presentation/components/dashboard/QuickActionGrid";
 import { RecentUpdates } from "@/presentation/components/dashboard/RecentUpdates";
+import { DASHBOARD_CONFIG } from "@/core/config/dashboard";
 //import { API_BASE_URL } from "@/core/config/api";
 
-const actions = [
-    { id: 1, title: "Timetable", icon: "calendar-outline", color: "#3B82F6" },
-    { id: 2, title: "Attendance", icon: "person-outline", color: "#3B82F6" },
-    { id: 3, title: "Students", icon: "people-outline", color: "#10B981" },
-    { id: 4, title: "Assessments", icon: "medal-outline", color: "#EF4444" },
-    { id: 5, title: "Academics", icon: "book-outline", color: "#8B5CF6" },
-    { id: 6, title: "Leave Requests", icon: "checkbox-outline", color: "#F59E0B" },
-];
+const quickActions =
+    DASHBOARD_CONFIG?.teacher?.quickActions || [];
+
 
 const Teacher2Dashboard = () => {
     const [updates, setUpdates] = useState<any[]>([]);
@@ -79,7 +75,7 @@ const Teacher2Dashboard = () => {
                 </View>
 
                 <View style={styles.gridWrapper}>
-                    <QuickActionGrid actions={actions} />
+                    <QuickActionGrid actions={quickActions} />
                 </View>
 
                 {/* RECENT UPDATES */}

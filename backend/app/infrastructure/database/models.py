@@ -22,13 +22,13 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
+    Text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
     """Base class for all database models."""
-
     pass
 
 
@@ -51,6 +51,9 @@ user_roles = Table(
 )
 
 
+# =========================
+# 👤 USER MODEL
+# =========================
 class UserModel(Base):
     """
     User database model.
@@ -78,7 +81,6 @@ class UserModel(Base):
         nullable=False,
     )
 
-    # Relationships
     roles: Mapped[List["RoleModel"]] = relationship(
         "RoleModel",
         secondary=user_roles,
@@ -94,6 +96,9 @@ class UserModel(Base):
         )
 
 
+# =========================
+# 🎭 ROLE MODEL
+# =========================
 class RoleModel(Base):
     """
     Role database model.
@@ -109,7 +114,6 @@ class RoleModel(Base):
     )
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    # Relationships
     users: Mapped[List["UserModel"]] = relationship(
         "UserModel",
         secondary=user_roles,
@@ -120,6 +124,34 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
+# =========================
+# 📚 HOMEWORK MODEL
+# =========================
+class HomeworkModel(Base):
+    __tablename__ = "homeworks"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
+
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(Text)
+
+    subject: Mapped[str] = mapped_column(String(100))
+    className: Mapped[str] = mapped_column(String(50))
+
+    dueDate: Mapped[str] = mapped_column(String(50))
+
+    assignType: Mapped[str] = mapped_column(String(20))  # ALL / INDIVIDUAL
+
+    students: Mapped[str] = mapped_column(Text)  # comma-separated
+
+    teacherId: Mapped[str] = mapped_column(String(255))
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+    def __repr__(self) -> str:
+        return f"<Homework(id={self.id}, title='{self.title}')>"
 class SubjectModel(Base):
     """
     Subject database model.
