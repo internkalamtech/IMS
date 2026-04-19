@@ -189,7 +189,7 @@ export class ApiClient {
 
                         if (this.isRefreshing) {
                             originalRequest._retry = true;
-                            return new Promise((resolve, reject) => {
+                            return new Promise<string>((resolve, reject) => {
                                 this.failedQueue.push({ resolve, reject });
                             }).then((token) => {
                                 this.ensureHeaders(originalRequest).set('Authorization', `Bearer ${token}`);
@@ -221,6 +221,21 @@ export class ApiClient {
                             this.processQueue(authError);
                             return Promise.reject(authError);
                         }
+                    }
+
+                    if (status === 401 || status === 403) {
+                        if (status === 401) {
+                            await StorageService.removeItem('auth_token');
+                            await StorageService.removeItem('current_user');
+                        }
+
+                        return Promise.reject(
+                            new AuthError(
+                                status === 401
+                                    ? 'Session expired'
+                                    : 'Access denied'
+                            )
+                        );
                     }
 
                     return Promise.reject(new NetworkError(`Request failed with status ${status}`, status));
