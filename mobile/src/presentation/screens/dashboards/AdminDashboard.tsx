@@ -86,7 +86,7 @@ export default function AdminDashboard() {
                                 router.push('/(tabs)/classes');
                             }
                             if (action.title === 'Timetable') {
-                                router.push('/(tabs)/timetable-classes');
+                                router.push('/timetable-classes');
                             }
                         }}
                     />
