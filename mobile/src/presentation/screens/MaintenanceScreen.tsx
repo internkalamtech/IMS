@@ -1,7 +1,7 @@
-import { DriverRepositoryImpl } from '@/data/repositories/driver-repository-impl';
-import { MaintenanceTask } from '@/domain/entities/maintenance-task';
-import { GetDriverMaintenanceUseCase } from '@/domain/usecases/get-driver-maintenance-usecase';
+import { getApiBaseUrl } from '@/core/api-config';
 import { useAuth } from '@/presentation/hooks/useAuth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -15,23 +15,54 @@ import { ThemedCard } from '../components/ThemedCard';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 
-const driverRepository = new DriverRepositoryImpl();
-const getDriverMaintenanceUseCase = new GetDriverMaintenanceUseCase(
-    driverRepository
-);
+type MaintenanceTaskStatus = 'Scheduled' | 'In Progress' | 'Completed';
+
+type MaintenanceTask = {
+    title: string;
+    date: string;
+    status: MaintenanceTaskStatus;
+};
+
+const API_BASE_URL = getApiBaseUrl();
+const TOKEN_STORAGE_KEY = 'auth_token';
+
+function getErrorMessage(error: unknown, fallback: string): string {
+    if (axios.isAxiosError(error)) {
+        const detail = error.response?.data?.detail;
+        if (typeof detail === 'string' && detail.length > 0) {
+            return detail;
+        }
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    return fallback;
+}
 
 export default function MaintenanceScreen() {
-    const { authReady, user } = useAuth();
+    const { loading, user } = useAuth();
     const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [screenLoading, setScreenLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const loadTasks = useCallback(
         async (isRefresh: boolean = false) => {
-            if (!authReady || !user) {
+            if (!user) {
+                setTasks([]);
                 setError('No token available');
-                setLoading(false);
+                setScreenLoading(false);
+                setRefreshing(false);
+                return;
+            }
+
+            const token = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+            if (!token) {
+                setTasks([]);
+                setError('No token available');
+                setScreenLoading(false);
                 setRefreshing(false);
                 return;
             }
@@ -39,46 +70,57 @@ export default function MaintenanceScreen() {
             if (isRefresh) {
                 setRefreshing(true);
             } else {
-                setLoading(true);
+                setScreenLoading(true);
             }
 
             setError(null);
 
             try {
-                const maintenanceTasks =
-                    await getDriverMaintenanceUseCase.execute();
-                setTasks(maintenanceTasks);
-            } catch (e: any) {
-                setError(e?.message ?? 'Failed to load maintenance tasks');
+                const response = await axios.get<MaintenanceTask[]>(
+                    `${API_BASE_URL}/driver/maintenance`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                setTasks(response.data);
+            } catch (fetchError: unknown) {
+                setError(
+                    getErrorMessage(
+                        fetchError,
+                        'Failed to load maintenance tasks'
+                    )
+                );
             } finally {
-                setLoading(false);
+                setScreenLoading(false);
                 setRefreshing(false);
             }
         },
-        [authReady, user]
+        [user]
     );
 
     useEffect(() => {
-        if (!authReady) {
+        if (loading) {
             return;
         }
 
         if (!user) {
             setTasks([]);
             setError('No token available');
-            setLoading(false);
+            setScreenLoading(false);
             setRefreshing(false);
             return;
         }
 
         void loadTasks();
-    }, [authReady, loadTasks, user]);
+    }, [loading, loadTasks, user]);
 
     const sortedTasks = [...tasks].sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
-    const getStatusStyle = (status: MaintenanceTask['status']) => {
+    const getStatusStyle = (status: MaintenanceTaskStatus) => {
         switch (status) {
             case 'Completed':
                 return styles.completed;
@@ -96,7 +138,7 @@ export default function MaintenanceScreen() {
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
-                        onRefresh={() => loadTasks(true)}
+                        onRefresh={() => void loadTasks(true)}
                     />
                 }
             >
@@ -108,17 +150,17 @@ export default function MaintenanceScreen() {
                     vehicle.
                 </ThemedText>
 
-                {loading && (
+                {screenLoading && (
                     <View style={styles.centered}>
                         <ActivityIndicator size="large" />
                     </View>
                 )}
 
-                {!loading && error && (
+                {!screenLoading && error && (
                     <ThemedCard style={styles.messageCard}>
                         <ThemedText style={styles.errorText}>{error}</ThemedText>
                         <Pressable
-                            onPress={() => loadTasks()}
+                            onPress={() => void loadTasks()}
                             style={styles.retryButton}
                         >
                             <ThemedText type="link">Retry</ThemedText>
@@ -126,7 +168,7 @@ export default function MaintenanceScreen() {
                     </ThemedCard>
                 )}
 
-                {!loading && !error && sortedTasks.length === 0 && (
+                {!screenLoading && !error && sortedTasks.length === 0 && (
                     <ThemedCard style={styles.messageCard}>
                         <ThemedText>
                             No maintenance tasks found for your assigned
@@ -135,7 +177,7 @@ export default function MaintenanceScreen() {
                     </ThemedCard>
                 )}
 
-                {!loading &&
+                {!screenLoading &&
                     !error &&
                     sortedTasks.map((task) => (
                         <ThemedCard

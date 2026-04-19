@@ -1,7 +1,7 @@
-import { DriverRepositoryImpl } from '@/data/repositories/driver-repository-impl';
-import { ComplianceDocument } from '@/domain/entities/compliance-document';
-import { GetDriverDocumentsUseCase } from '@/domain/usecases/get-driver-documents-usecase';
+import { getApiBaseUrl } from '@/core/api-config';
 import { useAuth } from '@/presentation/hooks/useAuth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -15,12 +15,15 @@ import { ThemedCard } from '../components/ThemedCard';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 
-const driverRepository = new DriverRepositoryImpl();
-const getDriverDocumentsUseCase = new GetDriverDocumentsUseCase(
-    driverRepository
-);
+type ComplianceDocument = {
+    title: string;
+    expiryDate: string;
+};
 
 type ComplianceStatus = 'Expired' | 'Expiring Soon' | 'Valid';
+
+const API_BASE_URL = getApiBaseUrl();
+const TOKEN_STORAGE_KEY = 'auth_token';
 
 function getDaysLeft(expiryDate: string): number {
     const today = new Date();
@@ -62,18 +65,43 @@ function getCountdownLabel(daysLeft: number): string {
     return `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`;
 }
 
+function getErrorMessage(error: unknown, fallback: string): string {
+    if (axios.isAxiosError(error)) {
+        const detail = error.response?.data?.detail;
+        if (typeof detail === 'string' && detail.length > 0) {
+            return detail;
+        }
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    return fallback;
+}
+
 export default function ComplianceScreen() {
-    const { authReady, user } = useAuth();
+    const { loading, user } = useAuth();
     const [documents, setDocuments] = useState<ComplianceDocument[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [screenLoading, setScreenLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const loadDocuments = useCallback(
         async (isRefresh: boolean = false) => {
-            if (!authReady || !user) {
+            if (!user) {
+                setDocuments([]);
                 setError('No token available');
-                setLoading(false);
+                setScreenLoading(false);
+                setRefreshing(false);
+                return;
+            }
+
+            const token = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+            if (!token) {
+                setDocuments([]);
+                setError('No token available');
+                setScreenLoading(false);
                 setRefreshing(false);
                 return;
             }
@@ -81,39 +109,48 @@ export default function ComplianceScreen() {
             if (isRefresh) {
                 setRefreshing(true);
             } else {
-                setLoading(true);
+                setScreenLoading(true);
             }
 
             setError(null);
 
             try {
-                const driverDocuments = await getDriverDocumentsUseCase.execute();
-                setDocuments(driverDocuments);
-            } catch (e: any) {
-                setError(e?.message ?? 'Failed to load documents');
+                const response = await axios.get<ComplianceDocument[]>(
+                    `${API_BASE_URL}/driver/documents`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                setDocuments(response.data);
+            } catch (fetchError: unknown) {
+                setError(
+                    getErrorMessage(fetchError, 'Failed to load documents')
+                );
             } finally {
-                setLoading(false);
+                setScreenLoading(false);
                 setRefreshing(false);
             }
         },
-        [authReady, user]
+        [user]
     );
 
     useEffect(() => {
-        if (!authReady) {
+        if (loading) {
             return;
         }
 
         if (!user) {
             setDocuments([]);
             setError('No token available');
-            setLoading(false);
+            setScreenLoading(false);
             setRefreshing(false);
             return;
         }
 
         void loadDocuments();
-    }, [authReady, loadDocuments, user]);
+    }, [loading, loadDocuments, user]);
 
     const getStatusStyle = (status: ComplianceStatus) => {
         switch (status) {
@@ -133,7 +170,7 @@ export default function ComplianceScreen() {
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
-                        onRefresh={() => loadDocuments(true)}
+                        onRefresh={() => void loadDocuments(true)}
                     />
                 }
             >
@@ -145,17 +182,17 @@ export default function ComplianceScreen() {
                     vehicle.
                 </ThemedText>
 
-                {loading && (
+                {screenLoading && (
                     <View style={styles.centered}>
                         <ActivityIndicator size="large" />
                     </View>
                 )}
 
-                {!loading && error && (
+                {!screenLoading && error && (
                     <ThemedCard style={styles.messageCard}>
                         <ThemedText style={styles.errorText}>{error}</ThemedText>
                         <Pressable
-                            onPress={() => loadDocuments()}
+                            onPress={() => void loadDocuments()}
                             style={styles.retryButton}
                         >
                             <ThemedText type="link">Retry</ThemedText>
@@ -163,7 +200,7 @@ export default function ComplianceScreen() {
                     </ThemedCard>
                 )}
 
-                {!loading && !error && documents.length === 0 && (
+                {!screenLoading && !error && documents.length === 0 && (
                     <ThemedCard style={styles.messageCard}>
                         <ThemedText>
                             No compliance documents found for your assigned
@@ -172,7 +209,7 @@ export default function ComplianceScreen() {
                     </ThemedCard>
                 )}
 
-                {!loading &&
+                {!screenLoading &&
                     !error &&
                     documents.map((document) => {
                         const status = getComplianceStatus(document.expiryDate);
