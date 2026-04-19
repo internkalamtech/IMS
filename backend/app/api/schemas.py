@@ -319,11 +319,13 @@ class StudentResponse(BaseModel):
     id: int
     name: str
     roll_number: str
-    class_id: int
+    class_id: Optional[int] = None
     class_name: str
     next_due_date: Optional[datetime] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
 
 
 class ParentResponse(BaseModel):
@@ -410,5 +412,113 @@ class RouteManifestResponse(BaseModel):
     route_id: int = Field(..., alias="routeId")
     total_students: int = Field(..., alias="totalStudents")
     students: List[RouteManifestStudentItem]
+
+    model_config = {"populate_by_name": True}
+
+
+class TripCreateRequest(BaseModel):
+    """Request schema for creating a trip."""
+
+    driver_id: int = Field(..., alias="driverId", gt=0)
+    route_id: str = Field(..., alias="routeId", min_length=1)
+    vehicle_id: str = Field(..., alias="vehicleId", min_length=1)
+    trip_type: Literal["pickup", "drop_off"] = Field(..., alias="tripType")
+    scheduled_start: datetime = Field(..., alias="scheduledStart")
+    total_students: int = Field(..., alias="totalStudents", ge=0)
+
+    model_config = {"populate_by_name": True}
+
+
+class TripUpdateStatusRequest(BaseModel):
+    """Request schema for updating trip status."""
+
+    status: Literal["scheduled", "in_progress", "completed", "cancelled"]
+    notes: Optional[str] = None
+
+
+class TripResponse(BaseModel):
+    """Response schema for trip details."""
+
+    id: int
+    driver_id: int = Field(..., alias="driverId")
+    route_id: str = Field(..., alias="routeId")
+    vehicle_id: str = Field(..., alias="vehicleId")
+    trip_type: str = Field(..., alias="tripType")
+    status: str
+    scheduled_start: datetime = Field(..., alias="scheduledStart")
+    actual_start: Optional[datetime] = Field(default=None, alias="actualStart")
+    actual_end: Optional[datetime] = Field(default=None, alias="actualEnd")
+    total_students: int = Field(..., alias="totalStudents")
+    boarded_count: int = Field(..., alias="boardedCount")
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    updated_at: Optional[datetime] = Field(default=None, alias="updatedAt")
+
+    model_config = {"populate_by_name": True}
+
+
+class TripStopCreateRequest(BaseModel):
+    """Request schema for creating a trip stop."""
+
+    stop_sequence: int = Field(..., alias="stopSequence", ge=1)
+    location_name: str = Field(..., alias="locationName", min_length=1)
+    scheduled_time: datetime = Field(..., alias="scheduledTime")
+    expected_students: int = Field(..., alias="expectedStudents", ge=0)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class TripStopUpdateRequest(BaseModel):
+    """Request schema for updating stop status."""
+
+    status: Literal["pending", "in_progress", "completed"]
+    boarded_students: Optional[int] = Field(default=None, alias="boardedStudents", ge=0)
+
+    model_config = {"populate_by_name": True}
+
+
+class TripStopResponse(BaseModel):
+    """Response schema for trip stop details."""
+
+    id: int
+    trip_id: int = Field(..., alias="tripId")
+    stop_sequence: int = Field(..., alias="stopSequence")
+    location_name: str = Field(..., alias="locationName")
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    scheduled_time: datetime = Field(..., alias="scheduledTime")
+    actual_arrival: Optional[datetime] = Field(default=None, alias="actualArrival")
+    actual_departure: Optional[datetime] = Field(default=None, alias="actualDeparture")
+    expected_students: int = Field(..., alias="expectedStudents")
+    boarded_students: int = Field(..., alias="boardedStudents")
+    status: str
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    updated_at: Optional[datetime] = Field(default=None, alias="updatedAt")
+
+    model_config = {"populate_by_name": True}
+
+
+class StudentBoardingCreateRequest(BaseModel):
+    """Request schema for logging student boarding."""
+
+    student_id: int = Field(..., alias="studentId", gt=0)
+    student_name: str = Field(..., alias="studentName", min_length=1)
+    status: Literal["boarded", "no_show", "marked_absent"]
+
+    model_config = {"populate_by_name": True}
+
+
+class StudentBoardingResponse(BaseModel):
+    """Response schema for boarding records."""
+
+    id: int
+    trip_id: int = Field(..., alias="tripId")
+    stop_id: int = Field(..., alias="stopId")
+    student_id: int = Field(..., alias="studentId")
+    student_name: str = Field(..., alias="studentName")
+    status: str
+    boarding_time: Optional[datetime] = Field(default=None, alias="boardingTime")
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
 
     model_config = {"populate_by_name": True}

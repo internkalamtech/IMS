@@ -14,6 +14,7 @@ from app.api.v1.endpoints import (
     enrollment_router,
     subjects,
     payments,
+    trips,
     class_subjects_router,
     transport_enrollments_router,
 )
@@ -29,5 +30,6 @@ router.include_router(students.router)
 router.include_router(enrollment_router)
 router.include_router(subjects.router)
 router.include_router(payments.router)
+router.include_router(trips.router)
 router.include_router(class_subjects_router)
 router.include_router(transport_enrollments_router)

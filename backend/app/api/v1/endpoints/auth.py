@@ -42,13 +42,12 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     },
     summary="User login",
     description=(
-        "Authenticate a user with email and password,"
+        "Authenticate a user with email and password, "
         "return user data with JWT access token."
     ),
 )
 async def login(
-    request: LoginRequest,
-    db: AsyncSession = Depends(get_db),
+    request: LoginRequest, db: AsyncSession = Depends(get_db)
 ) -> LoginResponse:
     """
     Login endpoint.
@@ -76,10 +75,7 @@ async def login(
 
         # Create access token
         access_token = create_access_token(
-            data={
-                "sub": user.id,
-                "email": user.email,
-            }
+            data={"sub": user.id, "email": user.email}
         )
 
         Logger.info(f"Login successful for user: {user.email}")
@@ -93,9 +89,7 @@ async def login(
                 role=user.role,
                 roles=[
                     RoleResponse(
-                        id=r.id,
-                        name=r.name,
-                        description=r.description,
+                        id=r.id, name=r.name, description=r.description
                     )
                     for r in user.roles
                 ],
@@ -120,8 +114,7 @@ async def login(
         )
     except DatabaseError as e:
         Logger.error(
-            f"Database error during login: {e.message}",
-            exc_info=True,
+            f"Database error during login: {e.message}", exc_info=True
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -277,8 +270,7 @@ async def get_demo_credentials(
 
     except Exception as e:
         Logger.error(
-            f"Error fetching demo credentials: {str(e)}",
-            exc_info=True,
+            f"Error fetching demo credentials: {str(e)}", exc_info=True
         )
         # Fallback to empty list if something goes wrong, but log the error
         return DemoCredentialsResponse(credentials=[])
