@@ -4,6 +4,7 @@ import { QuickActionGrid } from '@/presentation/components/dashboard/QuickAction
 import { ThemedCard } from '@/presentation/components/ThemedCard';
 import { ThemedText } from '@/presentation/components/ThemedText';
 import { ThemedView } from '@/presentation/components/ThemedView';
+import { FeeAnalyticsCard } from '@/presentation/components/FeeAnalyticsCard';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
@@ -85,6 +86,9 @@ export default function AdminDashboard() {
                     </View>
 
                     <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
+
+                    {/* Fee Analytics */}
+                    <FeeAnalyticsCard theme={theme} isDark={isDark} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>

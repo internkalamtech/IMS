@@ -15,6 +15,9 @@ from app.domain.entities.payment import (
     PaymentStatus,
     PaymentSummary,
     Student,
+    ClassFeeStructure,
+    FeeBreakdown,
+    InstallmentSchedule,
 )
 
 
@@ -203,5 +206,102 @@ class PaymentRepository(ABC):
 
         Returns:
             True if the receipt number exists, False otherwise
+        """
+        pass
+
+    # ------------------------------------------------------------------ #
+    # Class fee structure operations
+    # ------------------------------------------------------------------ #
+
+    @abstractmethod
+    async def create_class_fee_structure(
+        self,
+        class_name: str,
+        academic_year: str,
+        total_amount: float,
+        breakdowns: List[dict],
+        installments: List[dict],
+    ) -> ClassFeeStructure:
+        """
+        Create a new class fee structure with breakdowns and installments.
+
+        Args:
+            class_name: Name of the class
+            academic_year: Academic year (e.g., "2024-25")
+            total_amount: Total fee amount
+            breakdowns: List of fee breakdown dicts
+            installments: List of installment dicts
+
+        Returns:
+            Created ClassFeeStructure entity
+        """
+        pass
+
+    @abstractmethod
+    async def get_class_fee_structure_by_id(
+        self, structure_id: int
+    ) -> Optional[ClassFeeStructure]:
+        """
+        Retrieve a class fee structure by ID.
+
+        Args:
+            structure_id: ID of the class fee structure
+
+        Returns:
+            ClassFeeStructure entity or None if not found
+        """
+        pass
+
+    @abstractmethod
+    async def list_class_fee_structures(
+        self,
+        class_name: Optional[str] = None,
+        academic_year: Optional[str] = None,
+    ) -> List[ClassFeeStructure]:
+        """
+        List class fee structures with optional filters.
+
+        Args:
+            class_name: Filter by class name
+            academic_year: Filter by academic year
+
+        Returns:
+            List of ClassFeeStructure entities
+        """
+        pass
+
+    @abstractmethod
+    async def update_class_fee_structure(
+        self,
+        structure_id: int,
+        class_name: Optional[str] = None,
+        academic_year: Optional[str] = None,
+        total_amount: Optional[float] = None,
+        breakdowns: Optional[List[dict]] = None,
+        installments: Optional[List[dict]] = None,
+    ) -> ClassFeeStructure:
+        """
+        Update a class fee structure and its related data.
+
+        Args:
+            structure_id: ID of the class fee structure
+            class_name: New class name
+            academic_year: New academic year
+            total_amount: New total amount
+            breakdowns: Updated list of breakdown dicts
+            installments: Updated list of installment dicts
+
+        Returns:
+            Updated ClassFeeStructure entity
+        """
+        pass
+
+    @abstractmethod
+    async def delete_class_fee_structure(self, structure_id: int) -> None:
+        """
+        Delete a class fee structure and its related data.
+
+        Args:
+            structure_id: ID of the class fee structure to delete
         """
         pass

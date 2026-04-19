@@ -422,3 +422,135 @@ class ParentModel(Base):
             f"email='{self.email}')>"
         )
 
+
+class ClassFeeStructureModel(Base):
+    """
+    Class-level fee structure database model.
+
+    Represents the fee structure defined for a class including
+    total fee amount, breakdown items, and installment schedules.
+    """
+
+    __tablename__ = "class_fee_structures"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    class_name: Mapped[str] = mapped_column(
+        String(100), nullable=False, index=True
+    )
+    academic_year: Mapped[str] = mapped_column(
+        String(20), nullable=False, index=True
+    )
+    total_amount: Mapped[float] = mapped_column(Float, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    breakdowns: Mapped[List["FeeBreakdownModel"]] = relationship(
+        "FeeBreakdownModel",
+        back_populates="class_fee_structure",
+        cascade="all, delete-orphan",
+    )
+    installments: Mapped[List["InstallmentScheduleModel"]] = relationship(
+        "InstallmentScheduleModel",
+        back_populates="class_fee_structure",
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<ClassFeeStructure(id={self.id}, "
+            f"class_name='{self.class_name}', "
+            f"academic_year='{self.academic_year}', "
+            f"total={self.total_amount})>"
+        )
+
+
+class FeeBreakdownModel(Base):
+    """
+    Fee breakdown database model.
+
+    Represents an individual fee head component of a class fee structure.
+    """
+
+    __tablename__ = "fee_breakdowns"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    class_fee_structure_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("class_fee_structures.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    fee_head: Mapped[str] = mapped_column(String(100), nullable=False)
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+    description: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    class_fee_structure: Mapped["ClassFeeStructureModel"] = relationship(
+        "ClassFeeStructureModel", back_populates="breakdowns"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<FeeBreakdown(id={self.id}, "
+            f"fee_head='{self.fee_head}', "
+            f"amount={self.amount})>"
+        )
+
+
+class InstallmentScheduleModel(Base):
+    """
+    Installment schedule database model.
+
+    Represents an installment schedule for a class fee structure.
+    """
+
+    __tablename__ = "installment_schedules"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    class_fee_structure_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("class_fee_structures.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    installment_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    due_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+    description: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    class_fee_structure: Mapped["ClassFeeStructureModel"] = relationship(
+        "ClassFeeStructureModel", back_populates="installments"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<InstallmentSchedule(id={self.id}, "
+            f"installment_number={self.installment_number}, "
+            f"amount={self.amount})>"
+        )
+

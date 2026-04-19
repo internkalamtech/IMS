@@ -13,7 +13,10 @@ from app.api.v1.endpoints import (
     class_subjects_router,
     subjects,
     enrollment,
+    payments,
+    fee_structures,
 )
+
 # Create v1 router
 router = APIRouter(prefix="/v1")
 
@@ -24,4 +27,6 @@ router.include_router(dashboard.router)
 router.include_router(class_subjects_router)
 router.include_router(subjects.router)
 router.include_router(enrollment.router)
+router.include_router(payments.router)
+router.include_router(fee_structures.router)
 

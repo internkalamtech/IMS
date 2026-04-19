@@ -19,12 +19,18 @@ from app.domain.entities.payment import (
     PaymentStatus,
     PaymentSummary,
     Student,
+    ClassFeeStructure,
+    FeeBreakdown,
+    InstallmentSchedule,
 )
 from app.domain.repositories.payment_repository import PaymentRepository
 from app.infrastructure.database.models import (
     FeeStructureModel,
     PaymentModel,
     StudentModel,
+    ClassFeeStructureModel,
+    FeeBreakdownModel,
+    InstallmentScheduleModel,
 )
 
 
@@ -478,3 +484,308 @@ class DatabasePaymentRepository(PaymentRepository):
             raise DatabaseError(
                 "Failed to check receipt number."
             ) from exc
+
+    # ------------------------------------------------------------------ #
+    # Class fee structure operations
+    # ------------------------------------------------------------------ #
+
+    async def create_class_fee_structure(
+        self,
+        class_name: str,
+        academic_year: str,
+        total_amount: float,
+        breakdowns: List[dict],
+        installments: List[dict],
+    ) -> ClassFeeStructure:
+        """
+        Create a new class fee structure with breakdowns and installments.
+
+        Args:
+            class_name: Name of the class
+            academic_year: Academic year
+            total_amount: Total fee amount
+            breakdowns: List of breakdown dicts
+            installments: List of installment dicts
+
+        Returns:
+            Created ClassFeeStructure entity
+        """
+        try:
+            # Create the main structure
+            structure_model = ClassFeeStructureModel(
+                class_name=class_name,
+                academic_year=academic_year,
+                total_amount=total_amount,
+            )
+            self.db.add(structure_model)
+            await self.db.flush()
+
+            # Add breakdowns
+            for breakdown in breakdowns:
+                breakdown_model = FeeBreakdownModel(
+                    class_fee_structure_id=structure_model.id,
+                    fee_head=breakdown.get("fee_head"),
+                    amount=breakdown.get("amount"),
+                    description=breakdown.get("description"),
+                )
+                self.db.add(breakdown_model)
+
+            # Add installments
+            for installment in installments:
+                installment_model = InstallmentScheduleModel(
+                    class_fee_structure_id=structure_model.id,
+                    installment_number=installment.get("installment_number"),
+                    due_date=installment.get("due_date"),
+                    amount=installment.get("amount"),
+                    description=installment.get("description"),
+                )
+                self.db.add(installment_model)
+
+            await self.db.flush()
+            await self.db.refresh(structure_model)
+            return self._class_fee_structure_to_entity(structure_model)
+        except Exception as exc:
+            Logger.error(f"Error creating class fee structure: {exc}")
+            raise DatabaseError("Failed to create class fee structure.") from exc
+
+    async def get_class_fee_structure_by_id(
+        self, structure_id: int
+    ) -> Optional[ClassFeeStructure]:
+        """
+        Retrieve a class fee structure by ID.
+
+        Args:
+            structure_id: ID of the structure
+
+        Returns:
+            ClassFeeStructure entity or None if not found
+        """
+        try:
+            result = await self.db.execute(
+                select(ClassFeeStructureModel).where(
+                    ClassFeeStructureModel.id == structure_id
+                )
+            )
+            model = result.scalar_one_or_none()
+            return (
+                self._class_fee_structure_to_entity(model) if model else None
+            )
+        except Exception as exc:
+            Logger.error(
+                f"Error fetching class fee structure {structure_id}: {exc}"
+            )
+            raise DatabaseError(
+                "Failed to retrieve class fee structure."
+            ) from exc
+
+    async def list_class_fee_structures(
+        self,
+        class_name: Optional[str] = None,
+        academic_year: Optional[str] = None,
+    ) -> List[ClassFeeStructure]:
+        """
+        List class fee structures with optional filters.
+
+        Args:
+            class_name: Filter by class name
+            academic_year: Filter by academic year
+
+        Returns:
+            List of ClassFeeStructure entities
+        """
+        try:
+            query = select(ClassFeeStructureModel)
+
+            if class_name:
+                query = query.where(
+                    ClassFeeStructureModel.class_name.ilike(f"%{class_name}%")
+                )
+            if academic_year:
+                query = query.where(
+                    ClassFeeStructureModel.academic_year == academic_year
+                )
+
+            result = await self.db.execute(query)
+            models = result.scalars().all()
+            return [
+                self._class_fee_structure_to_entity(m) for m in models
+            ]
+        except Exception as exc:
+            Logger.error(f"Error listing class fee structures: {exc}")
+            raise DatabaseError(
+                "Failed to list class fee structures."
+            ) from exc
+
+    async def update_class_fee_structure(
+        self,
+        structure_id: int,
+        class_name: Optional[str] = None,
+        academic_year: Optional[str] = None,
+        total_amount: Optional[float] = None,
+        breakdowns: Optional[List[dict]] = None,
+        installments: Optional[List[dict]] = None,
+    ) -> ClassFeeStructure:
+        """
+        Update a class fee structure.
+
+        Args:
+            structure_id: ID of the structure
+            class_name: New class name
+            academic_year: New academic year
+            total_amount: New total amount
+            breakdowns: Updated breakdowns list
+            installments: Updated installments list
+
+        Returns:
+            Updated ClassFeeStructure entity
+        """
+        try:
+            result = await self.db.execute(
+                select(ClassFeeStructureModel).where(
+                    ClassFeeStructureModel.id == structure_id
+                )
+            )
+            model = result.scalar_one_or_none()
+            if model is None:
+                raise DatabaseError(
+                    f"Class fee structure {structure_id} not found."
+                )
+
+            # Update basic fields
+            if class_name is not None:
+                model.class_name = class_name
+            if academic_year is not None:
+                model.academic_year = academic_year
+            if total_amount is not None:
+                model.total_amount = total_amount
+
+            # Update breakdowns if provided
+            if breakdowns is not None:
+                # Delete existing breakdowns
+                await self.db.execute(
+                    select(FeeBreakdownModel)
+                    .where(
+                        FeeBreakdownModel.class_fee_structure_id
+                        == structure_id
+                    )
+                )
+                breakdowns_result = await self.db.execute(
+                    select(FeeBreakdownModel).where(
+                        FeeBreakdownModel.class_fee_structure_id
+                        == structure_id
+                    )
+                )
+                existing = breakdowns_result.scalars().all()
+                for existing_bd in existing:
+                    await self.db.delete(existing_bd)
+
+                # Add new breakdowns
+                for breakdown in breakdowns:
+                    breakdown_model = FeeBreakdownModel(
+                        class_fee_structure_id=structure_id,
+                        fee_head=breakdown.get("fee_head"),
+                        amount=breakdown.get("amount"),
+                        description=breakdown.get("description"),
+                    )
+                    self.db.add(breakdown_model)
+
+            # Update installments if provided
+            if installments is not None:
+                # Delete existing installments
+                installments_result = await self.db.execute(
+                    select(InstallmentScheduleModel).where(
+                        InstallmentScheduleModel.class_fee_structure_id
+                        == structure_id
+                    )
+                )
+                existing = installments_result.scalars().all()
+                for existing_is in existing:
+                    await self.db.delete(existing_is)
+
+                # Add new installments
+                for installment in installments:
+                    installment_model = InstallmentScheduleModel(
+                        class_fee_structure_id=structure_id,
+                        installment_number=installment.get(
+                            "installment_number"
+                        ),
+                        due_date=installment.get("due_date"),
+                        amount=installment.get("amount"),
+                        description=installment.get("description"),
+                    )
+                    self.db.add(installment_model)
+
+            await self.db.flush()
+            await self.db.refresh(model)
+            return self._class_fee_structure_to_entity(model)
+        except DatabaseError:
+            raise
+        except Exception as exc:
+            Logger.error(f"Error updating class fee structure: {exc}")
+            raise DatabaseError(
+                "Failed to update class fee structure."
+            ) from exc
+
+    async def delete_class_fee_structure(self, structure_id: int) -> None:
+        """
+        Delete a class fee structure and cascade delete its children.
+
+        Args:
+            structure_id: ID of the structure to delete
+        """
+        try:
+            result = await self.db.execute(
+                select(ClassFeeStructureModel).where(
+                    ClassFeeStructureModel.id == structure_id
+                )
+            )
+            model = result.scalar_one_or_none()
+            if model:
+                await self.db.delete(model)
+                await self.db.flush()
+        except Exception as exc:
+            Logger.error(f"Error deleting class fee structure: {exc}")
+            raise DatabaseError(
+                "Failed to delete class fee structure."
+            ) from exc
+
+    # ------------------------------------------------------------------ #
+    # Internal helper mappings
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _class_fee_structure_to_entity(
+        model: ClassFeeStructureModel,
+    ) -> ClassFeeStructure:
+        """Map ClassFeeStructureModel ORM object to ClassFeeStructure entity."""
+        breakdowns = [
+            FeeBreakdown(
+                id=bd.id,
+                class_fee_structure_id=bd.class_fee_structure_id,
+                fee_head=bd.fee_head,
+                amount=bd.amount,
+                description=bd.description,
+            )
+            for bd in model.breakdowns
+        ]
+        installments = [
+            InstallmentSchedule(
+                id=i.id,
+                class_fee_structure_id=i.class_fee_structure_id,
+                installment_number=i.installment_number,
+                due_date=i.due_date,
+                amount=i.amount,
+                description=i.description,
+            )
+            for i in model.installments
+        ]
+        return ClassFeeStructure(
+            id=model.id,
+            class_name=model.class_name,
+            academic_year=model.academic_year,
+            total_amount=model.total_amount,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
+            breakdowns=breakdowns,
+            installments=installments,
+        )
