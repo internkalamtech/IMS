@@ -10,9 +10,13 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const { width } = Dimensions.get('window');
-
+import { RefreshControl,
+        ScrollView,
+        StatusBar,
+        TouchableOpacity,
+        View,
+        StyleSheet
+       } from "react-native";
 export default function AdminDashboard() {
     const { logout, user } = useAuth();
     const router = useRouter();
@@ -89,7 +93,7 @@ return (
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
@@ -264,4 +268,3 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
 });
-

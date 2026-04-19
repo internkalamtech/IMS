@@ -1,7 +1,0 @@
-{
-  "venvPath": ".",
-  "venv": ".venv",
-  "pythonVersion": "3.11",
-  "include": ["app"],
-  "exclude": ["**/node_modules", "**/__pycache__"]
-}

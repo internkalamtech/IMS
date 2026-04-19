@@ -1,39 +1,84 @@
-import { DASHBOARD_CONFIG } from '@/core/config/dashboard';
+import { DASHBOARD_CONFIG, QuickAction } from '@/core/config/dashboard';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { QuickActionGrid } from '@/presentation/components/dashboard/QuickActionGrid';
 import { ThemedCard } from '@/presentation/components/ThemedCard';
 import { ThemedText } from '@/presentation/components/ThemedText';
 import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
-import { useDashboard } from '@/presentation/hooks/useDashboard';
+import { useIncidents } from '@/presentation/hooks/useIncidents';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import {
-    RefreshControl,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { BackHandler, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import IncidentListScreen from '../IncidentListScreen';
+import ReportIncidentScreen from '../ReportIncidentScreen';
+
+type ViewState = 'dashboard' | 'report_incident' | 'incident_list';
 
 export default function DriverDashboard() {
     const { logout, user } = useAuth();
-    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
+    const { incidents, loading, refreshing, submitting, submitIncident, onRefresh } = useIncidents();
+    const [currentView, setCurrentView] = useState<ViewState>('dashboard');
 
-    // Safe access to avoid build errors if 'driver' is not yet in DASHBOARD_CONFIG
-    const quickActions = (DASHBOARD_CONFIG as any).driver?.quickActions || [];
+    useEffect(() => {
+        const onBackPress = () => {
+            if (currentView !== 'dashboard') {
+                setCurrentView('dashboard');
+                return true; // Prevent default behavior (exit app)
+            }
+            return false; // Default behavior
+        };
 
-    const getStatValue = (label: string, defaultValue: string = '0') => {
-        return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
+        const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+        return () => subscription.remove();
+    }, [currentView]);
+
+    const quickActions = DASHBOARD_CONFIG.driver.quickActions;
+
+    const handleActionPress = (action: QuickAction) => {
+        if (action.title === 'Report Incident') {
+            setCurrentView('report_incident');
+        } else if (action.title === 'My Incidents') {
+            setCurrentView('incident_list');
+        } else {
+            // Other actions could go here
+            console.log(`Action not implemented: ${action.title}`);
+        }
     };
 
-    const stats = [
-        { title: 'Route Stops', value: getStatValue('Route Stops', '12'), icon: 'location-outline' },
-        { title: 'Students', value: getStatValue('Students', '38'), icon: 'people-outline' },
-    ];
+    const getIncidentColor = (type: string) => {
+        switch (type.toLowerCase()) {
+            case 'breakdown': return '#f59e0b';
+            case 'accident': return '#ef4444';
+            case 'delay': return '#3b82f6';
+            default: return theme.colors.primary;
+        }
+    };
+
+    if (currentView === 'report_incident') {
+        return <ReportIncidentScreen 
+            onBack={() => setCurrentView('dashboard')} 
+            onSubmit={submitIncident} 
+            submitting={submitting} 
+        />;
+    }
+
+    if (currentView === 'incident_list') {
+        return <IncidentListScreen 
+            onBack={() => setCurrentView('dashboard')} 
+            incidents={incidents}
+            loading={loading}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+        />;
+    }
+
+    const todayIncidents = incidents.filter(i => {
+        const today = new Date().toISOString().split('T')[0];
+        return i.createdAt.startsWith(today);
+    });
 
     return (
         <ThemedView style={styles.container}>
@@ -41,15 +86,9 @@ export default function DriverDashboard() {
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
-                        tintColor={theme.colors.primaryForeground}
-                    />
-                }
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primaryForeground} />}
             >
-                {/* Banner Header */}
+                {/* Blue Banner Header */}
                 <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
@@ -94,55 +133,49 @@ export default function DriverDashboard() {
                 <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
                     {/* Quick Actions */}
                     <View style={styles.sectionHeader}>
-                        <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
+                        <ThemedText style={styles.sectionTitle} type="subtitle">Driver Tools</ThemedText>
                     </View>
-                    <QuickActionGrid actions={quickActions} />
 
-                    {/* Today's Trip */}
-                    <View style={styles.sectionHeader}>
-                        <ThemedText style={styles.sectionTitle} type="subtitle">Today's Trip</ThemedText>
-                    </View>
-                    <ThemedCard style={styles.tripCard} padding={16}>
-                        <View style={styles.tripRow}>
-                            <View style={[styles.tripIcon, { backgroundColor: `${theme.colors.primary}18` }]}>
-                                <Ionicons name="bus" size={22} color={theme.colors.primary} />
-                            </View>
-                            <View style={styles.tripInfo}>
-                                <ThemedText type="defaultSemiBold" style={styles.tripTitle}>
-                                    Morning Route
-                                </ThemedText>
-                                <ThemedText lightColor="#666" darkColor="#999" style={styles.tripSub}>
-                                    Pickup: 7:00 AM  •  Drop: 8:30 AM
-                                </ThemedText>
-                            </View>
-                            <View style={[styles.statusBadge, { backgroundColor: '#dcfce7' }]}>
-                                <ThemedText style={[styles.statusText, { color: '#166534' }]}>On Time</ThemedText>
-                            </View>
-                        </View>
-                    </ThemedCard>
+                    <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
 
-                    {/* Recent Alerts */}
+                    {/* Recent Incidents */}
                     <View style={styles.sectionHeader}>
-                        <ThemedText style={styles.sectionTitle} type="subtitle">Alerts</ThemedText>
+                        <ThemedText style={styles.sectionTitle} type="subtitle">Recent Incidents</ThemedText>
                     </View>
                     <ThemedCard style={styles.updatesCard} padding={0}>
-                        {[
-                            { icon: 'notifications', color: '#f59e0b', bg: '#f59e0b15', title: 'Route Change', sub: 'Stop #5 relocated — check map' },
-                            { icon: 'alert-circle', color: '#ef4444', bg: '#ef444415', title: 'Traffic Warning', sub: 'Heavy traffic on Main St' },
-                        ].map((item, index) => (
-                            <View key={index} style={[
+                        {incidents.slice(0, 2).map((item, index) => (
+                            <View key={item.id} style={[
                                 styles.updateItem,
-                                index === 0 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+                                index !== Math.min(incidents.length - 1, 1) && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
                             ]}>
-                                <View style={[styles.updateIcon, { backgroundColor: item.bg }]}>
-                                    <Ionicons name={item.icon as any} size={20} color={item.color} />
-                                </View>
+                                <View style={[styles.classColorBar, { backgroundColor: getIncidentColor(item.type) }]} />
                                 <View style={styles.updateContent}>
-                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">{item.title}</ThemedText>
-                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">{item.sub}</ThemedText>
+                                    <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 2}}>
+                                        <ThemedText style={styles.updateTitle} type="defaultSemiBold">{item.type}</ThemedText>
+                                        <View style={[styles.severityBadge, {backgroundColor: item.severity === 'High' ? '#ef444420' : item.severity === 'Medium' ? '#f59e0b20' : '#10b98120'}]}>
+                                            <ThemedText style={{fontSize: 10, color: item.severity === 'High' ? '#ef4444' : item.severity === 'Medium' ? '#f59e0b' : '#10b981', fontWeight: 'bold'}}>{item.severity}</ThemedText>
+                                        </View>
+                                    </View>
+                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999" numberOfLines={1}>{item.description}</ThemedText>
+                                </View>
+                                <View style={[styles.timeTag, { backgroundColor: theme.colors.primary + '10' }]}>
+                                    <ThemedText style={{ color: theme.colors.primary, fontSize: 12 }} type="defaultSemiBold">
+                                        {new Date(item.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                    </ThemedText>
                                 </View>
                             </View>
                         ))}
+                        {incidents.length === 0 && (
+                            <View style={{padding: 24, alignItems: 'center', justifyContent: 'center'}}>
+                                <Ionicons name="checkmark-circle-outline" size={48} color={theme.colors.border} style={{marginBottom: 8}}/>
+                                <ThemedText lightColor="#666" darkColor="#999">No recent incidents</ThemedText>
+                            </View>
+                        )}
+                        {incidents.length > 0 && (
+                            <TouchableOpacity style={styles.viewAllButton} onPress={() => setCurrentView('incident_list')}>
+                                <ThemedText type="link" style={{textAlign: 'center', fontWeight: '600'}}>View All</ThemedText>
+                            </TouchableOpacity>
+                        )}
                     </ThemedCard>
                 </View>
             </ScrollView>
@@ -151,9 +184,15 @@ export default function DriverDashboard() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    scrollView: { flex: 1 },
-    scrollContent: { flexGrow: 1 },
+    container: {
+        flex: 1,
+    },
+    scrollView: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+    },
     banner: {
         paddingBottom: 30,
         borderBottomLeftRadius: 32,
@@ -167,9 +206,17 @@ const styles = StyleSheet.create({
         paddingTop: 20,
         paddingBottom: 24,
     },
-    userName: { fontSize: 26, fontWeight: '700' },
-    subtitle: { fontSize: 15, marginTop: 4 },
-    logoutIcon: { padding: 8 },
+    userName: {
+        fontSize: 26,
+        fontWeight: '700',
+    },
+    subtitle: {
+        fontSize: 15,
+        marginTop: 4,
+    },
+    logoutIcon: {
+        padding: 8,
+    },
     bannerStats: {
         flexDirection: 'row',
         paddingHorizontal: 20,
@@ -191,10 +238,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    bannerStatValue: { fontSize: 20, fontWeight: '700' },
-    bannerStatTitle: { fontSize: 11 },
+    bannerStatValue: {
+        fontSize: 20,
+        fontWeight: '700',
+    },
+    bannerStatTitle: {
+        fontSize: 11,
+    },
     mainContent: {
         flex: 1,
+        marginTop: 0,
         borderTopLeftRadius: 32,
         borderTopRightRadius: 32,
         paddingHorizontal: 24,
@@ -205,32 +258,51 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 20,
     },
-    sectionTitle: { fontSize: 18, fontWeight: '700' },
-    tripCard: { borderRadius: 20, marginBottom: 32 },
-    tripRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    tripIcon: {
-        width: 44,
-        height: 44,
-        borderRadius: 14,
-        justifyContent: 'center',
-        alignItems: 'center',
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '700',
     },
-    tripInfo: { flex: 1 },
-    tripTitle: { fontSize: 15, marginBottom: 2 },
-    tripSub: { fontSize: 13 },
-    statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
-    statusText: { fontSize: 12, fontWeight: '600' },
-    updatesCard: { borderRadius: 24, overflow: 'hidden', marginBottom: 40 },
-    updateItem: { flexDirection: 'row', alignItems: 'center', padding: 16 },
-    updateIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 10,
-        justifyContent: 'center',
+    updatesCard: {
+        borderRadius: 24,
+        overflow: 'hidden',
+        marginBottom: 40,
+    },
+    updateItem: {
+        flexDirection: 'row',
         alignItems: 'center',
+        padding: 16,
+    },
+    classColorBar: {
+        width: 4,
+        height: 40,
+        borderRadius: 2,
         marginRight: 16,
     },
-    updateContent: { flex: 1 },
-    updateTitle: { fontSize: 15, marginBottom: 2 },
-    updateSubtitle: { fontSize: 13 },
+    updateContent: {
+        flex: 1,
+    },
+    updateTitle: {
+        fontSize: 15,
+    },
+    updateSubtitle: {
+        fontSize: 13,
+        paddingRight: 10,
+    },
+    timeTag: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+    severityBadge: {
+        marginLeft: 8,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+    },
+    viewAllButton: {
+        padding: 16,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.05)',
+        alignItems: 'center',
+    }
 });
