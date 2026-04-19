@@ -115,3 +115,71 @@ class PaymentSummary:
     total_collected: float
     total_pending: float
     total_overdue: float
+
+
+@dataclass
+class FeeBreakdown:
+    """
+    Fee breakdown item representing a fee head.
+
+    Attributes:
+        id: Unique identifier for the breakdown item
+        class_fee_structure_id: ID of the parent class fee structure
+        fee_head: Name of the fee head (e.g., Tuition, Transport, Lab)
+        amount: Amount for this fee head
+        description: Optional description of the fee head
+    """
+
+    id: int
+    class_fee_structure_id: int
+    fee_head: str
+    amount: float
+    description: Optional[str] = None
+
+
+@dataclass
+class InstallmentSchedule:
+    """
+    Installment schedule for a fee structure.
+
+    Attributes:
+        id: Unique identifier for the installment
+        class_fee_structure_id: ID of the parent class fee structure
+        installment_number: Order of this installment (1st, 2nd, etc.)
+        due_date: Due date for this installment
+        amount: Amount due for this installment
+        description: Optional description
+    """
+
+    id: int
+    class_fee_structure_id: int
+    installment_number: int
+    due_date: datetime
+    amount: float
+    description: Optional[str] = None
+
+
+@dataclass
+class ClassFeeStructure:
+    """
+    Class-level fee structure defining fees and installments for a class.
+
+    Attributes:
+        id: Unique identifier for the class fee structure
+        class_name: Name of the class/grade
+        academic_year: Academic year (e.g., "2024-25")
+        total_amount: Total fee amount for the class
+        breakdowns: List of fee breakdown items
+        installments: List of installment schedules
+        created_at: Timestamp when created
+        updated_at: Timestamp when last updated
+    """
+
+    id: int
+    class_name: str
+    academic_year: str
+    total_amount: float
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    breakdowns: Optional[list] = None
+    installments: Optional[list] = None
