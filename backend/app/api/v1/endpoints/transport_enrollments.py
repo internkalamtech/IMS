@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.authz import require_roles
 from app.api.schemas import (
+    ErrorResponse,
     CreateStudentTransportEnrollmentsRequest,
     CreateStudentTransportEnrollmentsResponse,
     RouteManifestResponse,
@@ -26,6 +27,11 @@ router = APIRouter(prefix="/transport", tags=["Transport"])
     response_model=CreateStudentTransportEnrollmentsResponse,
     status_code=status.HTTP_201_CREATED,
     responses={
+        400: {"model": ErrorResponse, "description": "Validation error"},
+        404: {
+            "model": ErrorResponse,
+            "description": "Student, route, or stop not found",
+        },
         401: {"description": "Authentication required"},
         403: {"description": "Insufficient permissions"},
     },

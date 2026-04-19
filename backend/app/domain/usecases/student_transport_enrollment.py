@@ -21,31 +21,6 @@ class StudentTransportEnrollmentUseCase:
                     f"Student with id {item['student_id']} not found"
                 )
 
-            existing = await self.repository.get_enrollment(
-                item["student_id"],
-                item["route_id"],
-            )
-            if existing:
-                created_items.append(
-                    {
-                        "id": existing.id,
-                        "student_id": existing.student_id,
-                        "route_id": existing.route_id,
-                        "stop_id": existing.stop_id,
-                        "pickup_time": (
-                            existing.pickup_time.isoformat()
-                            if existing.pickup_time
-                            else None
-                        ),
-                        "dropoff_time": (
-                            existing.dropoff_time.isoformat()
-                            if existing.dropoff_time
-                            else None
-                        ),
-                    }
-                )
-                continue
-
             created = await self.repository.create_enrollment(
                 student_id=item["student_id"],
                 route_id=item["route_id"],

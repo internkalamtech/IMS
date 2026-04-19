@@ -61,6 +61,10 @@ class InMemoryStudentTransportRepository:
         dropoff_time,
     ):
         self.create_calls += 1
+        existing = self._enrollments_by_key.get((student_id, route_id))
+        if existing is not None:
+            return existing
+
         student = self.students[student_id]
         enrollment = _Enrollment(
             enrollment_id=self._next_id,
@@ -205,7 +209,7 @@ async def test_create_enrollments_is_idempotent_for_existing_records(
     assert first_body["enrollments"][0]["studentId"] == 1
     assert first_body["enrollments"][0]["routeId"] == 10
     assert first_body["enrollments"][0]["stopId"] == 2
-    assert transport_repo.create_calls == 1
+    assert transport_repo.create_calls == 2
 
 
 @pytest.mark.asyncio

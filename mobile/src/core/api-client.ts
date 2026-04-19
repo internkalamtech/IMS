@@ -179,12 +179,11 @@ export class ApiClient {
                             && (hasAuthHeader || Boolean(storedToken));
 
                         if (!canRefresh) {
-                            if (isAuthRequest) {
-                                return Promise.reject(error);
+                            if (!isAuthRequest) {
+                                await StorageService.removeItem('auth_token');
+                                await StorageService.removeItem('current_user');
                             }
-                            await StorageService.removeItem('auth_token');
-                            await StorageService.removeItem('current_user');
-                            return Promise.reject(new AuthError(`Request failed with status ${status}`));
+                            return Promise.reject(new AuthError('Session expired'));
                         }
 
                         if (this.isRefreshing) {
