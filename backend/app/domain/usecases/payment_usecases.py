@@ -123,6 +123,7 @@ class RecordPaymentUseCase:
                     f"does not belong to student {student_id}."
                 )
             )
+            raise ValidationError(message)
 
         # 4. Determine payment status based on amount vs. balance
         balance = fee_structure.balance

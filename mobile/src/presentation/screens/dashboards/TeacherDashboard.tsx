@@ -10,15 +10,24 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from "expo-router";
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 const { width } = Dimensions.get('window');
 
+
 export default function TeacherDashboard() {
-    const { logout, user } = useAuth();
     const router = useRouter();
+    const { logout, user } = useAuth();
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
+
+    useEffect(() => {
+        if (!user) {
+            router.replace('/');
+        }
+    }, [user, router]);
+
     const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
 
     const upcomingClasses = [
@@ -44,14 +53,16 @@ export default function TeacherDashboard() {
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
                             <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Hello, {user?.name?.split(' ')[0] || 'Teacher'} 👋
                                 </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
+                                <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Your academic day at a glance
                                 </ThemedText>
                             </View>
-                            <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
+                            <TouchableOpacity onPress={() => {
+                                 logout();
+                                 router.replace('/');}}>
                                 <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
                             </TouchableOpacity>
                         </View>
@@ -63,8 +74,12 @@ export default function TeacherDashboard() {
                                     <Ionicons name="people" size={24} color={theme.colors.primaryForeground} />
                                 </View>
                                 <View>
-                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Total Students', '42')}</ThemedText>
-                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">My Students</ThemedText>
+                                    <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        {getStatValue('Total Students', '42')}
+                                    </ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        My Students
+                                    </ThemedText>
                                 </View>
                             </View>
                             <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
@@ -72,8 +87,12 @@ export default function TeacherDashboard() {
                                     <Ionicons name="time" size={24} color={theme.colors.primaryForeground} />
                                 </View>
                                 <View>
-                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{getStatValue('Today\'s Classes', '5')}</ThemedText>
-                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">Classes Today</ThemedText>
+                                    <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        {getStatValue('Today\'s Classes', '5')}
+                                    </ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                        Classes Today
+                                    </ThemedText>
                                 </View>
                             </View>
                         </View>
@@ -87,15 +106,14 @@ export default function TeacherDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Teacher Tools</ThemedText>
                     </View>
 
-                    <QuickActionGrid
-                         actions={quickActions}
-                         onActionPress={(action) => {
-                          if (action.route) {
-                           router.push(action.route as any);
-                          }
-                           }}
-                         />
-
+                 <QuickActionGrid
+  actions={quickActions}
+  onActionPress={(action) => {
+    if (action.route) {
+      router.push(action.route as any);
+    }
+  }}
+/>
                     {/* Upcoming Classes */}
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Upcoming Classes</ThemedText>

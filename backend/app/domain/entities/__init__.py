@@ -1,4 +1,6 @@
-"""Domain entities."""
+"""
+Domain entities - Pure business objects.
+"""
 
 from app.domain.entities.user import User, Role, UserRole
 from app.domain.entities.payment import (
@@ -16,4 +18,11 @@ __all__ = [
     "Student",
     "FeeStructure",
     "PaymentSummary",
+    "Trip",
+    "TripStatus",
+    "TripType",
+    "TripStop",
+    "StopStatus",
+    "StudentBoarding",
+    "BoardingStatus",
 ]

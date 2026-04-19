@@ -26,7 +26,6 @@ from app.infrastructure.database.models import (
     UserModel,
 )
 
-
 # Demo users configuration
 DEMO_USERS = [
     {
@@ -201,7 +200,8 @@ async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
 
 
 async def create_users(
-    db: AsyncSession, roles_map: dict[str, RoleModel]
+    db: AsyncSession,
+    roles_map: dict[str, RoleModel],
 ) -> None:
     """
     Create demo users if they don't exist.
