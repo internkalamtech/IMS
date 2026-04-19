@@ -25,6 +25,7 @@ from app.api.v1.endpoints.payments import router as payments_router
 from app.api.v1.endpoints.homework import router as homework_router
 from app.api.v1.endpoints.learning_resources import router as learning_resources_router
 from app.api.v1.endpoints.staff import router as staff_router
+from app.api.v1.endpoints.transport import router as transport_router
 
 # Create v1 router
 router = APIRouter(prefix="/v1")
@@ -46,3 +47,4 @@ router.include_router(documents.router)
 router.include_router(staff_router)
 router.include_router(homework_router)
 router.include_router(learning_resources_router)
+router.include_router(transport_router)
