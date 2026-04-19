@@ -1,7 +1,7 @@
 import { getApiBaseUrl } from '@/core/api-config';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { Link } from 'expo-router';
-import { Linking, Pressable, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, Text, View } from 'react-native';
 
 const getBackendDocsUrl = (): string => {
   const apiBase = getApiBaseUrl();
@@ -18,7 +18,22 @@ export default function DocsRoute() {
   const docsUrl = getBackendDocsUrl();
 
   const openDocs = async () => {
-    await Linking.openURL(docsUrl);
+    try {
+      const canOpen = await Linking.canOpenURL(docsUrl);
+
+      if (!canOpen) {
+        Alert.alert('Unable to Open Docs', `No app can open ${docsUrl}`);
+        return;
+      }
+
+      await Linking.openURL(docsUrl);
+    } catch (error) {
+      console.error('Failed to open backend docs URL', error);
+      Alert.alert(
+        'Unable to Open Docs',
+        'Please check the backend URL and try again.'
+      );
+    }
   };
 
   return (
