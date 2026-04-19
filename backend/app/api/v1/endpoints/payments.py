@@ -58,8 +58,11 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
         400: {"model": ErrorResponse, "description": "Validation error"},
         401: {"model": ErrorResponse, "description": "Unauthorized"},
         404: {
+            
             "model": ErrorResponse,
-            "description": "Student or fee structure not found",
+           
+            "description": "Student or fee structure not found"
+        ,
         },
         500: {
             "model": ErrorResponse,
@@ -69,10 +72,11 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
     summary="Record a payment",
     description=(
         "Record a new payment transaction for a student. "
-        "A unique receipt number (REC-YYYY-XXXX format) is generated "
-        "automatically. "
-        "The payment status is derived from the amount vs. the outstanding "
-        "balance: 'Paid' if the balance is cleared, 'Partial' otherwise. "
+        "A unique receipt number (REC-YYYY-XXXX format),"
+        "is generated automatically. "
+        "The payment status is derived from the amount vs. "
+        "the outstanding balance: "
+        "'Paid' if the balance is cleared, 'Partial' otherwise. "
         "The student's next_due_date is updated accordingly."
     ),
 )
@@ -159,20 +163,17 @@ async def create_payment(
 async def list_payments(
     student_id: Optional[int] = Query(
         None,
-        description="Filter by student ID",
+        description="Filter by student ID"
     ),
     payment_status: Optional[str] = Query(
         None,
         alias="status",
         description=(
-            "Filter by status (Paid, Partial, Pending, Failed, Overdue)"
+            "Filter by status (Paid, Partial, Pending, Failed,"
+            "Overdue)",
         ),
     ),
-    skip: int = Query(
-        0,
-        ge=0,
-        description="Pagination offset",
-    ),
+    skip: int = Query(0, ge=0, description="Pagination offset"),
     limit: int = Query(
         100,
         ge=1,
@@ -281,7 +282,8 @@ async def get_payment(
         )
     except DatabaseError as exc:
         Logger.error(
-            f"Database error while fetching payment {payment_id}: {exc}"
+            f"Database error while fetching payment "
+            f"{payment_id}: {exc}"
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
