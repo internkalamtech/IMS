@@ -2,6 +2,13 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { Logger } from './logger';
 
+const DEFAULT_PORT = '8000';
+const API_VERSION = 'api/v1';
+
+/**
+ * Build the API base URL from env vars when present, otherwise fall back
+ * to a sensible local/dev host for the current platform.
+ */
 export const getApiBaseUrl = (): string => {
     const env = process.env.EXPO_PUBLIC_ENV || 'development';
     const configuredUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -15,40 +22,53 @@ export const getApiBaseUrl = (): string => {
     }
 
     if (Platform.OS === 'web') {
-        const url = configuredUrl || 'http://127.0.0.1:8000/api/v1';
+        const url =
+            configuredUrl || `http://127.0.0.1:${DEFAULT_PORT}/${API_VERSION}`;
         Logger.debug(`[Config] Web API URL: ${url}`);
         return url;
     }
 
-    if (Platform.OS === 'android') {
-        const url = configuredUrl || 'http://10.0.2.2:8000/api/v1';
-        Logger.debug(`[Config] Android API URL: ${url}`);
-        return url;
-    }
-
-    if (Platform.OS === 'ios') {
-        const url = configuredUrl || 'http://localhost:8000/api/v1';
-        Logger.debug(`[Config] iOS API URL: ${url}`);
-        return url;
+    if (Platform.OS === 'android' && !configuredUrl) {
+        const emulatorUrl = `http://10.0.2.2:${DEFAULT_PORT}/${API_VERSION}`;
+        Logger.debug(`[Config] Android emulator API URL: ${emulatorUrl}`);
+        return emulatorUrl;
     }
 
     try {
+        if (configuredUrl) {
+            Logger.debug(`[Config] Using configured API URL: ${configuredUrl}`);
+            return configuredUrl;
+        }
+
         const hostUri = Constants.expoConfig?.hostUri;
 
-        if (hostUri) {
-            const hostIp = hostUri.split(':')[0];
-
-            if (!hostUri.includes('ngrok') && !hostUri.includes('expo.dev')) {
-                const url = `http://${hostIp}:8000/api/v1`;
-                Logger.debug(`[Config] Device API URL: ${url}`);
-                return url;
-            }
+        if (!hostUri) {
+            const fallbackHost =
+                Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+            const url = `http://${fallbackHost}:${DEFAULT_PORT}/${API_VERSION}`;
+            Logger.debug(`[Config] No hostUri found, using fallback: ${url}`);
+            return url;
         }
-    } catch (err) {
-        Logger.error('[Config] Error detecting device IP', err);
-    }
 
-    const fallback = configuredUrl || 'http://localhost:8000/api/v1';
-    Logger.warn(`[Config] Using fallback API URL: ${fallback}`);
-    return fallback;
+        const isTunnel =
+            hostUri.includes('ngrok.io') || hostUri.includes('expo.direct');
+
+        if (isTunnel) {
+            const fallbackHost =
+                Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+            const url = `http://${fallbackHost}:${DEFAULT_PORT}/${API_VERSION}`;
+            Logger.warn(
+                `[Config] Tunnel detected. hostUri is ${hostUri}. Using fallback: ${url}.`
+            );
+            return url;
+        }
+
+        const hostIp = hostUri.split(':')[0];
+        const dynamicUrl = `http://${hostIp}:${DEFAULT_PORT}/${API_VERSION}`;
+        Logger.debug(`[Config] Dynamic API URL detected: ${dynamicUrl}`);
+        return dynamicUrl;
+    } catch (error) {
+        Logger.error('[Config] Error detecting dynamic API URL', error);
+        return configuredUrl || `http://10.0.2.2:${DEFAULT_PORT}/${API_VERSION}`;
+    }
 };

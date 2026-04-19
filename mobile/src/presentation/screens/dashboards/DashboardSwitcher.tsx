@@ -11,7 +11,8 @@ import AdminDashboard from './AdminDashboard';
 import DriverDashboard from './DriverDashboard';
 import ParentDashboard from './ParentDashboard';
 import StudentDashboard from './StudentDashboard';
-import TeacherDashboard from './TeacherDashboard';
+import Teacher2Dashboard from './Teacher2Dashboard';
+import TransportDashboard from './TransportDashboard';
 
 export default function DashboardSwitcher() {
     const { logout, user } = useAuth();
@@ -25,13 +26,15 @@ export default function DashboardSwitcher() {
         case 'admin':
             return <AdminDashboard />;
         case 'teacher':
-            return <TeacherDashboard />;
+            return <Teacher2Dashboard />;
         case 'student':
             return <StudentDashboard />;
         case 'parent':
             return <ParentDashboard />;
         case 'driver':
             return <DriverDashboard />;
+        case 'transport':
+            return <TransportDashboard />;
         default:
             return (
                 <ThemedView style={styles.container}>
