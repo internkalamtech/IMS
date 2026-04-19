@@ -28,6 +28,8 @@ class Student:
         roll_number: Student's roll number
         class_name: Class/grade the student belongs to
         next_due_date: Next payment due date (None if no outstanding dues)
+        created_at: Timestamp when the student record was created
+        updated_at: Timestamp when the student record was last updated
     """
 
     id: int
@@ -35,6 +37,8 @@ class Student:
     roll_number: str
     class_name: str
     next_due_date: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 
 @dataclass

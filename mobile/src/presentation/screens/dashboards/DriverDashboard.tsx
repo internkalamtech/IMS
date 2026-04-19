@@ -54,11 +54,11 @@ export default function DriverDashboard() {
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
                             <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
-                                    Hi, {user?.name?.split(' ')[0] || 'Driver'} 👋
+                                <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                    On the road, {user?.name?.split(' ')[0] || 'Driver'} 🚗
                                 </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
-                                    Driver Dashboard
+                                <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                    Your shift at a glance
                                 </ThemedText>
                             </View>
                             <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
@@ -68,21 +68,24 @@ export default function DriverDashboard() {
 
                         {/* Banner Stats */}
                         <View style={styles.bannerStats}>
-                            {stats.map((stat, index) => (
-                                <View key={index} style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                                    <View style={styles.statIconContainer}>
-                                        <Ionicons name={stat.icon as any} size={24} color={theme.colors.primaryForeground} />
-                                    </View>
-                                    <View>
-                                        <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">
-                                            {stat.value}
-                                        </ThemedText>
-                                        <ThemedText style={styles.bannerStatTitle} color="primaryForeground">
-                                            {stat.title}
-                                        </ThemedText>
-                                    </View>
+                            <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                                <View style={styles.statIconContainer}>
+                                    <Ionicons name="warning" size={24} color={theme.colors.primaryForeground} />
                                 </View>
-                            ))}
+                                <View>
+                                    <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >{todayIncidents.length}</ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >Incidents Today</ThemedText>
+                                </View>
+                            </View>
+                            <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                                <View style={styles.statIconContainer}>
+                                    <Ionicons name="map" size={24} color={theme.colors.primaryForeground} />
+                                </View>
+                                <View>
+                                    <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >Route 4</ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >Active Route</ThemedText>
+                                </View>
+                            </View>
                         </View>
                     </SafeAreaView>
                 </View>
