@@ -27,6 +27,18 @@ from app.api.schemas import (
 router = APIRouter()
 
 
+@router.get(
+    "/classes",
+    summary="List classes",
+    description="Return available class sections.",
+)
+async def list_classes(db: AsyncSession = Depends(get_db)) -> list[dict]:
+    result = await db.execute(select(ClassSectionModel).order_by(ClassSectionModel.id))
+    classes = result.scalars().all()
+
+    return [{"id": c.id, "name": c.name} for c in classes]
+
+
 @router.post(
     "/class/subjects",
     response_model=UpdateClassSubjectsResponse,

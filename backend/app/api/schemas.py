@@ -265,9 +265,10 @@ class StudentInput(BaseModel):
 
 class ParentInput(BaseModel):
     """Parent payload for create-student enrollment APIs.
-    
-    When creating a new parent via ParentInput in CreateStudentWithParentRequest,
-    email and relationship_type are required fields. They cannot be omitted.
+
+    Current API contract requires all of these fields in requests:
+    name, phone, email, and relationship_type.
+    This applies whether link_existing_parent is False or True.
     """
 
     name: str = Field(..., min_length=1)
@@ -287,13 +288,14 @@ class ParentInput(BaseModel):
 
 class CreateStudentWithParentRequest(BaseModel):
     """Create student request with parent details.
-    
+
     The parent payload is used to either:
     1. Create a new parent (when link_existing_parent=False)
     2. Link to an existing parent by email (when link_existing_parent=True)
-    
-    For linking to an existing parent, provide the parent's email in the parent.email field
-    and set link_existing_parent=True.
+
+    Note: parent.name, parent.phone, parent.email, and parent.relationship_type
+    are currently all required by schema and validation even when linking an
+    existing parent.
     """
 
     student: StudentInput
@@ -301,7 +303,11 @@ class CreateStudentWithParentRequest(BaseModel):
     link_existing_parent: bool = Field(
         default=False,
         alias="linkExistingParent",
-        description="Set to true to link to an existing parent by email instead of creating a new one",
+        description=(
+            "Set to true to link by parent.email; however, the current request "
+            "schema still requires parent.name, parent.phone, and "
+            "parent.relationship_type as mandatory fields."
+        ),
     )
 
     model_config = {"populate_by_name": True}

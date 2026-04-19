@@ -16,7 +16,7 @@ if (!fs.existsSync(venvPath)) {
   const createVenv = spawnSync("python", ["-m", "venv", "venv"], {
     cwd: __dirname,
     stdio: "inherit",
-    shell: true,
+    shell: false,
   });
   if (createVenv.error) {
     console.error("Failed to create venv:", createVenv.error);
@@ -29,7 +29,7 @@ console.log('Starting backend...\n');
 const python = spawn(pythonPath, ['run.py'], {
     cwd: __dirname,
     stdio: 'inherit',
-    shell: true,
+    shell: false,
 });
 
 python.on("exit", (code) => {
