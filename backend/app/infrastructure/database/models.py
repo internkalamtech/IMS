@@ -11,7 +11,7 @@ Best practices followed:
 """
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -22,13 +22,13 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
+    Text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
     """Base class for all database models."""
-
     pass
 
 
@@ -51,6 +51,9 @@ user_roles = Table(
 )
 
 
+# =========================
+# 👤 USER MODEL
+# =========================
 class UserModel(Base):
     """
     User database model.
@@ -83,7 +86,6 @@ class UserModel(Base):
         nullable=False,
     )
 
-    # Relationships
     roles: Mapped[List["RoleModel"]] = relationship(
         "RoleModel",
         secondary=user_roles,
@@ -99,6 +101,9 @@ class UserModel(Base):
         )
 
 
+# =========================
+# 🎭 ROLE MODEL
+# =========================
 class RoleModel(Base):
     """
     Role database model.
@@ -116,7 +121,6 @@ class RoleModel(Base):
 
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    # Relationships
     users: Mapped[List["UserModel"]] = relationship(
         "UserModel",
         secondary=user_roles,
@@ -176,6 +180,29 @@ class LeaveRequestModel(Base):
     reviewed_by: Mapped["UserModel | None"] = relationship("UserModel", foreign_keys=[reviewed_by_id])
 
 
+class HomeworkModel(Base):
+    """
+    Homework database model for lifecycle management and dashboards.
+    """
+    __tablename__ = "homeworks"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    subject: Mapped[str] = mapped_column(String(100))
+    className: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    dueDate: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    assignType: Mapped[str | None] = mapped_column(String(20), nullable=True)  # ALL / INDIVIDUAL
+    students: Mapped[str | None] = mapped_column(Text, nullable=True)  # comma-separated
+    teacherId: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    child_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    status: Mapped[str | None] = mapped_column(String(20), nullable=True, default="pending")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self) -> str:
+        return f"<Homework(id={self.id}, title='{self.title}')>"
 class SubjectModel(Base):
     """
     Subject database model.
