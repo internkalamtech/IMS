@@ -359,6 +359,41 @@ class CreateStudentWithParentResponse(BaseModel):
 
 
 
+class DocumentBase(BaseModel):
+    """Base schema for Document."""
+    title: str
+    branch: Optional[str] = None
+    scope: Optional[str] = None
+    expiry_date: datetime
+
+
+class DocumentCreate(DocumentBase):
+    """Schema for creating a document."""
+    pass
+
+
+class DocumentUpdate(BaseModel):
+    """Schema for updating a document."""
+    title: Optional[str] = None
+    branch: Optional[str] = None
+    scope: Optional[str] = None
+    expiry_date: Optional[datetime] = None
+
+
+class DocumentResponse(DocumentBase):
+    """Schema for document response, including computed fields."""
+    id: int
+    original_filename: str
+    content_type: str
+    upload_date: datetime
+    uploaded_by_id: Optional[int] = None
+
+    days_left: int
+    status: Literal["Valid", "Expiring-Soon", "Expired"]
+
+    model_config = {"from_attributes": True}
+
+
 # ------------------------------------------------------------------ #
 # Payment schemas
 # ------------------------------------------------------------------ #
