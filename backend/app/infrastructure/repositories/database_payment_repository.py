@@ -68,7 +68,8 @@ class DatabasePaymentRepository(PaymentRepository):
 
     @staticmethod
     def _fee_structure_to_entity(model: FeeStructureModel) -> FeeStructure:
-        """Map a FeeStructureModel ORM object to a FeeStructure domain entity."""
+        """Map a FeeStructureModel ORM object,
+        to a FeeStructure domain entity."""
         return FeeStructure(
             id=model.id,
             student_id=model.student_id,
@@ -159,8 +160,14 @@ class DatabasePaymentRepository(PaymentRepository):
                     )
                     .join(
                         latest_date_subq,
-                        (PaymentModel.student_id == latest_date_subq.c.student_id)
-                        & (PaymentModel.payment_date == latest_date_subq.c.max_date),
+                        (
+                            PaymentModel.student_id
+                            == latest_date_subq.c.student_id
+                        )
+                        & (
+                            PaymentModel.payment_date
+                            == latest_date_subq.c.max_date
+                        ),
                     )
                     .subquery()
                 )
@@ -427,12 +434,14 @@ class DatabasePaymentRepository(PaymentRepository):
             )
             total_collected: float = total_collected_result.scalar() or 0.0
 
-            # Overdue = outstanding balances for students past their next_due_date
+            # Overdue = outstanding balances for,
+            # students past their next_due_date
             overdue_result = await self.db.execute(
                 select(
                     func.coalesce(
                         func.sum(
-                            FeeStructureModel.total_fee - FeeStructureModel.amount_paid
+                            FeeStructureModel.total_fee
+                            - FeeStructureModel.amount_paid
                         ),
                         0,
                     )
@@ -443,7 +452,8 @@ class DatabasePaymentRepository(PaymentRepository):
                 )
                 .where(
                     StudentModel.next_due_date < datetime.utcnow(),
-                    FeeStructureModel.total_fee > FeeStructureModel.amount_paid,
+                    FeeStructureModel.total_fee
+                    > FeeStructureModel.amount_paid,
                 )
             )
             total_overdue: float = overdue_result.scalar() or 0.0

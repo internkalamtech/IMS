@@ -6,17 +6,17 @@ This module aggregates all v1 API endpoints.
 
 from fastapi import APIRouter
 
-
-from app.api.v1.endpoints import(
+from app.api.v1.endpoints import (
     auth,
-    health,
-    dashboard,
     class_subjects_router,
+    dashboard,
+    enrollment,
+    fee_structures,
+    health,
+    payments,
     students,
     subjects,
-    enrollment,
-    payments,
-    fee_structures,
+    trips,
 )
 
 # Create v1 router
@@ -32,4 +32,4 @@ router.include_router(subjects.router)
 router.include_router(enrollment.router)
 router.include_router(payments.router)
 router.include_router(fee_structures.router)
-
+router.include_router(trips.router)

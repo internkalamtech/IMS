@@ -307,6 +307,9 @@ class DatabaseEnrollmentRepository(EnrollmentRepository):
                 roll_number=roll_number,
                 class_id=class_id,
                 class_name=class_name,
+                marks=0.0,  # Default marks value
+                attendance=None,  # No attendance data on creation
+                next_due_date=None,  # No due date on creation
             )
             self.db.add(student_model)
             await self.db.flush()  # Get the ID without committing

@@ -8,14 +8,19 @@ import { FeeAnalyticsCard } from '@/presentation/components/FeeAnalyticsCard';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from "expo-router";
-import React from 'react';
-import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-const { width } = Dimensions.get('window');
-
+import { RefreshControl,
+        ScrollView,
+        StatusBar,
+        TouchableOpacity,
+        View,
+        StyleSheet
+       } from "react-native";
 export default function AdminDashboard() {
     const { logout, user } = useAuth();
+    const router = useRouter();
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
 
@@ -24,6 +29,8 @@ export default function AdminDashboard() {
     const handleActionPress = (action: any) => {
       if (action.title === "Manage Classes") {
         router.push("/manage-classes"); // ✅ NOT inside tabs
+      } else if (action.title === "Manage Users") {
+        router.push("/add-user"); // ✅ Navigate to add user screen
       }
     };
 
@@ -35,33 +42,33 @@ export default function AdminDashboard() {
         { title: 'Total Students', value: getStatValue('Total Students'), icon: 'people', color: '#fff' },
         { title: 'Total Teachers', value: getStatValue('Total Teachers'), icon: 'school', color: '#fff' },
     ];
-
-    return (
-        <ThemedView style={styles.container}>
-            <StatusBar barStyle={isDark ? "light-content" : "light-content"} />
+return (
+    <ThemedView style={styles.container}>
+            <StatusBar barStyle={ theme.dark ? "light-content" : "dark-content" } backgroundColor={theme.colors.background} />
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
             >
-                {/* Blue Banner Header */}
-                <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
-                    <SafeAreaView edges={['top']}>
-                        <View style={styles.headerContent}>
-                            <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+            {/* Blue Banner Header */}
+            <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
+                <SafeAreaView edges={['top']}>
+                    <View style={styles.headerContent}>
+                        <View>
+                            <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     {user?.name || 'Admin'}
-                                </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
-                                    Institute Management Overview
-                                </ThemedText>
-                            </View>
-                            <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
-                                <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
-                            </TouchableOpacity>
+                            </ThemedText>
+                            <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground}
+                             darkColor={theme.colors.primaryForeground}>
+                                Institute Management Overview
+                            </ThemedText>
                         </View>
+                        <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
+                            <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
+                        </TouchableOpacity>
+                    </View>
 
-                        {/* Banner Stats */}
+                    {/* Banner Stats */}
                         <View style={styles.bannerStats}>
                             {stats.map((stat, index) => (
                                 <View key={index} style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
@@ -69,8 +76,10 @@ export default function AdminDashboard() {
                                         <Ionicons name={stat.icon as any} size={24} color={theme.colors.primaryForeground} />
                                     </View>
                                     <View>
-                                        <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{stat.value}</ThemedText>
-                                        <ThemedText style={styles.bannerStatTitle} color="primaryForeground">{stat.title}</ThemedText>
+                                        <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>{stat.value}</ThemedText>
+                                        <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                            {stat.title}
+                                        </ThemedText>
                                     </View>
                                 </View>
                             ))}
@@ -94,7 +103,7 @@ export default function AdminDashboard() {
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
                         <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-                            <ThemedText style={styles.badgeText} color="primaryForeground">3 new</ThemedText>
+                            <ThemedText style={styles.badgeText} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >3 new</ThemedText>
                         </View>
                     </View>
                     <ThemedCard style={styles.updatesCard} padding={0}>
@@ -122,7 +131,6 @@ export default function AdminDashboard() {
         </ThemedView>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -147,11 +155,9 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
     },
     userName: {
-        fontSize: 28,
-        fontWeight: '700',
+        marginBottom: 4,
     },
     subtitle: {
-        fontSize: 16,
         marginTop: 4,
     },
     logoutIcon: {
@@ -179,11 +185,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     bannerStatValue: {
-        fontSize: 22,
-        fontWeight: '700',
+        marginBottom: 4,
     },
     bannerStatTitle: {
-        fontSize: 12,
+        marginTop: 4,
     },
     mainContent: {
         flex: 1,
@@ -199,20 +204,16 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     sectionTitle: {
-        fontSize: 20,
-        fontWeight: '700',
+        marginBottom: 4,
     },
     badge: {
-        backgroundColor: '#2563eb',
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 12,
         marginLeft: 12,
     },
     badgeText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: '600',
+        marginTop: 2,
     },
     quickActionsGrid: {
         flexDirection: 'row',
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     quickActionItem: {
-        width: (width - 48 - 40) / 3,
+        width: '32%',
         alignItems: 'center',
         marginBottom: 24,
     },
@@ -234,9 +235,8 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     quickActionLabel: {
-        fontSize: 12,
+        marginTop: 8,
         textAlign: 'center',
-        fontWeight: '500',
     },
     updatesCard: {
         borderRadius: 24,
@@ -260,18 +260,16 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     updateTitle: {
-        fontSize: 15,
         marginBottom: 2,
     },
     updateSubtitle: {
-        fontSize: 13,
         marginBottom: 4,
     },
     updateTime: {
-        fontSize: 11,
+        marginTop: 4,
     },
     viewLink: {
-        fontSize: 13,
         fontWeight: '600',
     },
 });
+
