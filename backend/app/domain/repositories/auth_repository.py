@@ -73,18 +73,3 @@ class AuthRepository(ABC):
             List of User entities
         """
         pass
-
-    @abstractmethod
-    async def create_user(self, name: str, email: str, password: str) -> User:
-        """
-        Create a new user in the database.
-
-        Args:
-            name: Full name of the user.
-            email: Email address of the user.
-            password: Plain-text password to hash.
-
-        Returns:
-            Created User entity.
-        """
-        pass

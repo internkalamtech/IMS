@@ -1,12 +1,7 @@
-from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
+from fastapi import APIRouter, Depends, status
 from app.api.dependencies import get_current_user
 from app.api.schemas import DashboardResponse, StatItem
 from app.domain.entities.user import User
-from app.infrastructure.database.database import get_db
-from app.infrastructure.database.models import HomeworkModel
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
@@ -15,55 +10,55 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
     "/stats",
     response_model=DashboardResponse,
     status_code=status.HTTP_200_OK,
+    summary="Get dashboard statistics",
+    description=(
+        "Retrieve dashboard statistics based on the "
+        "authenticated user's role."
+    ),
 )
 async def get_dashboard_stats(
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
 ) -> DashboardResponse:
+    """
+    Get dashboard statistics endpoint.
 
-    try:
-        role = current_user.role
-        stats = []
-        role_label = role.capitalize()
+    Returns statistics relevant to the current user's role.
+    """
+    role = current_user.role
 
-        # 🎯 TEACHER DASHBOARD
-        if role == "teacher":
+    # In a real app, these would be fetched from a service/repository
+    # which would query the database based on the role and branch.
 
-            result = await db.execute(
-                select(HomeworkModel).where(
-                    HomeworkModel.teacherId == str(current_user.id)
-                )
-            )
+    stats = []
+    role_label = role.capitalize()
 
-            homeworks = result.scalars().all()
+    if role == "admin":
+        role_label = "Branch Admin"
+        stats = [
+            StatItem(label="Total Students", value="1,250"),
+            StatItem(label="Faculty Members", value=85),
+            StatItem(label="Monthly Revenue", value="$45k"),
+        ]
+    elif role == "teacher":
+        role_label = "Senior Teacher"
+        stats = [
+            StatItem(label="Active Classes", value=4),
+            StatItem(label="Upcoming Exams", value=2),
+            StatItem(label="Pending Gradings", value=12),
+        ]
+    elif role == "parent":
+        role_label = "Parent"
+        stats = [
+            StatItem(label="Attendance (Aarav)", value="92%"),
+            StatItem(label="Last Exam Score", value="88/100"),
+            StatItem(label="Fee Status", value="Paid"),
+        ]
+    elif role == "student":
+        role_label = "Student"
+        stats = [
+            StatItem(label="Course Progress", value="75%"),
+            StatItem(label="Overall GPA", value="3.8"),
+            StatItem(label="Assignments Due", value=3),
+        ]
 
-            class_counts = {}
-
-            for hw in homeworks:
-                cls = hw.className
-                if cls:
-                    class_counts[cls] = class_counts.get(cls, 0) + 1
-
-            # ✅ HANDLE EMPTY CASE
-            if not class_counts:
-                stats = [
-                    StatItem(label="No Homework Yet", value="0")
-                ]
-            else:
-                stats = [
-                    StatItem(label=f"Homework ({cls})", value=str(count))  # 🔥 string safe
-                    for cls, count in class_counts.items()
-                ]
-
-            role_label = "Teacher"
-
-        else:
-            stats = [
-                StatItem(label="No Data", value="0")
-            ]
-
-        return DashboardResponse(role=role_label, stats=stats)
-
-    except Exception as e:
-        print("DASHBOARD ERROR:", e)
-        raise HTTPException(status_code=500, detail="Dashboard failed")
+    return DashboardResponse(role=role_label, stats=stats)

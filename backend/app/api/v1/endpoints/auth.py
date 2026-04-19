@@ -5,14 +5,12 @@ This module provides API endpoints for user authentication.
 """
 
 from fastapi import APIRouter, HTTPException, status, Depends
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
 from app.api.schemas import (
     LoginRequest,
     LoginResponse,
-    CreateUserRequest,
     UserResponse,
     ErrorResponse,
     RoleResponse,
@@ -22,12 +20,10 @@ from app.api.schemas import (
 
 from app.core.errors import AuthenticationError, ValidationError, DatabaseError
 from app.core.logger import Logger
-from app.core.password import hash_password
 from app.core.security import create_access_token
 from app.domain.entities.user import User
 from app.domain.usecases.auth_usecases import LoginUseCase
 from app.infrastructure.database.database import get_db
-from app.infrastructure.database.models import RoleModel, UserModel
 from app.infrastructure.repositories.database_auth_repository import (
     DatabaseAuthRepository,
 )
@@ -116,83 +112,8 @@ async def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=e.message,
         )
-
-
-@router.post(
-    "/create-user",
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED,
-    responses={
-        400: {"model": ErrorResponse, "description": "Validation error"},
-        409: {"model": ErrorResponse, "description": "User already exists"},
-        500: {"model": ErrorResponse, "description": "Internal server error"},
-    },
-    summary="Create a new user",
-    description="Create a new user record in the database with a default password.",
-)
-async def create_user(
-    request: CreateUserRequest,
-    db: AsyncSession = Depends(get_db),
-) -> UserResponse:
-    """Create a user record from name and email."""
-    try:
-        name = request.name.strip()
-        email = request.email.lower().strip()
-
-        if not name:
-            raise ValueError("Name is required")
-
-        result = await db.execute(select(UserModel).where(UserModel.email == email))
-        existing_user = result.unique().scalar_one_or_none()
-        if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="User with this email already exists",
-            )
-
-        password_hash = hash_password("Temp@1234")
-
-        # Create user model
-        user_model = UserModel(
-            email=email,
-            name=name,
-            password_hash=password_hash,
-            is_active=True,
-        )
-
-        # Ensure default role exists
-        result = await db.execute(select(RoleModel).where(RoleModel.name == "student"))
-        default_role = result.unique().scalar_one_or_none()
-        if not default_role:
-            default_role = RoleModel(
-                name="student", description="Default student role"
-            )
-            db.add(default_role)
-            await db.flush()
-
-        user_model.roles.append(default_role)
-
-        db.add(user_model)
-        await db.flush()
-
-        return UserResponse(
-            id=str(user_model.id),
-            name=user_model.name,
-            email=user_model.email,
-            role=default_role.name,
-            roles=[
-                RoleResponse(
-                    id=str(default_role.id),
-                    name=default_role.name,
-                    description=default_role.description,
-                )
-            ],
-            avatarUrl=None,
-        )
-    except HTTPException:
-        raise
-    except ValueError as e:
-        Logger.warning(f"Validation error while creating user: {str(e)}")
+    except (ValueError, ValidationError) as e:
+        Logger.warning(f"Validation error for {request.email}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -207,10 +128,10 @@ async def create_user(
             detail="An error occurred during login. Please try again later.",
         )
     except Exception as e:
-        Logger.error(f"Unexpected error while creating user: {str(e)}", exc_info=True)
+        Logger.error(f"Unexpected error during login: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred while creating user.",
+            detail="An unexpected error occurred. Please try again later.",
         )
 
 

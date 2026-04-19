@@ -32,19 +32,6 @@ class LoginRequest(BaseModel):
     }
 
 
-class CreateUserRequest(BaseModel):
-    """Request schema for creating a user."""
-
-    name: str = Field(..., min_length=1, description="User full name")
-    email: EmailStr
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [{"name": "John Doe", "email": "john@example.com"}]
-        }
-    }
-
-
 class RoleResponse(BaseModel):
     """Response schema for role data."""
 

@@ -20,7 +20,7 @@ from app.core.errors import (
     NotFoundError,
 )
 from app.core.logger import Logger
-from app.core.password import hash_password, verify_password
+from app.core.password import verify_password
 from app.domain.entities.user import Role, User
 from app.domain.repositories.auth_repository import AuthRepository
 from app.infrastructure.database.models import UserModel
@@ -189,45 +189,6 @@ class DatabaseAuthRepository(AuthRepository):
             raise DatabaseError(
                 f"Failed to get users matching pattern: {str(e)}"
             )
-
-    async def create_user(self, name: str, email: str, password: str) -> User:
-        """
-        Create a new user with name, email, and hashed password.
-
-        Args:
-            name: Full name
-            email: Email address
-            password: Plain text password
-
-        Returns:
-            Created User domain entity
-        """
-        try:
-            # Normalize email
-            normalized_email = email.strip().lower()
-
-            # Ensure user does not already exist
-            existing = await self.get_user_by_email(normalized_email)
-            if existing:
-                raise DatabaseError("User with this email already exists")
-
-            # Create user model and persist
-            user_model = UserModel(
-                name=name.strip(),
-                email=normalized_email,
-                password_hash=hash_password(password),
-                is_active=True,
-            )
-            self.db.add(user_model)
-            await self.db.flush()
-
-            # Return created user
-            return self._to_domain_entity(user_model)
-        except DatabaseError:
-            raise
-        except Exception as e:
-            Logger.error(f"Database error creating user: {e}", exc_info=True)
-            raise DatabaseError(f"Failed to create user: {str(e)}")
 
     def _to_domain_entity(self, user_model: UserModel) -> User:
         """
