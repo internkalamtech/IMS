@@ -7,7 +7,7 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RefreshControl,
@@ -21,15 +21,15 @@ export default function AdminDashboard() {
     const { logout, user } = useAuth();
     const router = useRouter();
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
-    const { theme, isDark } = useTheme();
+    const { theme } = useTheme();
 
     const quickActions = DASHBOARD_CONFIG.admin.quickActions;
 
     const handleActionPress = (action: any) => {
       if (action.title === "Manage Classes") {
-        router.push("/manage-classes"); // ✅ NOT inside tabs
+                router.push('../manage-classes');
       } else if (action.title === "Manage Users") {
-        router.push("/add-user"); // ✅ Navigate to add user screen
+                router.push('../add-user');
       }
     };
 

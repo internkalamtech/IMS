@@ -34,12 +34,6 @@ interface Route {
     delay_minutes: number;
 }
 
-interface ComplianceStatus {
-    valid_documents: number;
-    expiring_soon: number;
-    expired: number;
-}
-
 type TransportAlertType = 'danger' | 'warning' | 'maintenance' | 'alert';
 
 interface TransportAlert {
@@ -51,16 +45,6 @@ interface TransportAlert {
     location: string;
     resolved: boolean;
     icon?: React.ComponentProps<typeof Ionicons>['name'];
-}
-
-interface ExpiringDocument {
-    id: string;
-    bus_id: string;
-    type: string;
-    document_number: string;
-    expiry_date: string;
-    status: string;
-    days_left: number;
 }
 
 export default function TransportDashboard() {
@@ -143,17 +127,26 @@ export default function TransportDashboard() {
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
+                refreshControl={<RefreshControl refreshing={refreshingState} onRefresh={handleRefresh} tintColor={theme.colors.primary} />}
             >
                 {/* Blue Banner Header */}
                 <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
                             <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                <ThemedText
+                                    style={styles.userName}
+                                    type="title"
+                                    lightColor={theme.colors.primaryForeground}
+                                    darkColor={theme.colors.primaryForeground}
+                                >
                                     {user?.name || 'Transport Manager'}
                                 </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
+                                <ThemedText
+                                    style={styles.subtitle}
+                                    lightColor={theme.colors.primaryForeground}
+                                    darkColor={theme.colors.primaryForeground}
+                                >
                                     Transport Manager
                                 </ThemedText>
                             </View>
@@ -175,7 +168,11 @@ export default function TransportDashboard() {
                                         <ThemedText style={[styles.bannerStatValue, index === 2 && { color: stat.color }]} type="title">
                                             {stat.value}
                                         </ThemedText>
-                                        <ThemedText style={styles.bannerStatTitle} color="primaryForeground">
+                                        <ThemedText
+                                            style={styles.bannerStatTitle}
+                                            lightColor={theme.colors.primaryForeground}
+                                            darkColor={theme.colors.primaryForeground}
+                                        >
                                             {stat.title}
                                         </ThemedText>
                                     </View>
