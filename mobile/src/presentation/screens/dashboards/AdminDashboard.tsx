@@ -7,394 +7,448 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { router } from 'expo-router';
 import {
-  Dimensions,
+  Button,
+  Modal,
   RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
-  TouchableOpacity,
-  Modal,
+  Text,
   TextInput,
-  Button,
+  TouchableOpacity,
   View,
-  Text
-} from "react-native";
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-const { width } = Dimensions.get('window');
 
 export default function AdminDashboard() {
-    const { logout, user } = useAuth();
-    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
-    const { theme, isDark } = useTheme();
-    const [modalVisible, setModalVisible] = useState(false);
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [open, setOpen] = useState(false)
-const addUser = async () => {
+  const { logout, user } = useAuth();
+  const router = useRouter();
+  const { data: dashboardData, refreshing, onRefresh } = useDashboard();
+  const { theme } = useTheme();
 
-console.log("Submit button clicked")
+  const [modalVisible, setModalVisible] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
-try {
+  const quickActions = DASHBOARD_CONFIG.admin.quickActions;
 
-const response = await fetch("http://localhost:8000/api/v1/v1/users", {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify({
-name: name,
-email: email
-})
-})
+  const handleActionPress = (action: any) => {
+    if (action.title === 'Manage Classes') {
+      router.push('../manage-classes');
+      return;
+    }
 
-const data = await response.json()
+    if (action.title === 'Manage Users') {
+      router.push('../add-user');
+      return;
+    }
 
-console.log("Server response:", data)
+    if (action.route) {
+      router.push(action.route as any);
+    }
+  };
 
-alert("User added successfully")
+  const getStatValue = (label: string, defaultValue: string = '0') => {
+    return dashboardData?.stats?.find((s: any) => s.label === label)?.value || defaultValue;
+  };
 
-setName("")
-setEmail("")
-setOpen(false)
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/v1/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+        }),
+      });
 
-} catch (error) {
+      const data = await response.json();
+      console.log('Server response:', data);
 
-console.log("Error:", error)
-alert("API Error")
+      setModalVisible(false);
+      setName('');
+      setEmail('');
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
-}
+  const stats = [
+    { title: 'Total Students', value: getStatValue('Total Students'), icon: 'people' },
+    { title: 'Total Teachers', value: getStatValue('Total Teachers'), icon: 'school' },
+  ];
 
-}
-    const quickActions = DASHBOARD_CONFIG.admin.quickActions;
-
-    const handleActionPress = (action: any) => {
-      if (action.title === "Manage Classes") {
-        router.push("/manage-classes"); // ✅ NOT inside tabs
-      }
-    };
-
-    const getStatValue = (label: string, defaultValue: string = '0') => {
-        return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
-        };
-      const handleSubmit = async () => {
-     try {
-    const response = await fetch("http://127.0.0.1:8000/api/v1/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: name,
-        email: email,
-      }),
-    });
-
-    const data = await response.json();
-    console.log("Server response:", data);
-
-    setModalVisible(false);
-    setName("");
-    setEmail("");
-
-  } catch (error) {
-    console.error("Error:", error);
-  }
-};
-    const stats = [
-        { title: 'Total Students', value: getStatValue('Total Students'), icon: 'people', color: '#fff' },
-        { title: 'Total Teachers', value: getStatValue('Total Teachers'), icon: 'school', color: '#fff' },
-    ];
-
-    return (
-        <ThemedView style={styles.container}>
-            <StatusBar barStyle={isDark ? "light-content" : "light-content"} />
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
-            >
-                {/* Blue Banner Header */}
-                <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
-                    <SafeAreaView edges={['top']}>
-                        <View style={styles.headerContent}>
-                            <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
-                                    {user?.name || 'Admin'}
-                                </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
-                                    Institute Management Overview
-                                </ThemedText>
-                            </View>
-                            <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
-                                <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
-                            </TouchableOpacity>
-                             <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.logoutIcon}>
-                                <Ionicons name="information-circle-outline" size={24} color={theme.colors.primaryForeground} />
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Banner Stats */}
-                        <View style={styles.bannerStats}>
-                            {stats.map((stat, index) => (
-                                <View key={index} style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                                    <View style={styles.statIconContainer}>
-                                        <Ionicons name={stat.icon as any} size={24} color={theme.colors.primaryForeground} />
-                                    </View>
-                                    <View>
-                                        <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{stat.value}</ThemedText>
-                                        <ThemedText style={styles.bannerStatTitle} color="primaryForeground">{stat.title}</ThemedText>
-                                    </View>
-                                </View>
-                            ))}
-                        </View>
-                    </SafeAreaView>
-                </View>
-
-                {/* Main Content */}
-                <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
-                    {/* Quick Actions */}
-                    <View style={styles.sectionHeader}>
-                        <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
-                    </View>
-
-                    <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
-
-                    {/* Recent Updates */}
-                    <View style={styles.sectionHeader}>
-                        <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
-                        <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-                            <ThemedText style={styles.badgeText} color="primaryForeground">3 new</ThemedText>
-                        </View>
-                    </View>
-                    <ThemedCard style={styles.updatesCard} padding={0}>
-                        {[1, 2, 3].map((item, index) => (
-                            <View key={item} style={[
-                                styles.updateItem,
-                                index !== 2 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
-                            ]}>
-                                <View style={[styles.updateIcon, { backgroundColor: theme.colors.primary + '10' }]}>
-                                    <Ionicons name="people-outline" size={20} color={theme.colors.primary} />
-                                </View>
-                                <View style={styles.updateContent}>
-                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">New Student Enrolled</ThemedText>
-                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">Class 7-B • Roll 24</ThemedText>
-                                    <ThemedText style={styles.updateTime} lightColor="#999" darkColor="#aaa">2 hours ago</ThemedText>
-                                </View>
-                                <TouchableOpacity>
-                                    <ThemedText style={styles.viewLink} type="link">View →</ThemedText>
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-                    </ThemedCard>
-                </View>
-                <Modal visible={modalVisible} transparent animationType="slide">
-  <View
-    style={{
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "rgba(0,0,0,0.4)"
-    }}
-  >
-    <View
-      style={{
-        width: 300,
-        padding: 20,
-        backgroundColor: "white",
-        borderRadius: 10
-      }}
-    >
-      <Text style={{ fontSize: 18, marginBottom: 10 }}>
-        Add User
-      </Text>
-
-      <TextInput
-        placeholder="Enter Name"
-        value={name}
-        onChangeText={setName}
-        style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 10,
-          marginBottom: 10
-        }}
+  return (
+    <ThemedView style={styles.container}>
+      <StatusBar
+        barStyle={theme.dark ? 'light-content' : 'dark-content'}
+        backgroundColor={theme.colors.background}
       />
 
-      <TextInput
-        placeholder="Enter Email"
-        value={email}
-        onChangeText={setEmail}
-        style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 10,
-          marginBottom: 10
-        }}
-      />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primary}
+          />
+        }
+      >
+        <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
+          <SafeAreaView edges={['top']}>
+            <View style={styles.headerContent}>
+              <View>
+                <ThemedText
+                  style={styles.userName}
+                  type="title"
+                  lightColor={theme.colors.primaryForeground}
+                  darkColor={theme.colors.primaryForeground}
+                >
+                  {user?.name || 'Admin'}
+                </ThemedText>
 
-      <Button title="Submit" onPress={handleSubmit} />
+                <ThemedText
+                  style={styles.subtitle}
+                  lightColor={theme.colors.primaryForeground}
+                  darkColor={theme.colors.primaryForeground}
+                >
+                  Institute Management Overview
+                </ThemedText>
+              </View>
 
-      <Button title="Close" onPress={() => setModalVisible(false)} />
-    </View>
-  </View>
-</Modal>
-            </ScrollView>
-        </ThemedView>
-    );
+              <View style={styles.headerActions}>
+                <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.logoutIcon}>
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={24}
+                    color={theme.colors.primaryForeground}
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
+                  <Ionicons
+                    name="log-out-outline"
+                    size={24}
+                    color={theme.colors.primaryForeground}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.bannerStats}>
+              {stats.map((stat, index) => (
+                <View
+                  key={index}
+                  style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}
+                >
+                  <View style={styles.statIconContainer}>
+                    <Ionicons
+                      name={stat.icon as any}
+                      size={24}
+                      color={theme.colors.primaryForeground}
+                    />
+                  </View>
+
+                  <View>
+                    <ThemedText
+                      style={styles.bannerStatValue}
+                      type="title"
+                      lightColor={theme.colors.primaryForeground}
+                      darkColor={theme.colors.primaryForeground}
+                    >
+                      {stat.value}
+                    </ThemedText>
+
+                    <ThemedText
+                      style={styles.bannerStatTitle}
+                      lightColor={theme.colors.primaryForeground}
+                      darkColor={theme.colors.primaryForeground}
+                    >
+                      {stat.title}
+                    </ThemedText>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </SafeAreaView>
+        </View>
+
+        <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
+          <View style={styles.sectionHeader}>
+            <ThemedText style={styles.sectionTitle} type="subtitle">
+              Quick Actions
+            </ThemedText>
+          </View>
+
+          <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
+
+          <View style={styles.sectionHeader}>
+            <ThemedText style={styles.sectionTitle} type="subtitle">
+              Recent Updates
+            </ThemedText>
+
+            <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
+              <ThemedText
+                style={styles.badgeText}
+                lightColor={theme.colors.primaryForeground}
+                darkColor={theme.colors.primaryForeground}
+              >
+                3 new
+              </ThemedText>
+            </View>
+          </View>
+
+          <ThemedCard style={styles.updatesCard} padding={0}>
+            {[1, 2, 3].map((item, index) => (
+              <View
+                key={item}
+                style={[
+                  styles.updateItem,
+                  index !== 2 && {
+                    borderBottomWidth: 1,
+                    borderBottomColor: theme.colors.border,
+                  },
+                ]}
+              >
+                <View style={[styles.updateIcon, { backgroundColor: theme.colors.primary + '10' }]}>
+                  <Ionicons name="people-outline" size={20} color={theme.colors.primary} />
+                </View>
+
+                <View style={styles.updateContent}>
+                  <ThemedText style={styles.updateTitle} type="defaultSemiBold">
+                    New Student Enrolled
+                  </ThemedText>
+                  <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">
+                    Class 7-B • Roll 24
+                  </ThemedText>
+                  <ThemedText style={styles.updateTime} lightColor="#999" darkColor="#aaa">
+                    2 hours ago
+                  </ThemedText>
+                </View>
+
+                <TouchableOpacity>
+                  <ThemedText style={styles.viewLink} type="link">
+                    View →
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ThemedCard>
+        </View>
+
+        <Modal visible={modalVisible} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Add User</Text>
+
+              <TextInput
+                placeholder="Enter Name"
+                value={name}
+                onChangeText={setName}
+                style={styles.input}
+              />
+
+              <TextInput
+                placeholder="Enter Email"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+              />
+
+              <Button title="Submit" onPress={handleSubmit} />
+              <View style={styles.modalButtonGap} />
+              <Button title="Close" onPress={() => setModalVisible(false)} />
+            </View>
+          </View>
+        </Modal>
+      </ScrollView>
+    </ThemedView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    scrollView: {
-        flex: 1,
-    },
-    scrollContent: {
-        flexGrow: 1,
-    },
-    banner: {
-        paddingBottom: 30,
-        borderBottomLeftRadius: 32,
-        borderBottomRightRadius: 32,
-    },
-    headerContent: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 24,
-        paddingTop: 20,
-        paddingBottom: 24,
-    },
-    userName: {
-        fontSize: 28,
-        fontWeight: '700',
-    },
-    subtitle: {
-        fontSize: 16,
-        marginTop: 4,
-    },
-    logoutIcon: {
-        padding: 8,
-    },
-    bannerStats: {
-        flexDirection: 'row',
-        paddingHorizontal: 20,
-        gap: 12,
-    },
-    bannerStatCard: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        borderRadius: 20,
-        gap: 12,
-    },
-    statIconContainer: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    bannerStatValue: {
-        fontSize: 22,
-        fontWeight: '700',
-    },
-    bannerStatTitle: {
-        fontSize: 12,
-    },
-    mainContent: {
-        flex: 1,
-        marginTop: 0,
-        borderTopLeftRadius: 32,
-        borderTopRightRadius: 32,
-        paddingHorizontal: 24,
-        paddingTop: 32,
-    },
-    sectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    sectionTitle: {
-        fontSize: 20,
-        fontWeight: '700',
-    },
-    badge: {
-        backgroundColor: '#2563eb',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 12,
-        marginLeft: 12,
-    },
-    badgeText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    quickActionsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        marginBottom: 32,
-    },
-    quickActionItem: {
-        width: (width - 48 - 40) / 3,
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    quickActionIcon: {
-        width: 60,
-        height: 60,
-        borderRadius: 16,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    quickActionLabel: {
-        fontSize: 12,
-        textAlign: 'center',
-        fontWeight: '500',
-    },
-    updatesCard: {
-        borderRadius: 24,
-        overflow: 'hidden',
-        marginBottom: 40,
-    },
-    updateItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-    },
-    updateIcon: {
-        width: 48,
-        height: 48,
-        borderRadius: 14,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 16,
-    },
-    updateContent: {
-        flex: 1,
-    },
-    updateTitle: {
-        fontSize: 15,
-        marginBottom: 2,
-    },
-    updateSubtitle: {
-        fontSize: 13,
-        marginBottom: 4,
-    },
-    updateTime: {
-        fontSize: 11,
-    },
-    viewLink: {
-        fontSize: 13,
-        fontWeight: '600',
-    },
+  container: {
+    flex: 1,
+  },
+
+  scrollView: {
+    flex: 1,
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+  },
+
+  banner: {
+    paddingBottom: 30,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+  },
+
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 24,
+  },
+
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  userName: {
+    marginBottom: 4,
+  },
+
+  subtitle: {
+    marginTop: 4,
+  },
+
+  logoutIcon: {
+    padding: 8,
+  },
+
+  bannerStats: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+
+  bannerStatCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 20,
+    gap: 12,
+  },
+
+  statIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  bannerStatValue: {
+    marginBottom: 4,
+  },
+
+  bannerStatTitle: {
+    marginTop: 4,
+  },
+
+  mainContent: {
+    flex: 1,
+    marginTop: 0,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+  },
+
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  sectionTitle: {
+    marginBottom: 4,
+  },
+
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 12,
+  },
+
+  badgeText: {
+    marginTop: 2,
+  },
+
+  updatesCard: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginBottom: 40,
+  },
+
+  updateItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+
+  updateIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+
+  updateContent: {
+    flex: 1,
+  },
+
+  updateTitle: {
+    marginBottom: 2,
+  },
+
+  updateSubtitle: {
+    marginBottom: 4,
+  },
+
+  updateTime: {
+    marginTop: 4,
+  },
+
+  viewLink: {
+    fontWeight: '600',
+  },
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+
+  modalCard: {
+    width: 300,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    marginBottom: 10,
+  },
+
+  modalButtonGap: {
+    height: 10,
+  },
 });

@@ -1,5 +1,4 @@
 import { ColorPalettes, FontSize, FontWeight, Radius, Spacing } from './tokens';
-
 export interface ThemeColors {
     background: string;
     foreground: string;
@@ -52,7 +51,7 @@ export const LightTheme: Theme = {
         destructiveForeground: ColorPalettes.white,
         border: 'rgba(0, 0, 0, 0.1)', // Exact
         input: ColorPalettes.transparent,
-        ring: ColorPalettes.zinc[400], // Approx
+        ring: ColorPalettes.zinc[400],
     },
     spacing: Spacing,
     radius: Radius,
@@ -69,8 +68,8 @@ export const DarkTheme: Theme = {
         cardForeground: ColorPalettes.zinc[50],
         popover: ColorPalettes.zinc[950],
         popoverForeground: ColorPalettes.zinc[50],
-        primary: ColorPalettes.zinc[50],
-        primaryForeground: ColorPalettes.zinc[900], // oklch(0.205 0 0) approx
+        primary: '#2563eb', // Consistent with light theme
+        primaryForeground: ColorPalettes.white,
         secondary: ColorPalettes.zinc[800], // oklch(0.269 0 0) approx
         secondaryForeground: ColorPalettes.zinc[50],
         muted: ColorPalettes.zinc[800],
