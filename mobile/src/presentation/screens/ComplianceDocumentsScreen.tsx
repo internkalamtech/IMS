@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, RefreshControl, SafeAreaView, StyleSheet, TouchableOpacity, View, StatusBar } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/core/theme/ThemeContext';
@@ -25,7 +26,7 @@ export default function ComplianceDocumentsScreen() {
         let expired = 0;
         documents.forEach((doc) => {
             if (doc.status === 'Expired') expired++;
-            else if (doc.status === 'Expiring-Soon') expiring++;
+            else if (doc.status === 'Expiring' || doc.status === 'Expiring-Soon') expiring++;
             else valid++;
         });
         return { validCount: valid, expiringCount: expiring, expiredCount: expired };
@@ -39,14 +40,14 @@ export default function ComplianceDocumentsScreen() {
             // Apply search
             const query = searchQuery.toLowerCase();
             const matchesSearch =
-                (doc.title && doc.title.toLowerCase().includes(query)) ||
-                (doc.branch && doc.branch.toLowerCase().includes(query)) ||
-                (doc.scope && doc.scope.toLowerCase().includes(query));
+                (doc.type && doc.type.toLowerCase().includes(query)) ||
+                (doc.vehicleName && doc.vehicleName.toLowerCase().includes(query)) ||
+                (doc.documentNumber && doc.documentNumber.toLowerCase().includes(query));
 
             if (!matchesSearch) return false;
 
             // Apply tab filter
-            if (activeTab === 'Expiring') return doc.status === 'Expiring-Soon';
+            if (activeTab === 'Expiring') return doc.status === 'Expiring' || doc.status === 'Expiring-Soon';
             if (activeTab === 'Expired') return doc.status === 'Expired';
             return true;
         });
@@ -64,7 +65,7 @@ export default function ComplianceDocumentsScreen() {
 
     const renderDocumentCard = ({ item }: { item: any }) => {
         const isExpired = item.status === 'Expired';
-        const isExpiring = item.status === 'Expiring-Soon';
+        const isExpiring = item.status === 'Expiring' || item.status === 'Expiring-Soon';
         const isValid = item.status === 'Valid';
 
         let badgeColor = '#dcfce7';
@@ -81,7 +82,7 @@ export default function ComplianceDocumentsScreen() {
             badgeText = 'expiring soon';
         }
 
-        const formattedIssued = new Date(item.uploadDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const formattedIssued = new Date(item.issuedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         const formattedExpiry = new Date(item.expiryDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
         return (
@@ -92,8 +93,8 @@ export default function ComplianceDocumentsScreen() {
                             <Ionicons name="document-text" size={24} color={isExpired ? '#dc2626' : isExpiring ? '#ea580c' : '#166534'} />
                         </View>
                         <View style={styles.docInfo}>
-                            <ThemedText style={styles.docTitle} type="defaultSemiBold">{item.title}</ThemedText>
-                            <ThemedText style={styles.docSubtitle} lightColor="#6b7280" darkColor="#9ca3af">{item.branch || 'Unknown'}</ThemedText>
+                            <ThemedText style={styles.docTitle} type="defaultSemiBold">{item.type}</ThemedText>
+                            <ThemedText style={styles.docSubtitle} lightColor="#6b7280" darkColor="#9ca3af">{item.vehicleName || 'Unknown'}</ThemedText>
                         </View>
                     </View>
                     <View style={[styles.statusBadge, { backgroundColor: badgeColor }]}>
@@ -103,7 +104,7 @@ export default function ComplianceDocumentsScreen() {
 
                 <View style={styles.docDetails}>
                     <ThemedText style={styles.docMeta} lightColor="#6b7280" darkColor="#9ca3af">
-                        Doc #: {item.scope || 'N/A'}
+                        Doc #: {item.documentNumber || 'N/A'}
                     </ThemedText>
                     <View style={styles.dateContainer}>
                         <ThemedText style={styles.docMeta} lightColor="#6b7280" darkColor="#9ca3af">
