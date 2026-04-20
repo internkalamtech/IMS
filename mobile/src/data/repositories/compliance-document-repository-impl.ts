@@ -9,20 +9,18 @@ export class ComplianceDocumentRepositoryImpl implements ComplianceDocumentRepos
             const params = new URLSearchParams();
             if (branch) params.append('branch', branch);
             if (scope) params.append('scope', scope);
-            
+
             const queryString = params.toString() ? `?${params.toString()}` : '';
             const response = await api.get(`/documents/${queryString}`);
-            
+
             return response.data.map((doc: any) => {
                 const expiryDate = new Date(doc.expiry_date);
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 const expiry = new Date(expiryDate);
                 expiry.setHours(0, 0, 0, 0);
-                
                 const timeDiff = expiry.getTime() - today.getTime();
                 const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-                
                 let status = 'Valid';
                 if (daysLeft < 0) {
                     status = 'Expired';
