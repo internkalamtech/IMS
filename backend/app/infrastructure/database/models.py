@@ -10,12 +10,12 @@ Best practices followed:
 - Indexes for performance
 """
 
-from datetime import datetime
+from datetime import date as dt_date, datetime
 from typing import List
-
 from sqlalchemy import (
     Boolean,
     Column,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -375,8 +375,6 @@ class PaymentModel(Base):
             f"amount={self.amount}, "
             f"status='{self.status}')>"
         )
-
-
 class ParentModel(Base):
     """
     Parent database model.
@@ -398,7 +396,7 @@ class ParentModel(Base):
     )
     relationship_type: Mapped[str] = mapped_column(
         String(50), nullable=False, default="Parent"
-    )  # Parent, Guardian, etc.
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
@@ -410,7 +408,6 @@ class ParentModel(Base):
         nullable=False,
     )
 
-    # Relationships
     students: Mapped[List["StudentModel"]] = relationship(
         "StudentModel",
         secondary=student_parent_link,
@@ -424,3 +421,47 @@ class ParentModel(Base):
             f"email='{self.email}')>"
         )
 
+
+class AttendanceModel(Base):
+    """
+    Attendance database model.
+
+    Represents a student's attendance record for a specific date.
+    """
+
+    __tablename__ = "attendance"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    student_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    class_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("class_sections.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    date: Mapped[dt_date] = mapped_column(Date, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Attendance(id={self.id}, "
+            f"student_id={self.student_id}, "
+            f"class_id={self.class_id}, "
+            f"date='{self.date}', "
+            f"status='{self.status}')>"
+        )
