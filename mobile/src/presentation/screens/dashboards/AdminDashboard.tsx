@@ -30,7 +30,8 @@ export default function AdminDashboard() {
     const { logout, user } = useAuth();
     const router = useRouter();
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
-    const { theme, isDark } = useTheme();
+    const { theme } = useTheme();
+
     const quickActions = DASHBOARD_CONFIG.admin.quickActions;
 
     const handleActionPress = (action: any) => {
