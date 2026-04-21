@@ -1,57 +1,26 @@
-"""
-Pydantic schemas for API request/response models.
+# =========================
+# IMPORTS (FIXED)
+# =========================
 
-These schemas define the shape of data for API endpoints.
-"""
-
-from datetime import datetime
-from typing import List, Literal, Optional
-
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional
 
 
-class LoginRequest(BaseModel):
-    """Request schema for login endpoint."""
+# =========================
+# ENROLLMENT
+# =========================
 
-    email: EmailStr
-    password: str = Field(
-        ...,
-        min_length=6,
-        description="User password (minimum 6 characters)",
-    )
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "email": "admin@myuser.com",
-                    "password": "admin123",
-                }
-            ]
-        }
-    }
-
-
-class RoleResponse(BaseModel):
-    """Response schema for role data."""
-
-    id: str
-    name: Literal[
-        "admin",
-        "teacher",
-        "student",
-        "parent",
-        "transport",
-        "driver",
-    ]
-    description: str | None = None
-
-
-class UserResponse(BaseModel):
-    """Response schema for user data."""
-
-    id: str
+class ParentInput(BaseModel):
     name: str
+    email: EmailStr
+    phone: str = Field(..., min_length=10, max_length=15)
+    relationship_type: str = "Parent"
+
+
+class StudentInput(BaseModel):
+    name: str
+ 360-students-overview
+    roll_number: str = Field(..., min_length=1)
     email: str
     role: Literal["admin",
                   "teacher",
@@ -315,131 +284,15 @@ class SubjectInput(BaseModel):
 
 class UpdateClassSubjectsRequest(BaseModel):
     """Request schema for updating class subjects."""
-
+ main
     class_id: int
-    subjects: List[SubjectInput]
-
-
-# Student & Parent Enrollment Schemas
-
-
-class ParentInput(BaseModel):
-    """Input schema for parent information."""
-
-    name: str = Field(..., min_length=1, max_length=255, description="Parent full name")
-    phone: str = Field(
-        ..., min_length=10, max_length=20, description="Contact phone number"
-    )
-    email: EmailStr = Field(..., description="Parent email address")
-    relationship_type: str = Field(
-        default="Parent",
-        max_length=50,
-        description="Relationship to student (Parent, Guardian, etc.)",
-    )
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "name": "John Doe",
-                    "phone": "+1-555-123-4567",
-                    "email": "john.doe@example.com",
-                    "relationship_type": "Father",
-                }
-            ]
-        }
-    }
-
-
-class StudentInput(BaseModel):
-    """Input schema for student information."""
-
-    name: str = Field(..., min_length=1, max_length=255, description="Student full name")
-    roll_number: str = Field(
-        ..., min_length=1, max_length=50, description="Unique student roll number"
-    )
-    class_id: int = Field(..., description="ID of the class section")
-    class_name: str = Field(
-        ..., min_length=1, max_length=100, description="Class name/grade"
-    )
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "name": "Jane Doe",
-                    "roll_number": "A-001",
-                    "class_id": 1,
-                    "class_name": "Grade 6-A",
-                }
-            ]
-        }
-    }
+    class_name: str
 
 
 class CreateStudentWithParentRequest(BaseModel):
-    """Request schema for creating a student with parent link."""
-
-    student: StudentInput = Field(..., description="Student information")
-    parent: ParentInput = Field(..., description="Parent information")
-    link_existing_parent: bool = Field(
-        default=False,
-        description="If True, link to existing parent by email instead of creating new",
-    )
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "student": {
-                        "name": "Jane Doe",
-                        "roll_number": "A-001",
-                        "class_id": 1,
-                        "class_name": "Grade 6-A",
-                    },
-                    "parent": {
-                        "name": "John Doe",
-                        "phone": "+1-555-123-4567",
-                        "email": "john.doe@example.com",
-                        "relationship": "Father",
-
-                    },
-                    "link_existing_parent": False,
-                }
-            ]
-        }
-    }
-
-
-class ParentResponse(BaseModel):
-    """Response schema for parent data."""
-
-    id: int
-    name: str
-    phone: str
-    email: str
-    relationship_type: str
-
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "id": 1,
-                    "name": "John Doe",
-                    "phone": "+1-555-123-4567",
-                    "email": "john.doe@example.com",
-                    "relationship_type": "Father",
-                    "is_active": True,
-                    "created_at": "2024-02-16T10:30:00",
-                    "updated_at": "2024-02-16T10:30:00",
-                }
-            ]
-        }
-    }
+    student: StudentInput
+    parent: ParentInput
+    link_existing_parent: bool = False
 
 
 class StaffCreate(BaseModel):
@@ -476,6 +329,7 @@ class StaffResponse(BaseModel):
 
 
 class StudentResponse(BaseModel):
+ 360-students-overview
     """Response schema for student data."""
 
     id: int
@@ -663,131 +517,32 @@ class AverageMarksResponse(BaseModel):
 
 class PaymentStudentResponse(BaseModel):
     """Response schema for student data in payment context."""
-
+ main
     id: int
     name: str
     roll_number: str
+    class_id: int
     class_name: str
-    marks: Optional[float] = None
-    attendance: Optional[float] = None
-    next_due_date: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
 
-class FeeStructureResponse(BaseModel):
-    """Response schema for fee structure data."""
-
+class ParentResponse(BaseModel):
     id: int
-    student_id: int
-    total_fee: float
-    amount_paid: float
-    balance: float
-    fee_type: str
-    academic_year: str
-    student: PaymentStudentResponse
+    name: str
+    email: EmailStr
+    phone: str
+    relationship_type: str
 
     model_config = {"from_attributes": True}
 
 
-class PaymentResponse(BaseModel):
-    """Response schema for a single payment transaction."""
-
-    id: int
-    student_id: int
-    fee_structure_id: int
-    receipt_number: str
-    amount: float
-    payment_mode: PaymentMode
-    reference_number: Optional[str] = None
-    status: PaymentStatus
-    remarks: Optional[str] = None
-    payment_date: datetime
-
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "id": 1,
-                    "student_id": 1,
-                    "fee_structure_id": 1,
-                    "receipt_number": "REC-2024-A3F7",
-                    "amount": 5000.00,
-                    "payment_mode": "UPI",
-                    "reference_number": "UPI123456789",
-                    "status": "Paid",
-                    "remarks": "Monthly fee - April",
-                    "payment_date": "2024-04-01T10:00:00",
-                }
-            ]
-        },
-    }
-
-
-class PaymentSummaryResponse(BaseModel):
-    """Response schema for aggregated payment statistics."""
-
-    total_collectible: float
-    total_collected: float
-    total_pending: float
-    total_overdue: float
-
-    model_config = {"from_attributes": True}
-
-    
-# ============ TRIP SCHEMAS ============
-
-
-class TripCreateRequest(BaseModel):
-    """Request body for creating a trip."""
-
-    driver_id: int
-    route_id: str
-    vehicle_id: str
-    trip_type: str  # "pickup" or "drop_off"
-    scheduled_start: datetime
-    total_students: int
-
-
-class TripUpdateStatusRequest(BaseModel):
-    """Request body for updating trip status."""
-
-    status: str  # "scheduled", "in_progress", "completed"
-
-
-class TripResponse(BaseModel):
-    """Response model for a trip."""
-
-    id: int
-    driver_id: int
-    route_id: str
-    vehicle_id: str
-    trip_type: str
-    status: str
-    scheduled_start: datetime
-    actual_start: datetime | None = None
-    actual_end: datetime | None = None
-    total_students: int
-    boarded_count: int
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
-
-    class Config:
-        from_attributes = True
-
-
-class TripStopCreateRequest(BaseModel):
-    """Request body for creating a trip stop."""
-
-    stop_sequence: int
-    location_name: str
-    latitude: float
-    longitude: float
-    scheduled_time: datetime
-    expected_students: int
-
-
+ 360-students-overview
+class CreateStudentWithParentResponse(BaseModel):
+    student: StudentResponse
+    parent: ParentResponse
+    message: str
+=======
 class TripStopUpdateRequest(BaseModel):
     """Request body for updating trip stop status."""
 
@@ -839,3 +594,4 @@ class StudentBoardingResponse(BaseModel):
 
     class Config:
         from_attributes = True
+ main
