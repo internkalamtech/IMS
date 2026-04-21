@@ -2,6 +2,9 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { Logger } from './logger';
 
+const DEFAULT_PORT = '8000';
+const API_VERSION = 'api/v1';
+
 /**
  * Dynamically determines the API gateway URL based on the current environment and platform.
  *
