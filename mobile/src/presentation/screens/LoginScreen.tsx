@@ -23,8 +23,12 @@ export default function LoginScreen() {
     const { login, loading, error, demoCredentials } = useAuth();
     const { theme } = useTheme();
 
-    const handleLogin = () => {
-        login(email, password);
+    const handleLogin = async () => {
+        try {
+            await login(email, password);
+        } catch {
+            // Error state is managed in AuthContext.
+        }
     };
 
     const autofill = (userEmail: string, userPass: string) => {
