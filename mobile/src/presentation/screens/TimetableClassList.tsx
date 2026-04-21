@@ -4,7 +4,8 @@ import {
     Text,
     TouchableOpacity,
     FlatList,
-    StyleSheet
+    StyleSheet,
+    TextInput
 } from 'react-native';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -12,13 +13,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function TimetableClassListScreen() {
 
-    // 🔹 State to store classes
+    // State to store all classes
     const [classes, setClasses] = useState<any[]>([]);
 
-    // 🔹 Loading state
+    // Loading state
     const [loading, setLoading] = useState(true);
 
-    // 🔹 Fetch classes when screen comes into focus
+    // Search input state
+    const [search, setSearch] = useState('');
+
+    // Filter classes based on search input
+    const filteredClasses = classes.filter((c: any) =>
+        (c.name || '').toLowerCase().includes(search.toLowerCase())
+    );
+
+    // Fetch classes when screen is focused
     useFocusEffect(
         useCallback(() => {
             const fetchClasses = async () => {
@@ -28,10 +37,9 @@ export default function TimetableClassListScreen() {
                     const res = await fetch('http://10.237.144.29:8000/api/v1/classes');
                     const data = await res.json();
 
-                    console.log("CLASSES DATA:", data);
-
                     // Ensure correct format
                     setClasses(Array.isArray(data) ? data : data.data || []);
+
                 } catch (err) {
                     console.log("FETCH ERROR:", err);
                 } finally {
@@ -43,7 +51,7 @@ export default function TimetableClassListScreen() {
         }, [])
     );
 
-    // 🔹 Loading UI
+    // Loading UI
     if (loading) {
         return (
             <SafeAreaView style={styles.center}>
@@ -52,33 +60,43 @@ export default function TimetableClassListScreen() {
         );
     }
 
-    // 🔹 Empty UI
+    // Empty state when no classes exist
     if (classes.length === 0) {
         return (
             <SafeAreaView style={styles.center}>
-                <Text>No classes available. Add from Class Management.</Text>
+                <Text>No classes available. Add class from Class Management Section.</Text>
             </SafeAreaView>
         );
     }
 
-    // 🔹 Main UI
     return (
         <SafeAreaView style={styles.container}>
 
-            {/* 🔹 Header */}
+            {/* Header */}
             <Text style={styles.header}>Classes</Text>
 
-            {/* 🔹 Class List */}
-            <FlatList
-                data={classes}
-                keyExtractor={(item: any) => item.id.toString()}
-                contentContainerStyle={{ paddingBottom: 20 }}
-                renderItem={({ item }) => {
+            {/* Search Input */}
+            <TextInput
+                placeholder="Search class (e.g. 10th)"
+                value={search}
+                onChangeText={setSearch}
+                style={styles.searchInput}
+            />
 
-                    // Debug each item
-                    console.log("CLASS ITEM:", item);
+            {/* If no match found */}
+            {filteredClasses.length === 0 ? (
+                <View style={styles.center}>
+                    <Text>No matching classes found</Text>
+                </View>
+            ) : (
 
-                    return (
+                // Class List
+                <FlatList
+                    data={filteredClasses} // use filtered data
+                    keyExtractor={(item: any) => item.id.toString()}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                    renderItem={({ item }) => (
+
                         <TouchableOpacity
                             style={styles.card}
                             onPress={() =>
@@ -87,38 +105,32 @@ export default function TimetableClassListScreen() {
                                     params: {
                                         classId: item.id,
                                         className: item.name,
+                                        section: item.section
                                     },
                                 })
                             }
                         >
 
-                            {/* 🔹 Class Name */}
+                            {/* Class Name + Section */}
                             <Text style={styles.className}>
-                                {item.name || 'No Name'}
+                                {item.name || 'No Name'} {item.section ? `- ${item.section}` : ''}
                             </Text>
 
-                            {/* 🔹 Section */}
-                            {item.section && (
-                                <Text style={styles.subText}>
-                                    Section: {item.section}
-                                </Text>
-                            )}
-
-                            {/* 🔹 Academic Year */}
+                            {/* Academic Year */}
                             {item.academic_year && (
                                 <Text style={styles.subText}>
                                     Year: {item.academic_year}
                                 </Text>
                             )}
 
-                            {/* 🔹 Grade */}
+                            {/* Grade */}
                             {item.grade && (
                                 <Text style={styles.subText}>
                                     Grade: {item.grade}
                                 </Text>
                             )}
 
-                            {/* 🔹 Any other fields (optional) */}
+                            {/* Class Teacher */}
                             {item.class_teacher && (
                                 <Text style={styles.subText}>
                                     Teacher: {item.class_teacher}
@@ -126,9 +138,9 @@ export default function TimetableClassListScreen() {
                             )}
 
                         </TouchableOpacity>
-                    );
-                }}
-            />
+                    )}
+                />
+            )}
 
         </SafeAreaView>
     );
@@ -136,43 +148,52 @@ export default function TimetableClassListScreen() {
 
 const styles = StyleSheet.create({
 
-    // 🔹 Main container
+    // Main container
     container: {
         flex: 1,
         paddingHorizontal: 16,
         backgroundColor: '#fff',
     },
 
-    // 🔹 Centered view (loading / empty)
+    // Centered layout
     center: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
 
-    // 🔹 Header text
+    // Header
     header: {
         fontSize: 24,
         fontWeight: 'bold',
         marginVertical: 16,
     },
 
-    // 🔹 Card for each class
+    // Search input
+    searchInput: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        padding: 10,
+        borderRadius: 8,
+        marginBottom: 12,
+    },
+
+    // Card design
     card: {
         padding: 16,
         marginBottom: 12,
         backgroundColor: '#f2f2f2',
         borderRadius: 10,
-        elevation: 2, // shadow (Android)
+        elevation: 2,
     },
 
-    // 🔹 Class name
+    // Class name
     className: {
         fontSize: 18,
         fontWeight: '600',
     },
 
-    // 🔹 Sub text (section, year, etc.)
+    // Sub text
     subText: {
         fontSize: 14,
         color: '#555',
