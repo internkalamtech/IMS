@@ -19,8 +19,6 @@ from app.api.v1.endpoints import (
     documents, 
     )
 from app.api.v1.endpoints.payments import router as payments_router
-    trips,
-)
 
 from app.api.v1.endpoints.staff import router as staff_router
 
