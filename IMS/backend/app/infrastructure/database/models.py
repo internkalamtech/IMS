@@ -118,6 +118,32 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
+class ClassModel(Base):
+    """
+    Class database model.
+
+    Represents an academic class and its assigned class teacher.
+    """
+
+    __tablename__ = "classes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    teacher_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
+    teacher: Mapped["UserModel | None"] = relationship(
+        "UserModel", foreign_keys=[teacher_id]
+    )
+
+    def __repr__(self) -> str:
+        return f"<Class(id={self.id}, name='{self.name}', teacher_id={self.teacher_id})>"
+
+
 class StudentModel(Base):
     """
     Student profile database model.

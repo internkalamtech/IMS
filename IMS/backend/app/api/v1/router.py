@@ -3,10 +3,11 @@ from fastapi import APIRouter
 # Import all endpoint routers
 from app.api.v1.endpoints import (
     auth,
-    health,
     dashboard,
+    health,
     users,
 )
+from app.api.v1.class_routes import class_router
 
 # Main API router
 router = APIRouter(prefix="/v1")
@@ -37,4 +38,10 @@ router.include_router(
     users.router,
     prefix="/users",
     tags=["Users"],
+)
+
+# Classes
+router.include_router(
+    class_router,
+    tags=["Classes"],
 )
