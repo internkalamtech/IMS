@@ -63,7 +63,7 @@ class DatabasePaymentRepository(PaymentRepository):
     @staticmethod
     def _fee_structure_to_entity(model: FeeStructureModel) -> FeeStructure:
         """Map a FeeStructureModel ORM object,
-        to a FeeStructure domain entity."""
+        to a FeeStructure entity."""
         return FeeStructure(
             id=model.id,
             student_id=model.student_id,
@@ -428,7 +428,7 @@ class DatabasePaymentRepository(PaymentRepository):
             )
             total_collected: float = total_collected_result.scalar() or 0.0
 
-            # Overdue = outstanding balances for,
+            # Overdue = balances for,
             # students past their next_due_date
             overdue_result = await self.db.execute(
                 select(

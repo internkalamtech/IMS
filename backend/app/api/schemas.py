@@ -220,6 +220,157 @@ class LeaveRequestResponse(BaseModel):
     status: str
     appliedDate: str
     teacherNote: str | None = None
+# Transport-related schemas
+class RouteResponse(BaseModel):
+    """Response schema for route data."""
+
+    id: str
+    name: str
+    status: Literal["on_time", "delayed", "cancelled", "completed"]
+    total_stops: int
+    total_students: int
+    assigned_bus: str
+    driver: str
+    next_stop: str | None = None
+    next_time: str | None = None
+    current_location: dict | None = None
+    delay_minutes: int = 0
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{
+                "id": "route_001",
+                "name": "Route A - School Express",
+                "status": "on_time",
+                "total_stops": 8,
+                "total_students": 45,
+                "assigned_bus": "BUS-001",
+                "driver": "John Smith",
+                "next_stop": "Stop 3 - Oak Street",
+                "next_time": "14:15",
+                "delay_minutes": 0
+            }]
+        }
+    }
+
+
+class RouteListResponse(BaseModel):
+    """Response schema for route list."""
+
+    routes: list[RouteResponse]
+    total: int
+
+
+class ComplianceStatusResponse(BaseModel):
+    """Response schema for compliance status overview."""
+
+    valid_documents: int
+    expiring_soon: int
+    expired: int
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{
+                "valid_documents": 24,
+                "expiring_soon": 5,
+                "expired": 2
+            }]
+        }
+    }
+
+
+class AlertResponse(BaseModel):
+    """Response schema for alert data."""
+
+    id: str
+    bus_id: str
+    type: Literal["danger", "warning", "maintenance", "alert"]
+    message: str
+    timestamp: str  # ISO format datetime
+    location: str
+    resolved: bool = False
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{
+                "id": "alert_001",
+                "bus_id": "BUS-007",
+                "type": "danger",
+                "message": "Over-speeding detected - 68 km/h in 50 km/h zone",
+                "timestamp": "2024-01-15T10:30:00Z",
+                "location": "NH-8 Highway",
+                "resolved": False
+            }]
+        }
+    }
+
+
+class AlertListResponse(BaseModel):
+    """Response schema for alert list."""
+
+    alerts: list[AlertResponse]
+    total: int
+
+
+class DocumentExpiryResponse(BaseModel):
+    """Response schema for expiring document data."""
+
+    id: str
+    bus_id: str
+    type: str
+    document_number: str
+    expiry_date: str  # ISO format date
+    status: Literal["valid", "expiring_soon", "expired"]
+    days_left: int
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{
+                "id": "doc_001",
+                "bus_id": "BUS-012",
+                "type": "Insurance",
+                "document_number": "INS2024001",
+                "expiry_date": "2024-01-26T00:00:00Z",
+                "status": "expiring_soon",
+                "days_left": 7
+            }]
+        }
+    }
+
+
+class DocumentExpiryListResponse(BaseModel):
+    """Response schema for expiring documents list."""
+
+    documents: list[DocumentExpiryResponse]
+    total: int
+
+
+class TransportStatsResponse(BaseModel):
+    """Response schema for comprehensive transport statistics."""
+
+    total_routes: int
+    active_trips: int
+    total_students: int
+    total_buses: int
+    valid_documents: int
+    expiring_documents: int
+    expired_documents: int
+    active_alerts: int
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{
+                "total_routes": 12,
+                "active_trips": 8,
+                "total_students": 245,
+                "total_buses": 10,
+                "valid_documents": 24,
+                "expiring_documents": 5,
+                "expired_documents": 2,
+                "active_alerts": 4
+            }]
+        }
+    }
 
 
 class SubjectInput(BaseModel):
@@ -358,6 +509,39 @@ class ParentResponse(BaseModel):
     }
 
 
+class StaffCreate(BaseModel):
+    """Request schema for creating a staff user."""
+
+    name: str = Field(..., min_length=1, max_length=255, description="Full name")
+    email: EmailStr = Field(..., description="Staff email")
+    phone: str = Field(..., min_length=7, max_length=20, description="Contact phone")
+    role: Literal["admin", "teacher", "transport", "driver"] = Field(
+        ..., description="Staff role"
+    )
+
+    # Role-specific optional fields
+    subjects: Optional[List[str]] = Field(None, description="List of subjects (for teachers)")
+    class_assigned_id: Optional[int] = Field(None, description="Class section id assigned to teacher")
+    license: Optional[str] = Field(None, description="Driver license number (for drivers)")
+
+
+class StaffResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone: str
+    role: str
+    subjects: Optional[List[str]] = None
+    class_assigned_id: Optional[int] = None
+    class_assigned_name: Optional[str] = None
+    license: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class StudentResponse(BaseModel):
     """Response schema for student data."""
 
@@ -426,6 +610,41 @@ class CreateStudentWithParentResponse(BaseModel):
         }
     }
 
+
+
+class DocumentBase(BaseModel):
+    """Base schema for Document."""
+    title: str
+    branch: Optional[str] = None
+    scope: Optional[str] = None
+    expiry_date: datetime
+
+
+class DocumentCreate(DocumentBase):
+    """Schema for creating a document."""
+    pass
+
+
+class DocumentUpdate(BaseModel):
+    """Schema for updating a document."""
+    title: Optional[str] = None
+    branch: Optional[str] = None
+    scope: Optional[str] = None
+    expiry_date: Optional[datetime] = None
+
+
+class DocumentResponse(DocumentBase):
+    """Schema for document response, including computed fields."""
+    id: int
+    original_filename: str
+    content_type: str
+    upload_date: datetime
+    uploaded_by_id: Optional[int] = None
+
+    days_left: int
+    status: Literal["Valid", "Expiring-Soon", "Expired"]
+
+    model_config = {"from_attributes": True}
 
 
 # ------------------------------------------------------------------ #
