@@ -8,10 +8,14 @@ on external frameworks.
 from dataclasses import dataclass
 from typing import Literal
 
-
 # Type alias for user roles
 UserRole = Literal[
-    "admin", "teacher", "student", "parent", "transport", "driver"
+    "admin",
+    "teacher",
+    "student",
+    "parent",
+    "transport",
+    "driver"
 ]
 
 
@@ -60,7 +64,11 @@ class User:
             "email": self.email,
             "role": self.role,
             "roles": [
-                {"id": r.id, "name": r.name, "description": r.description}
+                {
+                    "id": r.id,
+                    "name": r.name,
+                    "description": r.description,
+                }
                 for r in self.roles
             ],
             "avatarUrl": self.avatar_url,

@@ -34,7 +34,7 @@ export class UserRepositoryImpl implements UserRepository {
         } catch (error) {
             Logger.error('Failed to fetch dashboard data', error);
 
-            // Role-aware fallback for demo stability
+            // Fallback for demo stability
             return {
                 role: `${role.charAt(0).toUpperCase()}${role.slice(1)} (Offline)`,
                 stats: FALLBACK_STATS[role] ?? [
@@ -45,5 +45,4 @@ export class UserRepositoryImpl implements UserRepository {
         }
     }
 }
-
 
