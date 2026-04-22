@@ -19,48 +19,29 @@ from app.infrastructure.repositories.subject_repository import (
 from app.domain.usecases.update_class_subjects import (
     UpdateClassSubjectsUseCase,
 )
-from app.api.schemas import (
-    UpdateClassSubjectsRequest,
-    UpdateClassSubjectsResponse,
-)
+from app.api.schemas import UpdateClassSubjectsRequest
 
 router = APIRouter()
 
 
-@router.get(
-    "/classes",
-    summary="List classes",
-    description="Return available class sections.",
-)
-async def list_classes(db: AsyncSession = Depends(get_db)) -> list[dict]:
-    result = await db.execute(select(ClassSectionModel).order_by(ClassSectionModel.id))
+@router.get("/classes")
+async def get_classes(db: AsyncSession = Depends(get_db)):
+    """
+    Get all available classes.
+
+    Returns a list of all classes with their IDs and names.
+    """
+    result = await db.execute(select(ClassSectionModel))
     classes = result.scalars().all()
 
     return [{"id": c.id, "name": c.name} for c in classes]
 
 
-@router.post(
-    "/class/subjects",
-    response_model=UpdateClassSubjectsResponse,
-    summary="Update class subjects",
-    description="Assign one or more subjects to an existing class section.",
-    openapi_extra={
-        "requestBody": {
-            "content": {
-                "application/json": {
-                    "example": {
-                        "class_id": 0,
-                        "subjects": [{"name": "Math"}, {"name": "Science"}],
-                    }
-                }
-            }
-        }
-    },
-)
+@router.post("/class/subjects")
 async def update_class_subjects(
     request: UpdateClassSubjectsRequest,
     db: AsyncSession = Depends(get_db),
-) -> UpdateClassSubjectsResponse:
+):
     class_repo = ClassRepository(db)
     subject_repo = SubjectRepository(db)
 
@@ -72,7 +53,7 @@ async def update_class_subjects(
 
     result = await usecase.execute(
         request.class_id,
-        [s.model_dump(exclude_none=True) for s in request.subjects],
+        [s.dict() for s in request.subjects],
     )
 
-    return UpdateClassSubjectsResponse(**result)
+    return result

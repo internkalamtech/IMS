@@ -18,7 +18,7 @@ if (!fs.existsSync(venvPath)) {
   const createVenv = spawnSync("python", ["-m", "venv", "venv"], {
     cwd: __dirname,
     stdio: "inherit",
-    shell: false,
+    shell: true,
   });
   if (createVenv.error) {
     console.error("\n✗ Failed to create venv:", createVenv.error);
@@ -32,12 +32,12 @@ if (!fs.existsSync(venvPath)) {
 // Step 2: Install dependencies
 console.log("📚 Installing dependencies...");
 const installDeps = spawnSync(
-  pythonPath,
+  `"${pythonPath}"`,
   ["-m", "pip", "install", "-r", "requirements.txt"],
   {
     cwd: __dirname,
     stdio: "inherit",
-    shell: false,
+    shell: true,
   },
 );
 

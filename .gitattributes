@@ -1,3 +1,0 @@
-# Treat lockfiles as generated artifacts in GitHub UI/reviews
-mobile/package-lock.json linguist-generated=true
-package-lock.json linguist-generated=true

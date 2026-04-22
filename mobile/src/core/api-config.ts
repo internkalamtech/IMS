@@ -70,11 +70,3 @@ export const getApiBaseUrl = (): string => {
         return configuredUrl || `http://10.0.2.2:${DEFAULT_PORT}/${API_VERSION}`;
     }
 };
-
-/**
- * Token refresh is disabled by default until backend /auth/refresh is available.
- * Set EXPO_PUBLIC_ENABLE_TOKEN_REFRESH=true to enable when server support exists.
- */
-export const isTokenRefreshEnabled = (): boolean => {
-    return process.env.EXPO_PUBLIC_ENABLE_TOKEN_REFRESH === 'true';
-};

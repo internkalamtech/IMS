@@ -7,5 +7,4 @@ export interface AuthRepository {
     logout(): Promise<void>;
     getCurrentUser(): Promise<User | null>;
     getDemoCredentials(): Promise<DemoCredential[]>;
-    refreshToken(): Promise<string | null>;
 }

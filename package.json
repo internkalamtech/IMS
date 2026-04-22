@@ -6,8 +6,8 @@
     "scripts": {
         "mobile": "cd mobile && npm start",
         "mobile:install": "cd mobile && npm install",
-        "backend": "node backend/start.js",
-        "backend:setup": "node backend/setup.js",
+        "backend": "cd backend && node start.js",
+        "backend:setup": "cd backend && node setup.js",
         "dev": "concurrently \"npm run mobile\" \"npm run backend\"",
         "install:all": "npm run mobile:install && npm run backend:setup",
         "lint:mobile": "cd mobile && npm run lint"

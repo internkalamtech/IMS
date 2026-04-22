@@ -32,16 +32,11 @@ class Settings(BaseSettings):
     secret_key: str = "dev-secret-key-change-in-production"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
-    access_token_refresh_window_minutes: int = 5
 
     # CORS - stored as string in env, parsed to list
     cors_origins: Union[str, list[str]] = (
-        "http://localhost:8000,"
-        "http://127.0.0.1:8000,"
-        "http://localhost:8081,"
-        "http://127.0.0.1:8081,"
-        "http://localhost:19000,"
-        "http://localhost:19006"
+        "http://localhost:8081,exp://localhost:8081,"
+        "http://localhost:19000,http://localhost:19006"
     )
 
     # Logging
@@ -50,27 +45,9 @@ class Settings(BaseSettings):
     @field_validator("cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):
-        """Parse CORS origins from comma-separated string or list.
-        
-        Strips whitespace and filters out empty entries.
-        This prevents empty strings from being added to the allowed origins list.
-        
-        Args:
-            v: Either a comma-separated string or a list of origins
-            
-        Returns:
-            List of non-empty origin strings
-        """
+        """Parse CORS origins from comma-separated string or list."""
         if isinstance(v, str):
-            # Split on comma, strip whitespace, and filter out empty entries
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        if isinstance(v, list):
-            # Normalize list values the same way as comma-separated strings.
-            return [
-                origin.strip()
-                for origin in v
-                if isinstance(origin, str) and origin.strip()
-            ]
+            return [origin.strip() for origin in v.split(",")]
         return v
 
     model_config = SettingsConfigDict(

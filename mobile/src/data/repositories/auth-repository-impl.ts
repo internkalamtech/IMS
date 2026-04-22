@@ -1,5 +1,5 @@
 import { api } from '@/core/api-client';
-import { AuthError, NetworkError } from '@/core/error';
+import { NetworkError } from '@/core/error';
 import { Logger } from '@/core/logger';
 import { StorageService } from '@/data/local/storage';
 import { DemoCredential } from '@/domain/entities/demo-credential';
@@ -46,52 +46,7 @@ export class AuthRepositoryImpl implements AuthRepository {
     }
 
     async getCurrentUser(): Promise<User | null> {
-        const cachedUser = await StorageService.getItem<User>(USER_STORAGE_KEY);
-
-        try {
-            const token = await StorageService.getItem<string>(TOKEN_STORAGE_KEY);
-
-            if (!token) {
-                await StorageService.removeItem(USER_STORAGE_KEY);
-                return null;
-            }
-
-            const response = await api.get('/auth/me');
-            const user = response.data;
-
-            const domainUser: User = {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                avatarUrl: user.avatarUrl,
-            };
-
-            await StorageService.setItem(USER_STORAGE_KEY, domainUser);
-            return domainUser;
-        } catch (error: unknown) {
-            const statusCode =
-                error instanceof NetworkError
-                    ? error.statusCode
-                    : (error as { response?: { status?: number } })?.response?.status;
-
-            const isAuthFailure =
-                error instanceof AuthError || statusCode === 401 || statusCode === 403;
-
-            if (isAuthFailure) {
-                Logger.warn('Stored session is invalid or expired; clearing auth state');
-                await StorageService.removeItem(USER_STORAGE_KEY);
-                await StorageService.removeItem(TOKEN_STORAGE_KEY);
-                return null;
-            }
-
-            Logger.warn('Session check failed due to transient error; keeping cached auth state');
-            if (cachedUser) {
-                return cachedUser;
-            }
-
-            throw error;
-        }
+        return await StorageService.getItem<User>(USER_STORAGE_KEY);
     }
 
     async getDemoCredentials(): Promise<DemoCredential[]> {
@@ -119,14 +74,6 @@ export class AuthRepositoryImpl implements AuthRepository {
             ];
         }
     }
-
-    async refreshToken(): Promise<string | null> {
-        Logger.warn('refreshToken called but backend /auth/refresh endpoint is not implemented');
-        await StorageService.removeItem(USER_STORAGE_KEY);
-        await StorageService.removeItem(TOKEN_STORAGE_KEY);
-        return null;
-    }
 }
-
 
 

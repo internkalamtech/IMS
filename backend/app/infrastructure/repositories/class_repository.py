@@ -35,22 +35,6 @@ class ClassRepository:
 
         return result.scalar_one_or_none()
 
-    async def get_first(self) -> ClassSectionModel | None:
-        """
-        Fetch the first available class section ordered by ID.
-
-        Used as a fallback when clients pass class_id=0 as a default value.
-        """
-
-        result = await self.db.execute(
-            select(ClassSectionModel)
-            .options(selectinload(ClassSectionModel.subjects))
-            .order_by(ClassSectionModel.id)
-            .limit(1)
-        )
-
-        return result.scalar_one_or_none()
-
     async def save(self, class_obj: ClassSectionModel) -> ClassSectionModel:
         """
         Save changes to a class object.

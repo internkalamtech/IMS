@@ -50,14 +50,8 @@ python -m venv venv
 
 3. Activate virtual environment:
 ```bash
-# Windows (PowerShell)
-. .\venv\Scripts\Activate.ps1
-
-# Windows (cmd.exe)
+# Windows
 venv\Scripts\activate
-
-# Windows (Git Bash)
-source venv/Scripts/activate
 
 # Linux/Mac
 source venv/bin/activate
@@ -82,20 +76,6 @@ Initialize database and seed demo data:
 ```bash
 python -m app.infrastructure.database.seed
 ```
-
-### Existing DB Migration: Transport Enrollment FK
-
-If your database was created before transport enrollments were aligned to
-the `students` table, run the migration below once:
-
-```bash
-psql "$DATABASE_URL" -f app/infrastructure/database/migrations/align_transport_enrollment_student_fk.sql
-```
-
-What it does:
-- Validates that `student_transport_enrollments.student_id` values exist in `students.id`
-- Drops old foreign key constraints on `student_transport_enrollments.student_id`
-- Recreates the FK to `students(id)` with `ON DELETE CASCADE`
 
 This will:
 - Create all database tables
@@ -122,12 +102,6 @@ Start the development server:
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-On Windows, you can also run it directly with the venv Python executable:
-
-```bash
-.\venv\Scripts\python.exe run.py
 ```
 
 The API will be available at:

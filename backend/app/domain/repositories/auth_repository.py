@@ -36,7 +36,7 @@ class AuthRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: str) -> User:
+    async def get_user_by_id(self, user_id: str) -> User | None:
         """
         Retrieve a user by their ID.
 
@@ -44,10 +44,7 @@ class AuthRepository(ABC):
             user_id: Unique identifier of the user
 
         Returns:
-            User entity if found
-
-        Raises:
-            NotFoundError: If user is not found
+            User entity if found, None otherwise
         """
         pass
 
