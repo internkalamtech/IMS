@@ -616,6 +616,49 @@ class AttendanceModel(Base):
             f"status='{self.status}')>"
         )
 
+class StaffModel(Base):
+    """
+    Staff database model.
+
+    Single table to store staff common fields and optional,
+    role-specific columns (nullable).
+    """
+
+    __tablename__ = "staff"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(255), unique=True, nullable=False, index=True
+    )
+    phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    # Role-specific optional fields
+    class_assigned_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("class_sections.id", ondelete="SET NULL"), nullable=True
+    )
+    class_assigned_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    subjects: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    license: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    class_assigned: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
+
+    def __repr__(self) -> str:
+        return (
+            f"<Staff(id={self.id}, "
+            f"email='{self.email}', "
+            f"name='{self.name}', "
+            f"role='{self.role}')>"
+        )
 class DocumentModel(Base):
     """
     Compliance Document database model.
