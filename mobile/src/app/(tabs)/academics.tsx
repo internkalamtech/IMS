@@ -136,10 +136,10 @@ export default function AcademicsScreen() {
                             <Ionicons name="arrow-back" size={24} color="#fff" />
                         </TouchableOpacity>
                         <View style={styles.headerTitle}>
-                            <ThemedText style={styles.headerTitleText} color="primaryForeground">
+                            <ThemedText style={styles.headerTitleText}>
                                 Academics
                             </ThemedText>
-                            <ThemedText style={styles.headerSubtitle} color="primaryForeground">
+                            <ThemedText style={styles.headerSubtitle}>
                                 Aarav Kumar · Class 7-B
                             </ThemedText>
                         </View>
