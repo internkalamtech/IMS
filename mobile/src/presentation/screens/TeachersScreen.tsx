@@ -2,12 +2,12 @@ import { Stack } from 'expo-router';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function LoginScreen() {
+export default function TeachersScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Login', headerShown: true }} />
+      <Stack.Screen options={{ title: 'Manage Teachers', headerShown: true }} />
       <View style={styles.container}>
-        <Text style={styles.title}>Login</Text>
+        <Text style={styles.title}>Manage Teachers</Text>
       </View>
     </>
   );

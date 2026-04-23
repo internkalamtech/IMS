@@ -9,12 +9,18 @@ from sqlalchemy import (
     Integer,
     String,
     Table,
+ feature/student-profile-ui
     Float,
+    Text,
+  main
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
+  feature/student-profile-ui
+    """Base class for all database models."""
+ main
     pass
 
 
@@ -43,6 +49,14 @@ student_parent_link = Table(
     Column("parent_id", Integer, ForeignKey("parents.id", ondelete="CASCADE"), primary_key=True),
 )
 
+feature/student-profile-ui
+# =========================
+# 👤 USER MODEL
+# =========================
+class UserModel(Base):
+    """
+    User database model.
+ main
 
 # =========================
 # CORE MODELS
@@ -57,9 +71,11 @@ class UserModel(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
+ feature/student-profile-ui
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
+ main
     roles: Mapped[List["RoleModel"]] = relationship(
         "RoleModel",
         secondary=user_roles,
@@ -68,6 +84,9 @@ class UserModel(Base):
     )
 
 
+# =========================
+# 🎭 ROLE MODEL
+# =========================
 class RoleModel(Base):
     __tablename__ = "roles"
 
@@ -86,6 +105,34 @@ class RoleModel(Base):
 # ACADEMIC MODELS
 # =========================
 
+# =========================
+# 📚 HOMEWORK MODEL
+# =========================
+class HomeworkModel(Base):
+    __tablename__ = "homeworks"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
+
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(Text)
+
+    subject: Mapped[str] = mapped_column(String(100))
+    className: Mapped[str] = mapped_column(String(50))
+
+    dueDate: Mapped[str] = mapped_column(String(50))
+
+    assignType: Mapped[str] = mapped_column(String(20))  # ALL / INDIVIDUAL
+
+    students: Mapped[str] = mapped_column(Text)  # comma-separated
+
+    teacherId: Mapped[str] = mapped_column(String(255))
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+    def __repr__(self) -> str:
+        return f"<Homework(id={self.id}, title='{self.title}')>"
 class SubjectModel(Base):
     __tablename__ = "subjects"
 
@@ -132,9 +179,25 @@ class StudentModel(Base):
     attendance: Mapped[float | None] = mapped_column(Float, nullable=True)
     next_due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+ feature/student-profile-ui
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
+    # Relationships
+    fee_structures: Mapped[List["FeeStructureModel"]] = relationship(
+        "FeeStructureModel", 
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
+    payments: Mapped[List["PaymentModel"]] = relationship(
+        "PaymentModel", back_populates="student", cascade="all, delete-orphan"
+    )
+    boardings: Mapped[List["StudentBoardingModel"]] = relationship(
+        "StudentBoardingModel",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
+main
     parents: Mapped[List["ParentModel"]] = relationship(
         "ParentModel",
         secondary=student_parent_link,
@@ -271,5 +334,108 @@ class StudentBoardingModel(Base):
     boarding_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
+feature/student-profile-ui
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=datetime.utcnow)
+
+    def __repr__(self) -> str:
+        return (
+            f"<Parent(id={self.id}, "
+            f"name='{self.name}', "
+            f"email='{self.email}')>"
+        )
+
+
+class StaffModel(Base):
+    """
+    Staff database model.
+
+    Single table to store staff common fields and optional,
+    role-specific columns (nullable).
+    """
+
+    __tablename__ = "staff"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(255), unique=True, nullable=False, index=True
+    )
+    phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    # Role-specific optional fields
+    class_assigned_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("class_sections.id", ondelete="SET NULL"), nullable=True
+    )
+    class_assigned_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    subjects: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    license: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    class_assigned: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
+
+    def __repr__(self) -> str:
+        return (
+            f"<Staff(id={self.id}, "
+            f"email='{self.email}', "
+            f"name='{self.name}', "
+            f"role='{self.role}')>"
+        )
+class DocumentModel(Base):
+    """
+    Compliance Document database model.
+
+    Represents an uploaded document with metadata for expiry tracking.
+    """
+
+    __tablename__ = "compliance_documents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    file_path: Mapped[str] = mapped_column(String(512), nullable=False)
+    content_type: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    # Metadata for filtering
+    branch: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, index=True
+    )
+    scope: Mapped[str | None] = mapped_column(
+        String(50), nullable=True, index=True
+    )  # e.g., 'branch', 'organizational'
+
+    # Expiry tracking
+    upload_date: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+    expiry_date: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        index=True,
+    )
+
+    # Relations
+    uploaded_by_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    uploaded_by: Mapped["UserModel"] = relationship(
+        "UserModel", foreign_keys=[uploaded_by_id]
+    )
+
+    def __repr__(self) -> str:
+        return f"<Document(id={self.id}, title='{self.title}')>"
+ main

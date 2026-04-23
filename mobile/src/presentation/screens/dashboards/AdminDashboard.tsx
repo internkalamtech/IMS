@@ -1,153 +1,166 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 
-const AdminDashboard = () => {
+import { ThemedText } from '@/presentation/components/ThemedText';
+import { ThemedView } from '@/presentation/components/ThemedView';
+import { ThemedCard } from '@/presentation/components/ThemedCard';
+
+import { useAuth } from '@/presentation/hooks/useAuth';
+
+export default function AdminDashboard() {
+  const { logout, user } = useAuth();
   const router = useRouter();
 
   const handleLogout = () => {
-    // @ts-ignore
-    router.replace('/(auth)/login'); // ✅ FIXED
+    logout();
+    router.replace('/(auth)/login' as any); // ✅ FIX ADDED
+  };
+
+  const handleActionPress = (route: string) => {
+    router.push(route as any);
   };
 
   return (
-    <ScrollView style={styles.container}>
-      
-      {/* HEADER */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Admin Dashboard</Text>
-          <Text style={styles.subtitle}>Welcome back 👋</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        
+        {/* 🔷 HEADER / BANNER */}
+        <ThemedView style={styles.banner}>
+          <View style={styles.headerContent}>
+            <View>
+              <ThemedText type="title" style={styles.userName}>
+                Admin Dashboard
+              </ThemedText>
+              <ThemedText style={styles.subtitle}>
+                Welcome back 👋
+              </ThemedText>
+            </View>
+
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutIcon}>
+              <Ionicons name="log-out-outline" size={24} color="red" />
+            </TouchableOpacity>
+          </View>
+
+          {/* 🔷 STATS */}
+          <View style={styles.bannerStats}>
+            <ThemedCard style={styles.bannerStatCard}>
+              <ThemedText style={styles.bannerStatValue}>120</ThemedText>
+              <ThemedText style={styles.bannerStatTitle}>Students</ThemedText>
+            </ThemedCard>
+
+            <ThemedCard style={styles.bannerStatCard}>
+              <ThemedText style={styles.bannerStatValue}>15</ThemedText>
+              <ThemedText style={styles.bannerStatTitle}>Teachers</ThemedText>
+            </ThemedCard>
+
+            <ThemedCard style={styles.bannerStatCard}>
+              <ThemedText style={styles.bannerStatValue}>8</ThemedText>
+              <ThemedText style={styles.bannerStatTitle}>Classes</ThemedText>
+            </ThemedCard>
+          </View>
+        </ThemedView>
+
+        {/* 🔷 ACTIONS */}
+        <View style={styles.mainContent}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleActionPress('/students')}
+          >
+            <ThemedText style={styles.actionText}>Manage Students</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleActionPress('/teachers')}
+          >
+            <ThemedText style={styles.actionText}>Manage Teachers</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleActionPress('/payments')}
+          >
+            <ThemedText style={styles.actionText}>View Payments</ThemedText>
+          </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.logout}>Logout</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* STATS SECTION */}
-      <View style={styles.statsContainer}>
-        <View style={styles.card}>
-          <Text style={styles.cardValue}>120</Text>
-          <Text style={styles.cardLabel}>Students</Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardValue}>15</Text>
-          <Text style={styles.cardLabel}>Teachers</Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardValue}>8</Text>
-          <Text style={styles.cardLabel}>Classes</Text>
-        </View>
-      </View>
-
-      {/* ACTION BUTTONS */}
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          // @ts-ignore
-          onPress={() => router.push({ pathname: '/students' })}
-        >
-          <Text style={styles.actionText}>Manage Students</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.actionButton}
-          // @ts-ignore
-          onPress={() => router.push({ pathname: '/teachers' })}
-        >
-          <Text style={styles.actionText}>Manage Teachers</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.actionButton}
-          // @ts-ignore
-          onPress={() => router.push({ pathname: '/payments' })}
-        >
-          <Text style={styles.actionText}>View Payments</Text>
-        </TouchableOpacity>
-      </View>
-
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
-};
-
-export default AdminDashboard;
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#f5f6fa',
+  scrollContent: {
+    flexGrow: 1,
   },
 
-  header: {
+  banner: {
+    paddingBottom: 30,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+  },
+
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 24,
   },
 
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
+  userName: {
+    marginBottom: 4,
   },
 
   subtitle: {
-    fontSize: 14,
-    color: '#666',
     marginTop: 4,
   },
 
-  logout: {
-    color: 'red',
-    fontWeight: '600',
+  logoutIcon: {
+    padding: 8,
   },
 
-  statsContainer: {
+  bannerStats: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    gap: 12,
   },
 
-  card: {
+  bannerStatCard: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
-    marginHorizontal: 4,
-    borderRadius: 12,
+    borderRadius: 20,
     alignItems: 'center',
-    elevation: 2,
   },
 
-  cardValue: {
-    fontSize: 20,
+  bannerStatValue: {
+    fontSize: 18,
     fontWeight: 'bold',
   },
 
-  cardLabel: {
-    fontSize: 14,
-    color: '#777',
+  bannerStatTitle: {
     marginTop: 4,
   },
 
-  actions: {
-    marginTop: 10,
+  mainContent: {
+    paddingHorizontal: 24,
+    paddingTop: 32,
   },
 
   actionButton: {
     backgroundColor: '#4CAF50',
     padding: 14,
-    borderRadius: 10,
-    marginBottom: 12,
+    borderRadius: 12,
+    marginBottom: 16,
     alignItems: 'center',
   },
 
