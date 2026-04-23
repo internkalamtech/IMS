@@ -1,11 +1,4 @@
-<<<<<<< HEAD
-// Tabs layout for the app
-// This defines the bottom tab navigation
-
-import { Stack } from 'expo-router';
-=======
 import { Stack, useRouter } from 'expo-router';
->>>>>>> c05063ab8805c5607463b099aa7def04f3ee9858
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from '../core/theme/ThemeContext';
