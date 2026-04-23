@@ -45,10 +45,10 @@ export default function ParentDashboard() {
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
                             <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Welcome, {user?.name?.split(' ')[0] || 'Priya'} 👋
                                 </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
+                                <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Track your child&apos;s progress
                                 </ThemedText>
                             </View>
@@ -128,7 +128,7 @@ export default function ParentDashboard() {
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
                         <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-                            <ThemedText style={styles.badgeText} color="primaryForeground">3 new</ThemedText>
+                            <ThemedText style={styles.badgeText} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>3 new</ThemedText>
                         </View>
                     </View>
                     <ThemedCard style={styles.updatesCard} padding={0}>
@@ -365,4 +365,3 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 });
-
