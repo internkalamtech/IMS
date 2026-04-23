@@ -17,6 +17,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AcademicRepository, AcademicSummaryResponse } from '@/data/repositories/academic-repository-impl';
 
 const { width } = Dimensions.get('window');
+interface HomeworkItem {
+    id: string;
+    subject: string;
+    title: string;
+    description: string;
+    teacher: string;
+    dueDate: string;
+    status: 'pending' | 'submitted' | 'overdue';
+    subjectColor: string;
+}
 
 // Remove mock HOMEWORK_DATA. Homework list logic will be added when backend is ready.
 
