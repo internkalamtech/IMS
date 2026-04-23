@@ -53,7 +53,14 @@ export default function TabLayout() {
                     ),
                 }}
             />
-
+            {/* Academics screen — accessible via navigation, hidden from tab bar */}
+            <Tabs.Screen
+                name="academics"
+                options={{
+                    href: null, // Hide from tab bar
+                    title: 'Academics',
+                }}
+            />
         </Tabs>
     );
 }

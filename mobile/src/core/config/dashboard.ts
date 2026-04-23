@@ -62,7 +62,7 @@ export const DASHBOARD_CONFIG = {
     transport: {
         quickActions: [
             { id: 1, title: 'Route\nPlanning', icon: 'map', color: ColorPalettes.emerald[500] },
-            { id: 2, title: 'Compliance\nDocs', icon: 'document', color: ColorPalettes.purple[500] },
+            { id: 2, title: 'Compliance\nDocs', icon: 'document', color: ColorPalettes.purple[500], route: '/compliance-documents' },
             { id: 3, title: 'Assign\nBus', icon: 'bus', color: ColorPalettes.blue[500] },
             { id: 4, title: 'Student\nAssignments', icon: 'people', color: ColorPalettes.indigo[500] },
             { id: 5, title: 'Driver\nManagement', icon: 'person', color: ColorPalettes.cyan[500] },
