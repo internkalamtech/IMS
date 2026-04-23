@@ -21,7 +21,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    Table,
+    Table, 
     Text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -202,7 +202,11 @@ class HomeworkModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     def __repr__(self) -> str:
-        return f"<Homework(id={self.id}, title='{self.title}')>"
+        return (
+            f"<Homework(id={self.id}, child_id={self.child_id}, "
+            f"title='{self.title}', status='{self.status}')>"
+        )
+    
 class SubjectModel(Base):
     """
     Subject database model.

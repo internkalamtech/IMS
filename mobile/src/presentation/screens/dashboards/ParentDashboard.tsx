@@ -22,12 +22,6 @@ export default function ParentDashboard() {
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
 
-    const handleQuickAction = (action: typeof quickActions[0]) => {
-        if (action.route) {
-            router.push(action.route as Parameters<typeof router.push>[0]);
-        }
-    };
-
     const getStatValue = (label: string, defaultValue: string = '0%') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
     };
@@ -36,6 +30,12 @@ export default function ParentDashboard() {
 
     const handleHomeworkCounterPress = () => {
         router.push('/(tabs)/academics?initialTab=homework');
+    };
+
+    const handleQuickActionPress = (action: typeof quickActions[0]) => {
+        if (action.route) {
+            router.push(action.route as Parameters<typeof router.push>[0]);
+        }
     };
 
     return (
@@ -63,7 +63,7 @@ export default function ParentDashboard() {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Child Info Card - Partially overlapping */}
+                        {/* Child Info Card - Fully enclosed in blue dashboard */}
                         <View style={styles.childCardContainer}>
                             <ThemedCard style={styles.childCard} padding={20}>
                                 <View style={styles.childHeader}>
@@ -128,7 +128,7 @@ export default function ParentDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickAction} />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickActionPress} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
     },
     banner: {
-        paddingBottom: 80,
+        paddingBottom: 24,
     },
     headerContent: {
         flexDirection: 'row',
@@ -195,11 +195,8 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     childCardContainer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
         paddingHorizontal: 20,
+        paddingBottom: 10,
     },
     childCard: {
         borderRadius: 24,
@@ -254,7 +251,7 @@ const styles = StyleSheet.create({
     mainContent: {
         flex: 1,
         paddingHorizontal: 24,
-        paddingTop: 80, // Offset for the overlapping card
+        paddingTop: 0,
     },
     sectionHeader: {
         flexDirection: 'row',
@@ -371,3 +368,4 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 });
+
