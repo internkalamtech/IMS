@@ -11,18 +11,32 @@ try:
 except ImportError:
     payments_router = None
 
+# Additional imports (merged cleanly)
+from app.api.v1.endpoints import (
+    enrollment,
+    students,
+    trips,
+)
+
+from app.api.v1.endpoints.staff import router as staff_router
 
 # Create v1 router
 router = APIRouter(prefix="/v1")
 
+# Core routers
 router.include_router(user_router)
 router.include_router(auth.router)
 router.include_router(health.router)
 router.include_router(dashboard.router)
 router.include_router(class_subjects_router)
 
-# ✅ Safe include
+# ✅ Safe include for payments
 if payments_router:
     router.include_router(payments_router)
 
+# Other routers
 router.include_router(subjects.router)
+router.include_router(students.router)
+router.include_router(enrollment.router)
+router.include_router(trips.router)
+router.include_router(staff_router)
