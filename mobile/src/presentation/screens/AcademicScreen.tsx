@@ -14,73 +14,11 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AcademicRepository, AcademicSummaryResponse } from '@/data/repositories/academic-repository-impl';
 
 const { width } = Dimensions.get('window');
 
-// --- Mock homework data ---
-interface HomeworkItem {
-    id: string;
-    subject: string;
-    title: string;
-    description: string;
-    teacher: string;
-    dueDate: string;
-    status: 'pending' | 'submitted' | 'overdue';
-    subjectColor: string;
-}
-
-const HOMEWORK_DATA: HomeworkItem[] = [
-    {
-        id: '1',
-        subject: 'Mathematics',
-        title: 'Algebra Practice Set',
-        description: 'Complete exercises 1–25 from chapter 4',
-        teacher: 'Mr. Anderson',
-        dueDate: 'Apr 2, 2026',
-        status: 'pending',
-        subjectColor: '#6366f1',
-    },
-    {
-        id: '2',
-        subject: 'Science',
-        title: 'Project on Solar System',
-        description: 'Submit detailed observations from the experiment',
-        teacher: 'Dr. Williams',
-        dueDate: 'Apr 5, 2026',
-        status: 'pending',
-        subjectColor: '#10b981',
-    },
-    {
-        id: '3',
-        subject: 'English',
-        title: 'Essay – My Favourite Book',
-        description: 'Write a 500-word essay on climate change impact',
-        teacher: 'Mr. Thompson',
-        dueDate: 'Mar 30, 2026',
-        status: 'overdue',
-        subjectColor: '#f59e0b',
-    },
-    {
-        id: '4',
-        subject: 'Hindi',
-        title: 'Grammar Exercise Page 45-47',
-        description: 'Complete the grammar exercises',
-        teacher: 'Ms. Sarah Johnson',
-        dueDate: 'Apr 4, 2026',
-        status: 'pending',
-        subjectColor: '#ec4899',
-    },
-    {
-        id: '5',
-        subject: 'Social Studies',
-        title: 'Map Work – Indian States',
-        description: 'Complete the map work assignment',
-        teacher: 'Mr. Lee',
-        dueDate: 'Apr 7, 2026',
-        status: 'submitted',
-        subjectColor: '#0ea5e9',
-    },
-];
+// Remove mock HOMEWORK_DATA. Homework list logic will be added when backend is ready.
 
 const STUDY_MATERIALS: { id: string; subject: string; title: string; type: string; size: string; subjectColor: string }[] = [
     { id: '1', subject: 'Mathematics', title: 'Chapter 4 – Algebra Notes', type: 'PDF', size: '2.4 MB', subjectColor: '#6366f1' },
@@ -99,18 +37,30 @@ export default function AcademicsScreen() {
     const router = useRouter();
     const { initialTab } = useLocalSearchParams<{ initialTab?: string }>();
     const { theme } = useTheme();
-
+    const { childId } = useLocalSearchParams<{ childId?: string }>();
     const tabs = ['Homework', 'Study Materials'];
     const [activeTab, setActiveTab] = useState(
         initialTab === 'homework' ? 0 : 0
     );
     const indicatorAnim = useRef(new Animated.Value(activeTab)).current;
 
+    // Academic summary state
+    const [summary, setSummary] = useState<AcademicSummaryResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         if (initialTab === 'homework') {
             setActiveTab(0);
         }
     }, [initialTab]);
+
+    useEffect(() => {
+        if (!childId) return; //Optionally handle missing childId
+        AcademicRepository.getAcademicSummary(childId)
+            .then(data => setSummary(data))
+            .catch(err => setSummary(null))
+            .finally(() => setLoading(false));
+    }, [childId]);
 
     const handleTabChange = (index: number) => {
         setActiveTab(index);
@@ -122,7 +72,8 @@ export default function AcademicsScreen() {
         }).start();
     };
 
-    const pendingCount = HOMEWORK_DATA.filter(h => h.status === 'pending' || h.status === 'overdue').length;
+    // Use summary?.pending_homework_count for badge and summary pill
+    const pendingCount = summary?.pending_homework_count ?? 0;
 
     return (
         <ThemedView style={styles.container}>
@@ -153,7 +104,9 @@ export default function AcademicsScreen() {
                             </ThemedText>
                         </View>
                         <View style={styles.headerBadge}>
-                            <ThemedText style={styles.headerBadgeText}>{pendingCount}</ThemedText>
+                            <ThemedText style={styles.headerBadgeText}>
+                                {loading ? '...' : pendingCount}
+                            </ThemedText>
                         </View>
                     </View>
 
@@ -196,27 +149,14 @@ export default function AcademicsScreen() {
                         <View style={styles.summaryRow}>
                             <SummaryPill
                                 label="Pending"
-                                count={HOMEWORK_DATA.filter(h => h.status === 'pending').length}
+                                count={loading ? 0 : pendingCount}
                                 color="#f59e0b"
                                 theme={theme}
                             />
-                            <SummaryPill
-                                label="Overdue"
-                                count={HOMEWORK_DATA.filter(h => h.status === 'overdue').length}
-                                color="#ef4444"
-                                theme={theme}
-                            />
-                            <SummaryPill
-                                label="Submitted"
-                                count={HOMEWORK_DATA.filter(h => h.status === 'submitted').length}
-                                color="#10b981"
-                                theme={theme}
-                            />
+                            {/* You can add more pills for Overdue/Submitted when backend supports it */}
                         </View>
 
-                        {HOMEWORK_DATA.map(item => (
-                            <HomeworkCard key={item.id} item={item} theme={theme} />
-                        ))}
+                        {/* Render homework list here when backend provides it */}
                     </View>
                 ) : (
                     // Study Materials Tab
