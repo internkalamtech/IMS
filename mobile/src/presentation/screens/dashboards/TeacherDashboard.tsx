@@ -45,10 +45,17 @@ export default function TeacherDashboard() {
         <ThemedView style={styles.container}>
             <StatusBar barStyle="light-content" />
             <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primaryForeground} />}
-            >
+  style={styles.scrollView}
+  contentContainerStyle={styles.scrollContent}
+  refreshControl={
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      tintColor={theme.colors.primaryForeground}
+    />
+  }
+  >
+
                 {/* Main Content */}
                 <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
                     {/* Quick Actions */}
@@ -84,34 +91,33 @@ export default function TeacherDashboard() {
                                 </View>
                             </View>
                         ))}
-                                </ThemedCard>
-      </View>
-    </ScrollView>
-  </ThemedView>
-);
+                    </ThemedCard>
+                </View>
+
+      </ScrollView>
+    </ThemedView>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
-  banner: {
-    padding: 20,
-  },
   scrollView: {
   flex: 1,
 },
 
 scrollContent: {
-  flexGrow: 1,
+  paddingBottom: 24,
 },
-
 mainContent: {
   flex: 1,
-  paddingHorizontal: 24,
-  paddingTop: 32,
+  paddingHorizontal: 16,
+  paddingTop: 16,
 },
+  banner: {
+    padding: 20,
+  },
 
   headerContent: {
     flexDirection: 'row',

@@ -14,7 +14,7 @@ export class AuthRepositoryImpl implements AuthRepository {
         try {
             console.log("BASE URL:", api.defaults.baseURL);
             console.log("FULL URL:", api.defaults.baseURL + "/auth/login");
-            const response = await api.post('/auth/login', { email, password });
+            const response =await api.post('/auth/login', { email, password });
             const { user, access_token } = response.data;
 
             // Map backend user to domain user if necessary
