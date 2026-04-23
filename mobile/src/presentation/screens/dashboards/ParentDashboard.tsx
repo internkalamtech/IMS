@@ -32,6 +32,12 @@ export default function ParentDashboard() {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
     };
 
+    const pendingHomework = Number(getStatValue('Pending Homework', '5'));
+
+    const handleHomeworkCounterPress = () => {
+        router.push('/(tabs)/academics?initialTab=homework');
+    };
+
     return (
         <ThemedView style={styles.container}>
             <StatusBar barStyle="light-content" />
@@ -86,6 +92,30 @@ export default function ParentDashboard() {
                                         </View>
                                     </View>
                                 </View>
+
+                                {/* Pending Homework Counter Card — Issue #294 */}
+                                <TouchableOpacity
+                                    style={[styles.homeworkCounterCard, { backgroundColor: '#f59e0b15', borderColor: '#f59e0b30' }]}
+                                    onPress={handleHomeworkCounterPress}
+                                    activeOpacity={0.75}
+                                >
+                                    <View style={styles.homeworkCounterLeft}>
+                                        <View style={[styles.homeworkIconBadge, { backgroundColor: '#f59e0b20' }]}>
+                                            <Ionicons name="book-outline" size={18} color="#f59e0b" />
+                                        </View>
+                                        <View>
+                                            <ThemedText style={[styles.homeworkCounterValue, { color: '#f59e0b' }]} type="defaultSemiBold">
+                                                {pendingHomework} Pending
+                                            </ThemedText>
+                                            <ThemedText style={styles.homeworkCounterLabel} lightColor="#666" darkColor="#999">
+                                                Homework assignments
+                                            </ThemedText>
+                                        </View>
+                                    </View>
+                                    <View style={[styles.homeworkCounterArrow, { backgroundColor: '#f59e0b20' }]}>
+                                        <Ionicons name="chevron-forward" size={16} color="#f59e0b" />
+                                    </View>
+                                </TouchableOpacity>
                             </ThemedCard>
                         </View>
                     </SafeAreaView>
@@ -302,5 +332,42 @@ const styles = StyleSheet.create({
     viewLink: {
         fontSize: 12,
         fontWeight: '600',
+    },
+    // Pending Homework counter card — Issue #294
+    homeworkCounterCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 12,
+        padding: 14,
+        borderRadius: 16,
+        borderWidth: 1,
+    },
+    homeworkCounterLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
+    },
+    homeworkIconBadge: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    homeworkCounterValue: {
+        fontSize: 15,
+    },
+    homeworkCounterLabel: {
+        fontSize: 11,
+        marginTop: 1,
+    },
+    homeworkCounterArrow: {
+        width: 28,
+        height: 28,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
