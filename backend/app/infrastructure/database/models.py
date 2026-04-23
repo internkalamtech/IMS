@@ -124,22 +124,6 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
-<<<<<<< HEAD
-class NoticeModel(Base):
-    """Represents a notice posted by admin."""
-
-    __tablename__ = "notices"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-    content: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-
-    def __repr__(self) -> str:
-        return f"<Notice(id={self.id}, title='{self.title}')>"
-=======
 # =========================
 # 📚 HOMEWORK MODEL
 # =========================
@@ -168,7 +152,6 @@ class HomeworkModel(Base):
 
     def __repr__(self) -> str:
         return f"<Homework(id={self.id}, title='{self.title}')>"
->>>>>>> c05063ab8805c5607463b099aa7def04f3ee9858
 class SubjectModel(Base):
     """
     Subject database model.
