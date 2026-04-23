@@ -315,7 +315,7 @@ export default function AddEditComplianceDocumentScreen() {
                     <Ionicons 
                       name="calendar-outline" 
                       size={20} 
-                      color={theme.colors.text + '80'} 
+                      color={theme.colors.foreground + '80'} 
                       style={{ position: 'absolute', right: 14, top: 14 }} 
                       pointerEvents="none" 
                     />
@@ -367,7 +367,7 @@ export default function AddEditComplianceDocumentScreen() {
                     <Ionicons 
                       name="calendar-outline" 
                       size={20} 
-                      color={theme.colors.text + '80'} 
+                      color={theme.colors.foreground + '80'} 
                       style={{ position: 'absolute', right: 14, top: 14 }} 
                       pointerEvents="none" 
                     />
@@ -394,12 +394,12 @@ export default function AddEditComplianceDocumentScreen() {
                    <View style={{ alignItems: 'center' }}>
                      <Ionicons name="document-attach" size={32} color={theme.colors.primary} />
                      <ThemedText style={{ marginTop: 8, textAlign: 'center' }}>Existing File Uploaded</ThemedText>
-                     <ThemedText style={{ marginTop: 4, color: theme.colors.text + '80', fontSize: 12 }}>Click to replace</ThemedText>
+                     <ThemedText style={{ marginTop: 4, color: theme.colors.foreground + '80', fontSize: 12 }}>Click to replace</ThemedText>
                    </View>
                 ) : (
                   <View style={{ alignItems: 'center' }}>
-                    <Ionicons name="cloud-upload-outline" size={32} color={errors.file ? theme.colors.destructive : theme.colors.text + '80'} />
-                    <ThemedText style={{ marginTop: 8, color: errors.file ? theme.colors.destructive : theme.colors.text + '80', textAlign: 'center' }}>
+                    <Ionicons name="cloud-upload-outline" size={32} color={errors.file ? theme.colors.destructive : theme.colors.foreground + '80'} />
+                    <ThemedText style={{ marginTop: 8, color: errors.file ? theme.colors.destructive : theme.colors.foreground + '80', textAlign: 'center' }}>
                       Drag & drop or click to upload{'\n'}PNG, JPG, PDF (max 10MB)
                     </ThemedText>
                   </View>
