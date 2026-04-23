@@ -21,6 +21,7 @@ from app.api.v1.endpoints import (
     transport,
     trips,
 )
+from app.api.v1.endpoints.staff import router as staff_router
 
 # Create v1 router
 router = APIRouter(prefix="/v1")
@@ -39,3 +40,4 @@ router.include_router(payments.router)
 router.include_router(fee_structures.router)
 router.include_router(trips.router)
 router.include_router(documents.router)
+router.include_router(staff_router)
