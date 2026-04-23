@@ -49,8 +49,9 @@ async def get_dashboard_stats(
     elif role == "parent":
         role_label = "Parent"
         stats = [
-            StatItem(label="Attendance (Aarav)", value="92%"),
-            StatItem(label="Last Exam Score", value="88/100"),
+            StatItem(label="Attendance", value="92%"),
+            StatItem(label="Avg Marks", value="88%"),
+            StatItem(label="Pending Homework", value=5),
             StatItem(label="Fee Status", value="Paid"),
         ]
     elif role == "student":
