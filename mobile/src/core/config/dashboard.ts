@@ -44,7 +44,7 @@ export const DASHBOARD_CONFIG = {
         quickActions: [
             { id: 1, title: 'Timetable', icon: 'calendar', color: ColorPalettes.blue[500] },
             { id: 2, title: 'Attendance', icon: 'checkmark-circle', color: ColorPalettes.emerald[500] },
-            { id: 3, title: 'Academics', icon: 'book', color: ColorPalettes.purple[500] },
+            { id: 3, title: 'Academics', icon: 'book', color: ColorPalettes.purple[500], route: '/academics' },
             { id: 4, title: 'Fees', icon: 'cash', color: ColorPalettes.emerald[500] }, // Keeping original color for now, even if amber seems better for cash
             { id: 5, title: 'Transport', icon: 'bus', color: ColorPalettes.amber[500] },
             { id: 6, title: 'Exams', icon: 'document-text', color: ColorPalettes.red[500] },
