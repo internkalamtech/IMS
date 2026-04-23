@@ -2,15 +2,17 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { QuickActionGrid } from "@/presentation/components/dashboard/QuickActionGrid";
+import { RecentUpdates } from "@/presentation/components/dashboard/RecentUpdates";
 import { DASHBOARD_CONFIG } from "@/core/config/dashboard";
-import { useRouter } from "expo-router";
+import { useRouter } from 'expo-router';
+//import { API_BASE_URL } from "@/core/config/api";
 
 const quickActions =
     DASHBOARD_CONFIG?.teacher?.quickActions || [];
-
 const Teacher2Dashboard = () => {
-    const [loaded, setLoaded] = useState(false);
-    const router = useRouter();
+  const [updates, setUpdates] = useState<any[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const router = useRouter();
 
     useEffect(() => {
         const fetchUpdates = async () => {
@@ -25,6 +27,7 @@ const Teacher2Dashboard = () => {
         fetchUpdates();
     }, []);
 
+    // ✅ WAIT until mounted properly (prevents context crash)
     if (!loaded) {
         return <View style={{ flex: 1, backgroundColor: "#F5F7FB" }} />;
     }
@@ -32,6 +35,8 @@ const Teacher2Dashboard = () => {
     return (
         <View style={{ flex: 1, backgroundColor: "#F5F7FB" }}>
             <ScrollView showsVerticalScrollIndicator={false}>
+
+                {/* HEADER */}
                 <View style={styles.header}>
                     <Text style={styles.teacherName}>Miss Jennie Ruby</Text>
                     <Text style={styles.subtitle}>Computer Science Teacher</Text>
@@ -60,6 +65,7 @@ const Teacher2Dashboard = () => {
                     </View>
                 </View>
 
+                {/* QUICK ACTIONS */}
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>Quick Actions</Text>
                 </View>
@@ -142,4 +148,5 @@ const styles = StyleSheet.create({
     sectionHeader: { marginTop: 16, paddingHorizontal: 16 },
     sectionTitle: { fontSize: 16, fontWeight: "600" },
     gridWrapper: { marginTop: 10, paddingHorizontal: 10 },
+    updateWrapper: { marginTop: 16, paddingHorizontal: 16, paddingBottom: 100 },
 });

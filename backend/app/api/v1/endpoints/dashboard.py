@@ -60,5 +60,13 @@ async def get_dashboard_stats(
             StatItem(label="Overall GPA", value="3.8"),
             StatItem(label="Assignments Due", value=3),
         ]
+    elif role == "transport":
+        role_label = "Transport Manager"
+        stats = [
+            StatItem(label="Total Routes", value="12"),
+            StatItem(label="Total Buses", value="8"),
+            StatItem(label="Active Trips", value="5"),
+            StatItem(label="Total Students", value="245"),
+        ]
 
     return DashboardResponse(role=role_label, stats=stats)
