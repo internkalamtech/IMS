@@ -7,6 +7,7 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
+import { useDashboard } from '@/presentation/hooks/useDashboard';
 import {
   RefreshControl,
   ScrollView,
@@ -36,85 +37,94 @@ export default function TeacherDashboard() {
     };
 
     return (
-        <ThemedView style={styles.container}>
-            <StatusBar barStyle="light-content" />
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primaryForeground} />}
+  <ThemedView style={styles.container}>
+    <StatusBar barStyle="light-content" />
+
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={theme.colors.primaryForeground}
+        />
+      }
+    >
+      {/* Wrap list inside a container View */}
+      <View>
+        {upcomingClasses.map((item, index) => (
+          <View
+            key={item.id}
+            style={[
+              styles.updateItem,
+              index !== upcomingClasses.length - 1 && {
+                borderBottomWidth: 1,
+                borderBottomColor: theme.colors.border,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.classColorBar,
+                { backgroundColor: item.color },
+              ]}
+            />
+
+            <View style={styles.updateContent}>
+              <ThemedText
+                style={styles.updateTitle}
+                type="defaultSemiBold"
+              >
+                {item.subject}
+              </ThemedText>
+
+              <ThemedText
+                style={styles.updateSubtitle}
+                lightColor="#666"
+                darkColor="#999"
+              >
+                {item.class}
+              </ThemedText>
+            </View>
+
+            <View
+              style={[
+                styles.timeTag,
+                {
+                  backgroundColor: theme.colors.primary + '10',
+                },
+              ]}
             >
-              {upcomingClasses.map((item, index) => (
-                <View
-                  key={item.id}
-                  style={[
-                    styles.updateItem,
-                    index !== upcomingClasses.length - 1 && {
-                      borderBottomWidth: 1,
-                      borderBottomColor:
-                        theme.colors.border,
-                    },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.classColorBar,
-                      {
-                        backgroundColor: item.color,
-                      },
-                    ]}
-                  />
-
-                  <View style={styles.updateContent}>
-                    <ThemedText
-                      style={styles.updateTitle}
-                      type="defaultSemiBold"
-                    >
-                      {item.subject}
-                    </ThemedText>
-
-                    <ThemedText
-                      style={styles.updateSubtitle}
-                      lightColor="#666"
-                      darkColor="#999"
-                    >
-                      {item.class}
-                    </ThemedText>
-                  </View>
-
-                  <View
-                    style={[
-                      styles.timeTag,
-                      {
-                        backgroundColor:
-                          theme.colors.primary + '10',
-                      },
-                    ]}
-                  >
-                    <ThemedText
-                      style={{
-                        color: theme.colors.primary,
-                        fontSize: 12,
-                      }}
-                      type="defaultSemiBold"
-                    >
-                      {item.time}
-                    </ThemedText>
-                  </View>
-                </View>
-              ))}
-            </ThemedCard>
-          </SafeAreaView>
-        </View>
-      </ScrollView>
-    </ThemedView>
-  );
+              <ThemedText
+                style={{
+                  color: theme.colors.primary,
+                  fontSize: 12,
+                }}
+                type="defaultSemiBold"
+              >
+                {item.time}
+              </ThemedText>
+            </View>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
+  </ThemedView>
+);
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+scrollView: {
+    flex: 1,
+},
 
+scrollContent: {
+    flexGrow: 1,
+},
   banner: {
     padding: 20,
   },
