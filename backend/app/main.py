@@ -98,6 +98,7 @@ app.add_middleware(
 app.include_router(api_v1_router, prefix="/api")
 
 
+
 @app.get("/", tags=["Root"])
 async def root() -> dict:
     """
