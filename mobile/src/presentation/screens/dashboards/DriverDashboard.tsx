@@ -93,10 +93,10 @@ export default function DriverDashboard() {
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
                             <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     On the road, {user?.name?.split(' ')[0] || 'Driver'} 🚗
                                 </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
+                                <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Your shift at a glance
                                 </ThemedText>
                             </View>
@@ -112,8 +112,8 @@ export default function DriverDashboard() {
                                     <Ionicons name="warning" size={24} color={theme.colors.primaryForeground} />
                                 </View>
                                 <View>
-                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">{todayIncidents.length}</ThemedText>
-                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">Incidents Today</ThemedText>
+                                    <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >{todayIncidents.length}</ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >Incidents Today</ThemedText>
                                 </View>
                             </View>
                             <View style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
@@ -121,8 +121,8 @@ export default function DriverDashboard() {
                                     <Ionicons name="map" size={24} color={theme.colors.primaryForeground} />
                                 </View>
                                 <View>
-                                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">Route 4</ThemedText>
-                                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">Active Route</ThemedText>
+                                    <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >Route 4</ThemedText>
+                                    <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >Active Route</ThemedText>
                                 </View>
                             </View>
                         </View>
