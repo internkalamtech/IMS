@@ -189,8 +189,9 @@ pip3 --version
    ```bash
    cd backend
    .venv\Scripts\python.exe -m app.infrastructure.database.seed
+   .venv\Scripts\python.exe -m app.infrastructure.database.seed_documents
    ```
-   This creates demo users and roles in the database for testing.
+   This creates demo users, roles, and sample compliance documents in the database for testing.
 
 ### Demo Credentials
 

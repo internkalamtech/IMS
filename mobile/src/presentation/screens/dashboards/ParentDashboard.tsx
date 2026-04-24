@@ -58,10 +58,10 @@ export default function ParentDashboard() {
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
                             <View>
-                                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                                <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Welcome, {user?.name?.split(' ')[0] || 'Priya'} 👋
                                 </ThemedText>
-                                <ThemedText style={styles.subtitle} color="primaryForeground">
+                                <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
                                     Track your child&apos;s progress
                                 </ThemedText>
                             </View>
@@ -70,7 +70,7 @@ export default function ParentDashboard() {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Child Info Card - Partially overlapping */}
+                        {/* Child Info Card - Fully enclosed in blue dashboard */}
                         <View style={styles.childCardContainer}>
                             <ThemedCard style={styles.childCard} padding={20}>
                                 <View style={styles.childHeader}>
@@ -99,6 +99,30 @@ export default function ParentDashboard() {
                                         </View>
                                     </View>
                                 </View>
+
+                                {/* Pending Homework Counter Card — Issue #294 */}
+                                <TouchableOpacity
+                                    style={[styles.homeworkCounterCard, { backgroundColor: '#f59e0b15', borderColor: '#f59e0b30' }]}
+                                    onPress={handleHomeworkCounterPress}
+                                    activeOpacity={0.75}
+                                >
+                                    <View style={styles.homeworkCounterLeft}>
+                                        <View style={[styles.homeworkIconBadge, { backgroundColor: '#f59e0b20' }]}>
+                                            <Ionicons name="book-outline" size={18} color="#f59e0b" />
+                                        </View>
+                                        <View>
+                                            <ThemedText style={[styles.homeworkCounterValue, { color: '#f59e0b' }]} type="defaultSemiBold">
+                                                {pendingHomework} Pending
+                                            </ThemedText>
+                                            <ThemedText style={styles.homeworkCounterLabel} lightColor="#666" darkColor="#999">
+                                                Homework assignments
+                                            </ThemedText>
+                                        </View>
+                                    </View>
+                                    <View style={[styles.homeworkCounterArrow, { backgroundColor: '#f59e0b20' }]}>
+                                        <Ionicons name="chevron-forward" size={16} color="#f59e0b" />
+                                    </View>
+                                </TouchableOpacity>
                             </ThemedCard>
                         </View>
                     </SafeAreaView>
@@ -111,13 +135,13 @@ export default function ParentDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickAction} />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickActionPress} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
                         <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-                            <ThemedText style={styles.badgeText} color="primaryForeground">3 new</ThemedText>
+                            <ThemedText style={styles.badgeText} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>3 new</ThemedText>
                         </View>
                     </View>
                     <ThemedCard style={styles.updatesCard} padding={0}>
@@ -156,7 +180,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
     },
     banner: {
-        paddingBottom: 80,
+        paddingBottom: 24,
     },
     headerContent: {
         flexDirection: 'row',
@@ -178,11 +202,8 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     childCardContainer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
         paddingHorizontal: 20,
+        paddingBottom: 10,
     },
     childCard: {
         borderRadius: 24,
@@ -237,7 +258,7 @@ const styles = StyleSheet.create({
     mainContent: {
         flex: 1,
         paddingHorizontal: 24,
-        paddingTop: 80, // Offset for the overlapping card
+        paddingTop: 0,
     },
     sectionHeader: {
         flexDirection: 'row',
@@ -316,4 +337,42 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '600',
     },
+    // Pending Homework counter card — Issue #294
+    homeworkCounterCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 12,
+        padding: 14,
+        borderRadius: 16,
+        borderWidth: 1,
+    },
+    homeworkCounterLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
+    },
+    homeworkIconBadge: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    homeworkCounterValue: {
+        fontSize: 15,
+    },
+    homeworkCounterLabel: {
+        fontSize: 11,
+        marginTop: 1,
+    },
+    homeworkCounterArrow: {
+        width: 28,
+        height: 28,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
+
