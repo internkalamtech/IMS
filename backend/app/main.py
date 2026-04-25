@@ -14,7 +14,7 @@ from app.api.v1 import router as api_v1_router
 from app.core.config import settings
 from app.core.errors import IMSException
 from app.core.logger import Logger
-from app.infrastructure.database.database import init_db, close_db
+from app.infrastructure.database.database import init_db, engine
 
 
 @asynccontextmanager
@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     )
 
     try:
-        await init_db()
+        init_db()
         Logger.info("Database initialized successfully")
     except Exception as e:
         Logger.error(f"Failed to initialize database: {e}", exc_info=True)
@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     Logger.info("Shutting down IMS Backend...")
-    await close_db()
+    engine.dispose()
     Logger.info("Database connections closed")
 
 

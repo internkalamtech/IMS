@@ -1,48 +1,50 @@
 """
 Database connection and session management.
 
-This module handles PostgreSQL database connections using SQLAlchemy
-with async support via asyncpg driver.
+This module handles database connections using SQLAlchemy.
+Uses SQLite for development, can be configured for PostgreSQL in production.
 
 Following best practices:
-- Async database operations for better performance
 - Connection pooling for resource management
 - Dependency injection for session management
 - Proper error handling and cleanup
 """
 
-from typing import AsyncGenerator
+from typing import Generator
 
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    create_async_engine,
-    async_sessionmaker,
-)
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
 
 from app.core.config import settings
 from app.infrastructure.database.models import Base
 
-# Create async engine with connection pooling
-engine = create_async_engine(
-    settings.database_url,
-    echo=settings.debug,  # Log SQL queries in debug mode
-    pool_pre_ping=True,  # Verify connections before using
-    pool_size=10,  # Number of connections to maintain
-    max_overflow=20,  # Additional connections when pool is full
-    pool_recycle=3600,  # Recycle connections after 1 hour
-)
+# Create engine - using sync SQLAlchemy for SQLite compatibility
+if settings.database_url.startswith("sqlite"):
+    # SQLite requires connect_args
+    engine = create_engine(
+        settings.database_url,
+        echo=settings.debug,  # Log SQL queries in debug mode
+        connect_args={"check_same_thread": False},
+    )
+else:
+    # PostgreSQL or other databases
+    engine = create_engine(
+        settings.database_url,
+        echo=settings.debug,
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20,
+    )
 
-# Create async session factory
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
+# Create session factory
+SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
+    bind=engine,
 )
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+def get_db() -> Generator[Session, None, None]:
     """
     Dependency function to get database session.
 
@@ -50,34 +52,32 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     It ensures proper session lifecycle management with automatic cleanup.
 
     Yields:
-        AsyncSession: Database session
+        Session: Database session
 
     Example:
         @app.get("/users")
-        async def get_users(db: AsyncSession = Depends(get_db)):
-            result = await db.execute(select(UserModel))
-            return result.scalars().all()
+        def get_users(db: Session = Depends(get_db)):
+            return db.query(UserModel).all()
     """
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+    db = SessionLocal()
+    try:
+        yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 
-async def init_db() -> None:
+def init_db() -> None:
     """
     Initialize database by creating all tables.
 
     This function should be called on application startup.
     In production, use Alembic migrations instead.
     """
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    Base.metadata.create_all(bind=engine)
 
 
 async def close_db() -> None:

@@ -437,3 +437,150 @@ class ParentModel(Base):
             f"email='{self.email}')>"
         )
 
+
+class ClassModel(Base):
+    """
+    Class database model (Phase 2).
+
+    Represents a class/section in the school with student limits
+    and subject assignments.
+    """
+
+    __tablename__ = "classes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    section: Mapped[str] = mapped_column(String(50), nullable=False)
+    academic_year: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="2024-25"
+    )
+    max_students: Mapped[int] = mapped_column(Integer, default=50, nullable=False)
+    class_teacher_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="ACTIVE"
+    )  # ACTIVE, ARCHIVED, INACTIVE
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Class(id={self.id}, "
+            f"name='{self.name}', "
+            f"section='{self.section}')>"
+        )
+
+
+class BudgetModel(Base):
+    """
+    Budget database model (Phase 3.1).
+
+    Represents budget allocation for the school with budget heads
+    and department-wise breakdown.
+    """
+
+    __tablename__ = "budgets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    academic_year: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="2024-25"
+    )
+    total_allocated: Mapped[float] = mapped_column(Float, nullable=False)
+    total_spent: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="DRAFT"
+    )  # DRAFT, APPROVED, ACTIVE, COMPLETED, ARCHIVED
+    approved_by_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    approved_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_by_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    expenses: Mapped[List["ExpenseModel"]] = relationship(
+        "ExpenseModel", back_populates="budget", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Budget(id={self.id}, "
+            f"name='{self.name}', "
+            f"total={self.total_allocated})>"
+        )
+
+
+class ExpenseModel(Base):
+    """
+    Expense database model (Phase 3.1).
+
+    Represents expenses tracked against budgets with categorization
+    and approval workflow.
+    """
+
+    __tablename__ = "expenses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    budget_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("budgets.id", ondelete="CASCADE"), nullable=False
+    )
+    description: Mapped[str] = mapped_column(String(500), nullable=False)
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+    category: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # SALARY, UTILITIES, MAINTENANCE, etc.
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="PENDING"
+    )  # PENDING, APPROVED, PAID, REJECTED
+    vendor_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    invoice_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    approved_by_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    approved_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    payment_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_by_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    budget: Mapped["BudgetModel"] = relationship(
+        "BudgetModel", back_populates="expenses"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<Expense(id={self.id}, "
+            f"amount={self.amount}, "
+            f"category='{self.category}')>"
+        )
+
