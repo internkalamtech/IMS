@@ -9,6 +9,8 @@ import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { useTransportDashboard } from '../../hooks/useTransportDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { useRouter } from 'expo-router';
+import { QuickAction } from '@/core/config/dashboard';
 import {
     RefreshControl,
     ScrollView,
@@ -48,11 +50,18 @@ interface TransportAlert {
 }
 
 export default function TransportDashboard() {
+    const router = useRouter();
     const { logout, user } = useAuth();
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme, isDark } = useTheme();
 
     const quickActions = DASHBOARD_CONFIG.transport?.quickActions || [];
+
+    const handleActionPress = (action: QuickAction) => {
+        if (action.route) {
+            router.push(action.route as any);
+        }
+    };
 
     const { routes, complianceStatus, transportAlerts, expiringDocuments, transportRefreshing, refreshTransportData } = useTransportDashboard();
 
@@ -191,7 +200,7 @@ export default function TransportDashboard() {
                         </ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
 
                     {/* Route Status Overview */}
                     <View style={styles.sectionHeader}>

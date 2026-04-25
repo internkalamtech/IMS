@@ -53,19 +53,14 @@ export default function TabLayout() {
                     ),
                 }}
             />
+            {/* Academics screen — accessible via navigation, hidden from tab bar */}
             <Tabs.Screen
-  name="notices"
-  options={{
-    title: "Notices",
-    tabBarIcon: ({ color, focused }) => (
-      <Ionicons
-        name={focused ? "megaphone" : "megaphone-outline"}
-        size={24}
-        color={color}
-      />
-    ),
-  }}
-/>
+                name="academics"
+                options={{
+                    href: null, // Hide from tab bar
+                    title: 'Academics',
+                }}
+            />
         </Tabs>
     );
 }

@@ -15,8 +15,10 @@ from app.api.v1.endpoints import (
     payments,
     students,
     subjects,
-    trips,
-)
+    trips, 
+    documents, 
+    )
+from app.api.v1.endpoints.payments import router as payments_router
 
 from app.api.v1.endpoints.staff import router as staff_router
 
@@ -33,4 +35,5 @@ router.include_router(students.router)
 router.include_router(subjects.router)
 router.include_router(enrollment.router)
 router.include_router(trips.router)
+router.include_router(documents.router)
 router.include_router(staff_router)
