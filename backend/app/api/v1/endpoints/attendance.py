@@ -55,6 +55,12 @@ MOCK_CHILDREN = [
         overallAttendance=82.5, monthlyAttendance=74.0,
         status="Absent Today", statusColor="#DC2626", emoji="👧"
     ),
+    ChildSummaryResponse(
+        id="3", name="Ravi Kumar", grade="Class 9C", rollNo="22",
+        presentDays=18, absentDays=3, totalDays=21,
+        overallAttendance=85.7, monthlyAttendance=88.0,
+        status="Present Today", statusColor="#16A34A", emoji="🧒"
+    ),
 ]
 
 # ─── Per-student metadata (grade, roll, emoji) keyed by email ─────────────────
@@ -102,7 +108,7 @@ def _mock_calendar(child_id: str, year: int, month: int) -> AttendanceCalendarRe
                 id="1",
                 dateRange=f"{year}-{month:02d}-14 to {year}-{month:02d}-15",
                 days=2, reason="Medical appointment",
-                status="Approved", appliedDate=f"{year}-{month:02d}-10",
+                status="approved", appliedDate=f"{year}-{month:02d}-10",
                 teacherNote="Approved. Get well soon."
             )
         ]
@@ -335,7 +341,7 @@ async def apply_for_leave(
             start_date=start,
             end_date=end,
             reason=body.reason,
-            status="Pending",
+            status="pending",
             applied_date=dt.utcnow(),
         )
         db.add(new_leave)

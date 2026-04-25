@@ -15,6 +15,7 @@ from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     Column,
     DateTime,
     Float,
@@ -124,7 +125,8 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
-# Association table linking parents to their children (students)
+# Association table linking parent and student users.
+# Authoritative source for parent-facing endpoints (attendance, leave, etc.).
 parent_student = Table(
     "parent_student",
     Base.metadata,
@@ -157,6 +159,12 @@ class LeaveRequestModel(Base):
     status: 'pending' | 'approved' | 'rejected'
     """
     __tablename__ = "leave_requests"
+    __table_args__ = (
+        CheckConstraint(
+            "status in ('pending', 'approved', 'rejected')",
+            name="ck_leave_requests_status",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     student_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
@@ -270,7 +278,8 @@ class_subject_link = Table(
 )
 
 
-# Association table for many-to-many relationship between students and parents
+# Association table for many-to-many relationship between students and parents.
+# Legacy domain link for Student/Parent records; not used by parent-facing endpoints (they use parent_student).
 student_parent_link = Table(
     "student_parent_link",
     Base.metadata,

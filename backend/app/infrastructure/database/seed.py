@@ -12,10 +12,8 @@ Following best practices:
 
 import asyncio
 from datetime import datetime, timedelta
-import calendar as cal_lib
-import random  # noqa: F401 kept for future use
 
-from sqlalchemy import select
+from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logger import Logger
@@ -30,35 +28,6 @@ from app.infrastructure.database.models import (
     parent_student,
 )
 
-# Roles configuration
-ROLES = [
-    {
-        "name": "admin",
-        "description": "Administrator with full system access",
-    },
-    {
-        "name": "teacher",
-        "description": "Teacher with access to classes and students",
-    },
-    {
-        "name": "parent",
-        "description": ("Parent with access to their children's information"),
-    },
-    {
-        "name": "student",
-        "description": "Student with access to their own information",
-    },
-    {
-        "name": "transport",
-        "description": (
-            "Transport manager with access to routes and vehicles"
-        ),
-    },
-    {
-        "name": "driver",
-        "description": "Driver with access to assigned routes",
-    },
-]
 # Demo users configuration
 DEMO_USERS = [
     {
@@ -117,7 +86,6 @@ DEMO_USERS = [
         "roles": ["student"],
         "grade": "Class 7A",
         "rollNo": "101",
-        "emoji": "👦",
     },
     {
         "email": "priya@myuser.com",
@@ -126,7 +94,6 @@ DEMO_USERS = [
         "roles": ["student"],
         "grade": "Class 5B",
         "rollNo": "45",
-        "emoji": "👧",
     },
     {
         "email": "ravi@myuser.com",
@@ -135,7 +102,36 @@ DEMO_USERS = [
         "roles": ["student"],
         "grade": "Class 9C",
         "rollNo": "22",
-        "emoji": "🧒",
+    },
+]
+
+# Roles configuration
+ROLES = [
+    {
+        "name": "admin",
+        "description": "Administrator with full system access",
+    },
+    {
+        "name": "teacher",
+        "description": "Teacher with access to classes and students",
+    },
+    {
+        "name": "parent",
+        "description": ("Parent with access to their children's information"),
+    },
+    {
+        "name": "student",
+        "description": "Student with access to their own information",
+    },
+    {
+        "name": "transport",
+        "description": (
+            "Transport manager with access to routes and vehicles"
+        ),
+    },
+    {
+        "name": "driver",
+        "description": "Driver with access to assigned routes",
     },
 ]
 
@@ -176,6 +172,7 @@ DEMO_HOMEWORK = [
 # Emails of children that belong to parent@myuser.com
 PARENT_EMAIL = "parent@myuser.com"
 CHILDREN_EMAILS = ["aarav@myuser.com", "priya@myuser.com", "ravi@myuser.com"]
+
 
 async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     """
@@ -259,53 +256,110 @@ async def create_users(
     await db.commit()
 
 
-async def create_homework(db: AsyncSession) -> None:
+async def link_parent_children(db: AsyncSession) -> None:
     """
-    Create demo homework assignments for the student demo user.
-
-    Homework is assigned to the student@myuser.com user.
-    Idempotent: only seeds if no homework records exist for that student.
+    Create parent_student links for demo data.
 
     Args:
         db: Database session
     """
-    Logger.info("Creating demo homework assignments...")
-
-    # Find the student demo user
-    result = await db.execute(
-        select(UserModel).where(UserModel.email == "student@myuser.com")
+    parent_result = await db.execute(
+        select(UserModel).where(UserModel.email == PARENT_EMAIL)
     )
-    student = result.unique().scalar_one_or_none()
-
-    if not student:
+    parent = parent_result.unique().scalar_one_or_none()
+    if not parent:
         Logger.warning(
-            "Student demo user not found — skipping homework seed"
+            f"Parent user '{PARENT_EMAIL}' not found; skipping links."
         )
         return
 
-    # Check if homework already seeded for this student
-    existing = await db.execute(
-        select(HomeworkModel).where(
-            HomeworkModel.child_id == student.id
-        )
+    children_result = await db.execute(
+        select(UserModel).where(UserModel.email.in_(CHILDREN_EMAILS))
     )
-    if existing.scalars().first():
-        Logger.info("Homework already seeded — skipping")
+    children = children_result.unique().scalars().all()
+    if not children:
+        Logger.warning("No demo children found; skipping parent links.")
         return
 
-    for hw_data in DEMO_HOMEWORK:
-        homework = HomeworkModel(
-            child_id=student.id,
-            subject=hw_data["subject"],
-            title=hw_data["title"],
-            description=hw_data["description"],
-            status=hw_data["status"],
+    for child in children:
+        existing = await db.execute(
+            select(parent_student).where(
+                parent_student.c.parent_id == parent.id,
+                parent_student.c.student_id == child.id,
+            )
         )
-        db.add(homework)
+        if existing.first():
+            Logger.info(
+                f"Parent link already exists: parent={parent.id}, child={child.id}"
+            )
+            continue
+
+        await db.execute(
+            insert(parent_student).values(
+                parent_id=parent.id,
+                student_id=child.id,
+            )
+        )
         Logger.info(
-            f"Created homework: '{hw_data['title']}' "
-            f"(status: {hw_data['status']})"
+            f"Linked parent {parent.id} to child {child.id}"
         )
+
+    await db.commit()
+
+
+async def seed_attendance_and_leave(db: AsyncSession) -> None:
+    """
+    Seed demo attendance and leave requests for linked children.
+
+    Args:
+        db: Database session
+    """
+    children_result = await db.execute(
+        select(UserModel).where(UserModel.email.in_(CHILDREN_EMAILS))
+    )
+    children = children_result.unique().scalars().all()
+    if not children:
+        Logger.warning("No demo children found; skipping attendance/leave seeding.")
+        return
+
+    today = datetime.utcnow().date()
+    for child in children:
+        existing_attendance = await db.execute(
+            select(AttendanceModel).where(
+                AttendanceModel.student_id == child.id,
+            )
+        )
+        if not existing_attendance.first():
+            for offset in range(7):
+                day = today - timedelta(days=offset)
+                status = "present" if offset % 4 != 0 else "absent"
+                db.add(
+                    AttendanceModel(
+                        student_id=child.id,
+                        date=datetime(day.year, day.month, day.day),
+                        status=status,
+                    )
+                )
+
+        existing_leave = await db.execute(
+            select(LeaveRequestModel).where(
+                LeaveRequestModel.student_id == child.id,
+            )
+        )
+        if not existing_leave.first():
+            start_date = datetime(today.year, today.month, max(today.day - 3, 1))
+            end_date = start_date + timedelta(days=1)
+            db.add(
+                LeaveRequestModel(
+                    student_id=child.id,
+                    start_date=start_date,
+                    end_date=end_date,
+                    reason="Medical appointment",
+                    status="approved",
+                    applied_date=datetime.utcnow(),
+                    teacher_note="Approved. Get well soon.",
+                )
+            )
 
     await db.commit()
 
@@ -318,7 +372,8 @@ async def seed_database() -> None:
     1. Initializes database (creates tables)
     2. Creates roles
     3. Creates demo users
-    4. Creates demo homework assignments
+    4. Links demo parent to children
+    5. Seeds attendance and leave
     """
     try:
         Logger.info("Starting database seeding...")
@@ -335,8 +390,11 @@ async def seed_database() -> None:
             # Create users
             await create_users(db, roles_map)
 
-            # Create homework assignments
-            await create_homework(db)
+            # Link parent to children
+            await link_parent_children(db)
+
+            # Seed attendance and leave
+            await seed_attendance_and_leave(db)
 
         Logger.info("Database seeding completed successfully!")
 
