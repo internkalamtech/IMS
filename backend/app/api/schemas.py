@@ -327,6 +327,24 @@ class DocumentExpiryListResponse(BaseModel):
     total: int
 
 
+class DocumentResponse(BaseModel):
+    """Response schema for compliance document upload/list endpoints."""
+
+    id: int
+    title: str
+    branch: Optional[str] = None
+    scope: Optional[str] = None
+    expiry_date: datetime
+    original_filename: str
+    content_type: str
+    upload_date: datetime
+    uploaded_by_id: Optional[int] = None
+    days_left: int
+    status: Literal["Valid", "Expiring-Soon", "Expired"]
+
+    model_config = {"from_attributes": True}
+
+
 class TransportStatsResponse(BaseModel):
     """Response schema for comprehensive transport statistics."""
 
