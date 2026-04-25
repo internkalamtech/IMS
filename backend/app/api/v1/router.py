@@ -10,8 +10,10 @@ from app.api.v1.endpoints import (
     enrollment,
     students,
     subjects,
-    trips,
-)
+    trips, 
+    documents, 
+    )
+from app.api.v1.endpoints.payments import router as payments_router
 
 from app.api.v1.endpoints.payments import router as payments_router
 from app.api.v1.endpoints.attendance import router as attendance_router
