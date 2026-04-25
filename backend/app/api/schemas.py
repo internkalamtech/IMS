@@ -220,6 +220,13 @@ class LeaveRequestResponse(BaseModel):
     status: str
     appliedDate: str
     teacherNote: str | None = None
+class AcademicSummaryResponse(BaseModel):
+    """Response schema for the academic summary endpoint."""
+
+    child_id: str
+    pending_homework_count: int
+
+
 # Transport-related schemas
 class RouteResponse(BaseModel):
     """Response schema for route data."""

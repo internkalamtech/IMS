@@ -82,6 +82,15 @@ This will:
 - Create roles (admin, teacher, student, parent, transport, driver)
 - Create 8 demo users with hashed passwords
 
+To seed demo compliance documents data (make sure users exist first):
+
+```bash
+python -m app.infrastructure.database.seed_documents
+```
+
+This will:
+- Create 3 sample compliance documents connected to vehicles
+
 ### Demo Users
 
 **Core Roles:**

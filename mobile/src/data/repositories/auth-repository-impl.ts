@@ -32,10 +32,28 @@ export class AuthRepositoryImpl implements AuthRepository {
             return domainUser;
         } catch (error: any) {
             Logger.error('Login failed', error);
+            
+            // Fallback to local mock if backend is unreachable or offline
+            if (!error.response || error.message.includes('No response')) {
+                Logger.info('Using offline fallback for login');
+                
+                let role: 'admin' | 'teacher' | 'student' | 'parent' = 'admin';
+                if (email.includes('teacher')) role = 'teacher';
+                else if (email.includes('student')) role = 'student';
+                else if (email.includes('parent')) role = 'parent';
+                
+                const mockUser: User = {
+                    id: `mock-${role}-123`,
+                    name: `Demo ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+                    email: email,
+                    role: role,
+                    avatarUrl: undefined,
+                };
 
-            // If backend is unreachable, try offline demo login
-            if (error.message === 'No response received from server' || error.code === 'ECONNABORTED') {
-                return this._offlineMockLogin(email, password);
+                await StorageService.setItem(TOKEN_STORAGE_KEY, `mock-token-${role}`);
+                await StorageService.setItem(USER_STORAGE_KEY, mockUser);
+                
+                return mockUser;
             }
 
             if (error.response?.data?.detail) {
