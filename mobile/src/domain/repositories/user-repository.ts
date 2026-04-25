@@ -15,4 +15,3 @@ export interface UserRepository {
     getDashboardData(role: string): Promise<DashboardData>;
     getClasses(): Promise<ClassData[]>;
 }
-}
