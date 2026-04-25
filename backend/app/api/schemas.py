@@ -391,19 +391,16 @@ class UpdateClassSubjectsRequest(BaseModel):
 
     class_id: int = Field(
         ...,
-        ge=0,
-        description=(
-            "Class section ID. Use 0 to automatically target the default "
-            "(first available) class section."
-        ),
-        examples=[0],
+        gt=0,
+        description="Class section ID.",
+        examples=[1],
     )
     subjects: List[SubjectInput]
 
     model_config = {
         "json_schema_extra": {
             "example": {
-                "class_id": 0,
+                "class_id": 1,
                 "subjects": [{"name": "Math"}, {"name": "Science"}],
             }
         }
@@ -566,7 +563,7 @@ class StudentTransportEnrollmentCreate(BaseModel):
     """Single student transport enrollment payload."""
 
     student_id: int = Field(..., alias="studentId", gt=0)
-    route_id: int = Field(..., alias="routeId", gt=0)
+    route_id: str = Field(..., alias="routeId", min_length=1)
     stop_id: int = Field(..., alias="stopId", gt=0)
     pickup_time: Optional[time] = Field(default=None, alias="pickupTime")
     dropoff_time: Optional[time] = Field(default=None, alias="dropoffTime")
@@ -589,7 +586,7 @@ class StudentTransportEnrollmentItem(BaseModel):
 
     id: int
     student_id: int = Field(..., alias="studentId")
-    route_id: int = Field(..., alias="routeId")
+    route_id: str = Field(..., alias="routeId")
     stop_id: int = Field(..., alias="stopId")
     pickup_time: Optional[str] = Field(default=None, alias="pickupTime")
     dropoff_time: Optional[str] = Field(default=None, alias="dropoffTime")
@@ -620,7 +617,7 @@ class RouteManifestStudentItem(BaseModel):
 class RouteManifestResponse(BaseModel):
     """Route manifest response schema."""
 
-    route_id: int = Field(..., alias="routeId")
+    route_id: str = Field(..., alias="routeId", min_length=1)
     total_students: int = Field(..., alias="totalStudents")
     students: List[RouteManifestStudentItem]
 

@@ -30,7 +30,7 @@ router = APIRouter(prefix="/transport", tags=["Transport"])
         400: {"model": ErrorResponse, "description": "Validation error"},
         404: {
             "model": ErrorResponse,
-            "description": "Student, route, or stop not found",
+            "description": "Student not found",
         },
         401: {"description": "Authentication required"},
         403: {"description": "Insufficient permissions"},
@@ -69,7 +69,7 @@ async def create_student_transport_enrollments(
     ),
 )
 async def get_students_by_route(
-    route_id: int,
+    route_id: str,
     _current_user: User = Depends(
         require_roles("admin", "transport", "driver")
     ),

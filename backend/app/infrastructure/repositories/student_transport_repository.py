@@ -28,7 +28,7 @@ class StudentTransportRepository:
     async def get_enrollment(
         self,
         student_id: int,
-        route_id: int,
+        route_id: str,
     ) -> StudentTransportEnrollmentModel | None:
         result = await self.db.execute(
             select(StudentTransportEnrollmentModel).where(
@@ -41,7 +41,7 @@ class StudentTransportRepository:
     async def create_enrollment(
         self,
         student_id: int,
-        route_id: int,
+        route_id: str,
         stop_id: int,
         pickup_time: time | None,
         dropoff_time: time | None,
@@ -83,7 +83,7 @@ class StudentTransportRepository:
         return existing
 
     async def list_students_by_route(
-        self, route_id: int
+        self, route_id: str
     ) -> list[StudentTransportEnrollmentModel]:
         result = await self.db.execute(
             select(StudentTransportEnrollmentModel)

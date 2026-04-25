@@ -50,7 +50,7 @@ class StudentTransportEnrollmentUseCase:
 
         return created_items
 
-    async def get_students_for_route(self, route_id: int) -> dict:
+    async def get_students_for_route(self, route_id: str) -> dict:
         enrollments = await self.repository.list_students_by_route(route_id)
 
         students = []

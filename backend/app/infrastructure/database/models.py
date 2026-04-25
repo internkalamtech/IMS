@@ -219,7 +219,7 @@ class StudentTransportEnrollmentModel(Base):
         nullable=False,
         index=True,
     )
-    route_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    route_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     stop_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     pickup_time: Mapped[time | None] = mapped_column(
         Time,

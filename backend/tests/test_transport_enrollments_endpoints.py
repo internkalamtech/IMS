@@ -22,7 +22,7 @@ class _Enrollment:
         self,
         enrollment_id: int,
         student_id: int,
-        route_id: int,
+        route_id: str,
         stop_id: int,
         student: _Student,
     ):
@@ -42,20 +42,20 @@ class InMemoryStudentTransportRepository:
             2: _Student(2, "Bhavya"),
             3: _Student(3, "Charu"),
         }
-        self._enrollments_by_key: dict[tuple[int, int], _Enrollment] = {}
+        self._enrollments_by_key: dict[tuple[int, str], _Enrollment] = {}
         self._next_id = 1
         self.create_calls = 0
 
     async def get_student_by_id(self, student_id: int):
         return self.students.get(student_id)
 
-    async def get_enrollment(self, student_id: int, route_id: int):
+    async def get_enrollment(self, student_id: int, route_id: str):
         return self._enrollments_by_key.get((student_id, route_id))
 
     async def create_enrollment(
         self,
         student_id: int,
-        route_id: int,
+        route_id: str,
         stop_id: int,
         pickup_time,
         dropoff_time,
@@ -79,7 +79,7 @@ class InMemoryStudentTransportRepository:
         self._next_id += 1
         return enrollment
 
-    async def list_students_by_route(self, route_id: int):
+    async def list_students_by_route(self, route_id: str):
         route_enrollments = [
             enrollment
             for enrollment in self._enrollments_by_key.values()
@@ -145,7 +145,7 @@ async def test_create_enrollments_rejects_for_unauthorized_role(
                 "enrollments": [
                     {
                         "studentId": 1,
-                        "routeId": 10,
+                        "routeId": "route_010",
                         "stopId": 2,
                     }
                 ]
@@ -164,7 +164,7 @@ async def test_get_students_by_route_rejects_for_unauthorized_role(
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.get("/api/v1/transport/routes/10/students")
+        response = await client.get("/api/v1/transport/routes/route_010/students")
 
     assert response.status_code == 403
     assert response.json()["detail"] == "Insufficient permissions"
@@ -180,7 +180,7 @@ async def test_create_enrollments_is_idempotent_for_existing_records(
         "enrollments": [
             {
                 "studentId": 1,
-                "routeId": 10,
+                "routeId": "route_010",
                 "stopId": 2,
             }
         ]
@@ -207,7 +207,7 @@ async def test_create_enrollments_is_idempotent_for_existing_records(
     assert second_body["count"] == 1
     assert first_body["enrollments"][0]["id"] == second_body["enrollments"][0]["id"]
     assert first_body["enrollments"][0]["studentId"] == 1
-    assert first_body["enrollments"][0]["routeId"] == 10
+    assert first_body["enrollments"][0]["routeId"] == "route_010"
     assert first_body["enrollments"][0]["stopId"] == 2
     assert transport_repo.create_calls == 2
 
@@ -221,21 +221,21 @@ async def test_get_students_by_route_returns_manifest_sorted_by_stop_id(
     # Seed unsorted enrollments for the same route to verify stop ordering.
     await transport_repo.create_enrollment(
         student_id=1,
-        route_id=77,
+        route_id="route_077",
         stop_id=30,
         pickup_time=None,
         dropoff_time=None,
     )
     await transport_repo.create_enrollment(
         student_id=2,
-        route_id=77,
+        route_id="route_077",
         stop_id=10,
         pickup_time=None,
         dropoff_time=None,
     )
     await transport_repo.create_enrollment(
         student_id=3,
-        route_id=77,
+        route_id="route_077",
         stop_id=20,
         pickup_time=None,
         dropoff_time=None,
@@ -243,12 +243,12 @@ async def test_get_students_by_route_returns_manifest_sorted_by_stop_id(
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.get("/api/v1/transport/routes/77/students")
+        response = await client.get("/api/v1/transport/routes/route_077/students")
 
     assert response.status_code == 200
     body = response.json()
 
-    assert body["routeId"] == 77
+    assert body["routeId"] == "route_077"
     assert body["totalStudents"] == 3
     assert [student["stopId"] for student in body["students"]] == [10, 20, 30]
     assert [student["studentId"] for student in body["students"]] == [2, 3, 1]
