@@ -11,6 +11,7 @@ import React from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
