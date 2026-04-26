@@ -70,6 +70,10 @@ async def log_requests(request: Request, call_next):
     Logger.info(f"{request.method} {request.url.path}")
     response = await call_next(request)
     Logger.info(f"{request.method} {request.url.path} - {response.status_code}")
+    Logger.info(
+        f"{request.method} {request.url.path} - "
+        f"{response.status_code}"
+    )
     return response
 
 
@@ -88,6 +92,7 @@ app.include_router(api_v1_router, prefix="/api")
 
 
 # Root
+
 @app.get("/", tags=["Root"])
 async def root() -> dict:
     return {

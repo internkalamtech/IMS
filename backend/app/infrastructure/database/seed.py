@@ -18,8 +18,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logger import Logger
 from app.core.password import hash_password
 from app.infrastructure.database.database import AsyncSessionLocal, init_db
-from app.infrastructure.database.models import RoleModel, UserModel
-
+from app.infrastructure.database.models import (
+    HomeworkModel,
+    RoleModel,
+    UserModel,
+)
 
 # Demo users configuration
 DEMO_USERS = [
@@ -73,6 +76,43 @@ DEMO_USERS = [
         "roles": ["parent", "teacher"],
     },
 ]
+
+
+# Demo homework assignments for the student demo user
+# These are tied to the student user by email lookup at seed time
+DEMO_HOMEWORK = [
+    {
+        "subject": "Mathematics",
+        "title": "Algebra Practice Set",
+        "description": "Complete exercises 1–25 from chapter 4",
+        "status": "pending",
+    },
+    {
+        "subject": "Science",
+        "title": "Project on Solar System",
+        "description": "Submit detailed observations from the experiment",
+        "status": "pending",
+    },
+    {
+        "subject": "English",
+        "title": "Essay – My Favourite Book",
+        "description": "Write a 500-word essay on climate change impact",
+        "status": "overdue",
+    },
+    {
+        "subject": "Hindi",
+        "title": "Grammar Exercise Page 45-47",
+        "description": "Complete the grammar exercises",
+        "status": "pending",
+    },
+    {
+        "subject": "Social Studies",
+        "title": "Map Work – Indian States",
+        "description": "Complete the map work assignment",
+        "status": "submitted",
+    },
+]
+
 
 # Roles configuration
 ROLES = [
@@ -140,7 +180,8 @@ async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
 
 
 async def create_users(
-    db: AsyncSession, roles_map: dict[str, RoleModel]
+    db: AsyncSession,
+    roles_map: dict[str, RoleModel],
 ) -> None:
     """
     Create demo users if they don't exist.
@@ -186,6 +227,57 @@ async def create_users(
     await db.commit()
 
 
+async def create_homework(db: AsyncSession) -> None:
+    """
+    Create demo homework assignments for the student demo user.
+
+    Homework is assigned to the student@myuser.com user.
+    Idempotent: only seeds if no homework records exist for that student.
+
+    Args:
+        db: Database session
+    """
+    Logger.info("Creating demo homework assignments...")
+
+    # Find the student demo user
+    result = await db.execute(
+        select(UserModel).where(UserModel.email == "student@myuser.com")
+    )
+    student = result.unique().scalar_one_or_none()
+
+    if not student:
+        Logger.warning(
+            "Student demo user not found — skipping homework seed"
+        )
+        return
+
+    # Check if homework already seeded for this student
+    existing = await db.execute(
+        select(HomeworkModel).where(
+            HomeworkModel.child_id == student.id
+        )
+    )
+    if existing.scalars().first():
+        Logger.info("Homework already seeded — skipping")
+        return
+
+    for hw_data in DEMO_HOMEWORK:
+        homework = HomeworkModel(
+            child_id=student.id,
+            subject=hw_data["subject"],
+            title=hw_data["title"],
+            description=hw_data["description"],
+            status=hw_data["status"],
+        )
+        db.add(homework)
+        Logger.info(
+            f"Created homework: '{hw_data['title']}' "
+            f"(status: {hw_data['status']})"
+        )
+
+    await db.commit()
+
+
 async def seed_database() -> None:
     """
     Main function to seed the database.
@@ -194,6 +286,7 @@ async def seed_database() -> None:
     1. Initializes database (creates tables)
     2. Creates roles
     3. Creates demo users
+    4. Creates demo homework assignments
     """
     try:
         Logger.info("Starting database seeding...")
@@ -209,6 +302,9 @@ async def seed_database() -> None:
 
             # Create users
             await create_users(db, roles_map)
+
+            # Create homework assignments
+            await create_homework(db)
 
         Logger.info("Database seeding completed successfully!")
 
