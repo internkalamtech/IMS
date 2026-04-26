@@ -123,6 +123,21 @@ class ErrorResponse(BaseModel):
     }
 
 
+class DriverDocumentResponse(BaseModel):
+    """Response schema for driver compliance document status."""
+
+    title: str
+    expiryDate: str
+
+
+class DriverMaintenanceResponse(BaseModel):
+    """Response schema for driver vehicle maintenance tasks."""
+
+    title: str
+    date: str
+    status: Literal["Scheduled", "In Progress", "Completed"]
+
+
 class DemoCredential(BaseModel):
     """Schema for a single demo credential."""
 

@@ -1,7 +1,7 @@
-import { getApiBaseUrl } from '@/core/api-config';
+import { api } from '@/core/api-client';
+import { useTheme } from '@/core/theme/ThemeContext';
 import { useAuth } from '@/presentation/hooks/useAuth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -23,17 +23,11 @@ type MaintenanceTask = {
     status: MaintenanceTaskStatus;
 };
 
-const API_BASE_URL = getApiBaseUrl();
-const TOKEN_STORAGE_KEY = 'auth_token';
+type MaintenanceScreenProps = {
+    onBack?: () => void;
+};
 
 function getErrorMessage(error: unknown, fallback: string): string {
-    if (axios.isAxiosError(error)) {
-        const detail = error.response?.data?.detail;
-        if (typeof detail === 'string' && detail.length > 0) {
-            return detail;
-        }
-    }
-
     if (error instanceof Error && error.message) {
         return error.message;
     }
@@ -41,8 +35,9 @@ function getErrorMessage(error: unknown, fallback: string): string {
     return fallback;
 }
 
-export default function MaintenanceScreen() {
+export default function MaintenanceScreen({ onBack }: MaintenanceScreenProps) {
     const { loading, user } = useAuth();
+    const { theme } = useTheme();
     const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
     const [screenLoading, setScreenLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -51,15 +46,6 @@ export default function MaintenanceScreen() {
     const loadTasks = useCallback(
         async (isRefresh: boolean = false) => {
             if (!user) {
-                setTasks([]);
-                setError('No token available');
-                setScreenLoading(false);
-                setRefreshing(false);
-                return;
-            }
-
-            const token = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
-            if (!token) {
                 setTasks([]);
                 setError('No token available');
                 setScreenLoading(false);
@@ -76,14 +62,7 @@ export default function MaintenanceScreen() {
             setError(null);
 
             try {
-                const response = await axios.get<MaintenanceTask[]>(
-                    `${API_BASE_URL}/driver/maintenance`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                const response = await api.get<MaintenanceTask[]>('/driver/maintenance');
                 setTasks(response.data);
             } catch (fetchError: unknown) {
                 setError(
@@ -142,9 +121,25 @@ export default function MaintenanceScreen() {
                     />
                 }
             >
-                <ThemedText type="title" style={styles.heading}>
-                    Vehicle Maintenance
-                </ThemedText>
+                <View style={styles.headingRow}>
+                    {onBack && (
+                        <Pressable
+                            onPress={onBack}
+                            style={styles.backButton}
+                            accessibilityRole="button"
+                            accessibilityLabel="Back to dashboard"
+                        >
+                            <Ionicons
+                                name="arrow-back"
+                                size={22}
+                                color={theme.colors.foreground}
+                            />
+                        </Pressable>
+                    )}
+                    <ThemedText type="title" style={styles.heading}>
+                        Vehicle Maintenance
+                    </ThemedText>
+                </View>
                 <ThemedText style={styles.subheading}>
                     View upcoming and past maintenance work for your assigned
                     vehicle.
@@ -237,8 +232,18 @@ const styles = StyleSheet.create({
         paddingVertical: 32,
         alignItems: 'center',
     },
-    heading: {
+    headingRow: {
         marginBottom: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    heading: {
+        flex: 1,
+    },
+    backButton: {
+        marginRight: 12,
+        paddingVertical: 4,
+        paddingRight: 4,
     },
     subheading: {
         marginBottom: 16,

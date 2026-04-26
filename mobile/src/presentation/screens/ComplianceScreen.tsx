@@ -1,7 +1,7 @@
-import { getApiBaseUrl } from '@/core/api-config';
+import { api } from '@/core/api-client';
+import { useTheme } from '@/core/theme/ThemeContext';
 import { useAuth } from '@/presentation/hooks/useAuth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -22,8 +22,9 @@ type ComplianceDocument = {
 
 type ComplianceStatus = 'Expired' | 'Expiring Soon' | 'Valid';
 
-const API_BASE_URL = getApiBaseUrl();
-const TOKEN_STORAGE_KEY = 'auth_token';
+type ComplianceScreenProps = {
+    onBack?: () => void;
+};
 
 function getDaysLeft(expiryDate: string): number {
     const today = new Date();
@@ -66,13 +67,6 @@ function getCountdownLabel(daysLeft: number): string {
 }
 
 function getErrorMessage(error: unknown, fallback: string): string {
-    if (axios.isAxiosError(error)) {
-        const detail = error.response?.data?.detail;
-        if (typeof detail === 'string' && detail.length > 0) {
-            return detail;
-        }
-    }
-
     if (error instanceof Error && error.message) {
         return error.message;
     }
@@ -80,8 +74,9 @@ function getErrorMessage(error: unknown, fallback: string): string {
     return fallback;
 }
 
-export default function ComplianceScreen() {
+export default function ComplianceScreen({ onBack }: ComplianceScreenProps) {
     const { loading, user } = useAuth();
+    const { theme } = useTheme();
     const [documents, setDocuments] = useState<ComplianceDocument[]>([]);
     const [screenLoading, setScreenLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -90,15 +85,6 @@ export default function ComplianceScreen() {
     const loadDocuments = useCallback(
         async (isRefresh: boolean = false) => {
             if (!user) {
-                setDocuments([]);
-                setError('No token available');
-                setScreenLoading(false);
-                setRefreshing(false);
-                return;
-            }
-
-            const token = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
-            if (!token) {
                 setDocuments([]);
                 setError('No token available');
                 setScreenLoading(false);
@@ -115,14 +101,7 @@ export default function ComplianceScreen() {
             setError(null);
 
             try {
-                const response = await axios.get<ComplianceDocument[]>(
-                    `${API_BASE_URL}/driver/documents`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                const response = await api.get<ComplianceDocument[]>('/driver/documents');
                 setDocuments(response.data);
             } catch (fetchError: unknown) {
                 setError(
@@ -174,9 +153,25 @@ export default function ComplianceScreen() {
                     />
                 }
             >
-                <ThemedText type="title" style={styles.heading}>
-                    License Compliance
-                </ThemedText>
+                <View style={styles.headingRow}>
+                    {onBack && (
+                        <Pressable
+                            onPress={onBack}
+                            style={styles.backButton}
+                            accessibilityRole="button"
+                            accessibilityLabel="Back to dashboard"
+                        >
+                            <Ionicons
+                                name="arrow-back"
+                                size={22}
+                                color={theme.colors.foreground}
+                            />
+                        </Pressable>
+                    )}
+                    <ThemedText type="title" style={styles.heading}>
+                        License Compliance
+                    </ThemedText>
+                </View>
                 <ThemedText style={styles.subheading}>
                     Track expiry dates for the documents tied to your assigned
                     vehicle.
@@ -269,8 +264,18 @@ const styles = StyleSheet.create({
         paddingVertical: 32,
         alignItems: 'center',
     },
-    heading: {
+    headingRow: {
         marginBottom: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    heading: {
+        flex: 1,
+    },
+    backButton: {
+        marginRight: 12,
+        paddingVertical: 4,
+        paddingRight: 4,
     },
     subheading: {
         marginBottom: 16,

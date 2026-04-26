@@ -19,9 +19,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import IncidentListScreen from '../IncidentListScreen';
+import ComplianceScreen from '../ComplianceScreen';
+import MaintenanceScreen from '../MaintenanceScreen';
 import ReportIncidentScreen from '../ReportIncidentScreen';
 
-type ViewState = 'dashboard' | 'report_incident' | 'incident_list';
+type ViewState =
+    | 'dashboard'
+    | 'report_incident'
+    | 'incident_list'
+    | 'compliance'
+    | 'maintenance';
 
 export default function DriverDashboard() {
     const { logout, user } = useAuth();
@@ -61,6 +68,10 @@ export default function DriverDashboard() {
             setCurrentView('report_incident');
         } else if (action.title === 'My Incidents') {
             setCurrentView('incident_list');
+        } else if (action.title === 'Compliance Docs') {
+            setCurrentView('compliance');
+        } else if (action.title === 'Maintenance') {
+            setCurrentView('maintenance');
         } else {
             console.log(`Action not implemented: ${action.title}`);
         }
@@ -99,6 +110,14 @@ export default function DriverDashboard() {
                 onRefresh={onRefresh}
             />
         );
+    }
+
+    if (currentView === 'compliance') {
+        return <ComplianceScreen onBack={() => setCurrentView('dashboard')} />;
+    }
+
+    if (currentView === 'maintenance') {
+        return <MaintenanceScreen onBack={() => setCurrentView('dashboard')} />;
     }
 
     const today = new Date().toISOString().split('T')[0];

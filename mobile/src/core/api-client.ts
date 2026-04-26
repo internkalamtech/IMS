@@ -8,6 +8,16 @@ import { Logger } from './logger';
 // Default configuration
 const API_URL = getApiBaseUrl();
 const TIMEOUT = 10000;
+const LOGIN_ENDPOINT = '/auth/login';
+
+const getResponseMessage = (error: AxiosError): string | null => {
+    const data = error.response?.data;
+    if (data && typeof data === 'object' && 'detail' in data) {
+        const detail = (data as { detail?: unknown }).detail;
+        return typeof detail === 'string' ? detail : null;
+    }
+    return null;
+};
 
 export class ApiClient {
     private static instance: ApiClient;
@@ -56,16 +66,24 @@ export class ApiClient {
                 Logger.debug(`[API Response] ${response.status} ${response.config.url}`);
                 return response;
             },
-            (error: AxiosError) => {
+            async (error: AxiosError) => {
                 Logger.error('[API Response Error]', error);
 
                 if (error.response) {
                     // Server responded with a status code outside of 2xx
                     const status = error.response.status;
+                    const message = getResponseMessage(error);
+                    const requestUrl = error.config?.url ?? '';
                     if (status === 401) {
-                        return Promise.reject(new AuthError('Session expired'));
+                        if (requestUrl.includes(LOGIN_ENDPOINT)) {
+                            return Promise.reject(new AuthError(message ?? 'Invalid email or password'));
+                        }
+
+                        await StorageService.removeItem('auth_token');
+                        await StorageService.removeItem('current_user');
+                        return Promise.reject(new AuthError(message ?? 'Session expired'));
                     }
-                    return Promise.reject(new NetworkError(`Request failed with status ${status}`, status));
+                    return Promise.reject(new NetworkError(message ?? `Request failed with status ${status}`, status));
                 } else if (error.request) {
                     // Request was made but no response received
                     return Promise.reject(new NetworkError('No response received from server'));
