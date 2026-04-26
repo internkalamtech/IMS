@@ -1,4 +1,7 @@
 import { useTheme } from "@/core/theme/ThemeContext";
+import SubjectSelector, {
+  Subject,
+} from "@/presentation/components/SubjectSelector";
 import { ThemedButton } from "@/presentation/components/ThemedButton";
 import { ThemedCard } from "@/presentation/components/ThemedCard";
 import { ThemedText } from "@/presentation/components/ThemedText";
@@ -18,6 +21,7 @@ import {
 
 interface StudentRegistrationFormProps {
   classes: { id: string; name: string }[];
+  availableSubjects: Subject[];
   onSubmit: (data: StudentRegistrationData) => Promise<boolean>;
   submitting: boolean;
   onCancel: () => void;
@@ -27,11 +31,14 @@ export interface StudentRegistrationData {
   name: string;
   email: string;
   role: string;
+  phone: string;
   rollNumber: string;
   dateOfBirth: string;
   bloodGroup: string;
   classId: string;
   className?: string;
+  subjects?: string[];
+  license?: string;
   parentName: string;
   parentPhone: string;
   parentEmail: string;
@@ -42,6 +49,7 @@ const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 export default function StudentRegistrationForm({
   classes,
+  availableSubjects,
   onSubmit,
   submitting,
   onCancel,
@@ -52,6 +60,7 @@ export default function StudentRegistrationForm({
     name: "",
     email: "",
     role: "Student",
+    phone: "",
     rollNumber: "",
     dateOfBirth: "",
     bloodGroup: "A+",
@@ -61,12 +70,16 @@ export default function StudentRegistrationForm({
     parentEmail: "",
   });
 
+  const [selectedSubjects, setSelectedSubjects] = useState<Subject[]>([]);
+
   const [errors, setErrors] = useState<Partial<StudentRegistrationData>>({});
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [showBloodGroupDropdown, setShowBloodGroupDropdown] = useState(false);
   const [showClassDropdown, setShowClassDropdown] = useState(false);
 
   const isStudent = formData.role === "Student";
+  const isTeacher = formData.role === "Teacher";
+  const isDriver = formData.role === "Driver";
 
   const validateForm = (): boolean => {
     const newErrors: Partial<StudentRegistrationData> = {};
@@ -79,6 +92,13 @@ export default function StudentRegistrationForm({
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Invalid email format";
+    }
+
+    // Phone required for staff and students
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone is required";
+    } else if (!/^\+?[0-9\s\-()]{7,}$/.test(formData.phone)) {
+      newErrors.phone = "Valid phone number required";
     }
 
     // Student-specific validation
@@ -108,6 +128,23 @@ export default function StudentRegistrationForm({
         newErrors.parentEmail = "Parent email is required";
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.parentEmail)) {
         newErrors.parentEmail = "Invalid email format";
+      }
+    }
+
+    // Teacher-specific validation
+    if (isTeacher) {
+      if (selectedSubjects.length === 0) {
+        newErrors.subjects = "At least one subject is required" as any;
+      }
+      if (!formData.classId) {
+        newErrors.classId = "Class assignment is required";
+      }
+    }
+
+    // Driver-specific validation
+    if (isDriver) {
+      if (!formData.license || !formData.license.trim()) {
+        newErrors.license = "Driver license is required" as any;
       }
     }
 
@@ -201,6 +238,18 @@ export default function StudentRegistrationForm({
               editable={!submitting}
             />
 
+            <ThemedTextInput
+              label="Phone"
+              placeholder="Enter phone number"
+              value={formData.phone}
+              onChangeText={(value) =>
+                setFormData({ ...formData, phone: value })
+              }
+              keyboardType="phone-pad"
+              error={errors.phone}
+              editable={!submitting}
+            />
+
             {/* Role Selection */}
             <View style={styles.fieldContainer}>
               <ThemedText style={styles.fieldLabel} type="defaultSemiBold">
@@ -265,6 +314,159 @@ export default function StudentRegistrationForm({
               )}
             </View>
           </ThemedCard>
+
+          {/* Teacher / Driver specific fields */}
+          {!isStudent && (
+            <ThemedCard style={styles.card}>
+              <View style={{ marginBottom: 8 }}>
+                <Ionicons
+                  name="briefcase-outline"
+                  size={22}
+                  color={theme.colors.primary}
+                  style={{ marginBottom: 12 }}
+                />
+                <ThemedText style={styles.sectionTitle} type="defaultSemiBold">
+                  Staff Details
+                </ThemedText>
+              </View>
+
+              {/* Teacher fields */}
+              {isTeacher && (
+                <>
+                  <ThemedText style={styles.fieldLabel} type="defaultSemiBold">
+                    Subjects <ThemedText style={styles.required}>*</ThemedText>
+                  </ThemedText>
+                  <SubjectSelector
+                    availableSubjects={availableSubjects}
+                    selectedSubjects={selectedSubjects}
+                    onChange={(subjects) => {
+                      setSelectedSubjects(subjects);
+                      setFormData({
+                        ...formData,
+                        subjects: subjects.map((s) => s.name),
+                      });
+                    }}
+                    clearTrigger={0}
+                  />
+
+                  {errors.subjects && (
+                    <ThemedText
+                      style={{
+                        color: theme.colors.destructive,
+                        fontSize: 12,
+                        marginTop: 6,
+                      }}
+                    >
+                      {errors.subjects as any}
+                    </ThemedText>
+                  )}
+
+                  {/* Class Assignment reuse */}
+                  <View style={styles.fieldContainer}>
+                    <ThemedText
+                      style={styles.fieldLabel}
+                      type="defaultSemiBold"
+                    >
+                      Class Assigned{" "}
+                      <ThemedText style={styles.required}>*</ThemedText>
+                    </ThemedText>
+                    <TouchableOpacity
+                      style={[
+                        styles.dropdown,
+                        {
+                          borderColor: errors.classId
+                            ? theme.colors.destructive
+                            : theme.colors.border,
+                          backgroundColor: theme.colors.input,
+                        },
+                      ]}
+                      onPress={() => setShowClassDropdown(!showClassDropdown)}
+                      disabled={submitting}
+                    >
+                      <ThemedText>
+                        {classes.find(
+                          (c) => c.id.toString() === formData.classId,
+                        )?.name || "Select a class"}
+                      </ThemedText>
+                      <Ionicons
+                        name={showClassDropdown ? "chevron-up" : "chevron-down"}
+                        size={20}
+                        color={theme.colors.foreground}
+                      />
+                    </TouchableOpacity>
+
+                    {showClassDropdown && (
+                      <View
+                        style={[
+                          styles.dropdownMenu,
+                          {
+                            backgroundColor: theme.colors.card,
+                            borderColor: theme.colors.border,
+                          },
+                        ]}
+                      >
+                        <ScrollView
+                          nestedScrollEnabled={true}
+                          scrollEnabled={true}
+                          showsVerticalScrollIndicator={true}
+                        >
+                          {classes.map((classItem) => (
+                            <TouchableOpacity
+                              key={classItem.id}
+                              style={[
+                                styles.dropdownItem,
+                                {
+                                  backgroundColor:
+                                    formData.classId === String(classItem.id)
+                                      ? theme.colors.primary + "20"
+                                      : "transparent",
+                                },
+                              ]}
+                              onPress={() => {
+                                setFormData({
+                                  ...formData,
+                                  classId: String(classItem.id),
+                                  className: classItem.name,
+                                });
+                                setShowClassDropdown(false);
+                              }}
+                            >
+                              <ThemedText>{classItem.name}</ThemedText>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+                    {errors.classId && (
+                      <ThemedText
+                        style={{
+                          color: theme.colors.destructive,
+                          fontSize: 12,
+                          marginTop: 4,
+                        }}
+                      >
+                        {errors.classId}
+                      </ThemedText>
+                    )}
+                  </View>
+                </>
+              )}
+
+              {/* Driver fields */}
+              {isDriver && (
+                <ThemedTextInput
+                  label="Driver License"
+                  placeholder="Enter license number"
+                  value={formData.license || ""}
+                  onChangeText={(value) =>
+                    setFormData({ ...formData, license: value })
+                  }
+                  error={errors.license}
+                  editable={!submitting}
+                />
+              )}
+            </ThemedCard>
+          )}
 
           {/* Student-Specific Fields */}
           {isStudent && (
@@ -478,6 +680,8 @@ export default function StudentRegistrationForm({
                 </View>
                 <ThemedText style={styles.sectionDescription} type="default">
                   Please provide your parent or guardian&apos;s contact information
+                  Please provide your parent or guardian&apos;s contact
+                  information
                 </ThemedText>
 
                 <ThemedTextInput

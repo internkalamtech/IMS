@@ -2,6 +2,7 @@
 Domain entities - Pure business objects.
 """
 
+from app.domain.entities.homework import Homework, HomeworkStatus
 from app.domain.entities.user import User, Role, UserRole
 from app.domain.entities.payment import (
     FeeStructure,
@@ -21,6 +22,8 @@ __all__ = [
     "Student",
     "FeeStructure",
     "PaymentSummary",
+    "Homework", 
+    "HomeworkStatus"
     "Trip",
     "TripStatus",
     "TripType",
