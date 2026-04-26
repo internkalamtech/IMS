@@ -22,6 +22,12 @@ export default function ParentDashboard() {
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
 
+    const handleQuickAction = (action: typeof quickActions[0]) => {
+        if (action.title === 'Attendance') {
+            router.push('/attendance-summary');
+        }
+    };
+
     const getStatValue = (label: string, defaultValue: string = '0%') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
     };

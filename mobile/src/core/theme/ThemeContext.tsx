@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { Appearance, ColorSchemeName } from 'react-native';
+import { ColorSchemeName } from 'react-native';
 import { DarkTheme, LightTheme, Theme } from './theme';
 
 type ThemeType = 'light' | 'dark' | 'system';
@@ -18,15 +18,18 @@ const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 export const THEME_STORAGE_KEY = 'ims_theme_preference';
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-    const [themeType, setThemeTypeState] = useState<ThemeType>('system');
-    const [systemColorScheme, setSystemColorScheme] = useState<ColorSchemeName>(Appearance.getColorScheme());
+    // Force light mode by default so all screens match the blue UI design.
+    // System dark mode is intentionally ignored — the app always starts light.
+    const [themeType, setThemeTypeState] = useState<ThemeType>('light');
+    const [systemColorScheme, setSystemColorScheme] = useState<ColorSchemeName>('light');
 
     useEffect(() => {
-        // Load persisted theme preference
+        // Load persisted theme preference (only honours 'light' or manual overrides)
         const loadTheme = async () => {
             try {
                 const storedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-                if (storedTheme) {
+                // Only restore if user explicitly set it; never restore 'system' (dark)
+                if (storedTheme && storedTheme !== 'system') {
                     setThemeTypeState(storedTheme as ThemeType);
                 }
             } catch (error) {
@@ -35,12 +38,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         };
         loadTheme();
 
-        // Listen for system theme changes
-        const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-            setSystemColorScheme(colorScheme);
-        });
-
-        return () => subscription.remove();
+        // We no longer follow system colour scheme changes
+        // (app is designed as a light-theme-first product)
     }, []);
 
     const setThemeType = async (type: ThemeType) => {

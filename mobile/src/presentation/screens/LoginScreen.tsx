@@ -1,31 +1,34 @@
-import { useTheme } from '@/core/theme/ThemeContext';
+/**
+ * LoginScreen — fixed to use hardcoded light colours (matching the blue UI design)
+ * instead of theme-aware components that go dark when the device is in dark mode.
+ */
+
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
+    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     Pressable,
     ScrollView,
     StyleSheet,
-    View
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ThemedButton } from '../components/ThemedButton';
-import { ThemedCard } from '../components/ThemedCard';
-import { ThemedText } from '../components/ThemedText';
-import { ThemedTextInput } from '../components/ThemedTextInput';
-import { ThemedView } from '../components/ThemedView';
+
+const BLUE = '#0066FF';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const { login, loading, error, demoCredentials } = useAuth();
-    const { theme } = useTheme();
 
-    const handleLogin = () => {
-        login(email, password);
-    };
+    const handleLogin = () => login(email, password);
 
     const autofill = (userEmail: string, userPass: string) => {
         setEmail(userEmail);
@@ -33,179 +36,304 @@ export default function LoginScreen() {
     };
 
     return (
-        <ThemedView style={styles.container} lightColor="#0066FF" darkColor={theme.colors.background}>
-            <SafeAreaView style={{ flex: 1 }}>
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={{ flex: 1 }}
-                >
-                    <ScrollView contentContainerStyle={styles.scrollContent}>
-                        <View style={styles.header}>
-                            <View style={[styles.logoContainer, { backgroundColor: theme.colors.background, shadowColor: theme.colors.primary }]}>
-                                <Ionicons name="school" size={40} color={theme.colors.primary} />
-                            </View>
-                            <ThemedText style={styles.headerTitle} lightColor="#fff">KalamTech</ThemedText>
-                            <ThemedText style={styles.headerSubtitle} lightColor="rgba(255, 255, 255, 0.8)">Smart Institute Management System</ThemedText>
+        <SafeAreaView style={styles.safe} edges={['top']}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+            >
+                <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+
+                    {/* ── Blue header ── */}
+                    <View style={styles.header}>
+                        <View style={styles.logoBox}>
+                            <Ionicons name="school" size={36} color={BLUE} />
                         </View>
+                        <Text style={styles.appName}>KalamTech</Text>
+                        <Text style={styles.appSub}>Smart Institute Management System</Text>
+                    </View>
 
-                        <ThemedCard style={styles.card}>
-                            <ThemedText type="title" style={styles.cardTitle}>Welcome Back</ThemedText>
+                    {/* ── White login card ── */}
+                    <View style={styles.card}>
+                        <Text style={styles.cardTitle}>Welcome Back</Text>
+                        <Text style={styles.cardSub}>Sign in to continue</Text>
 
-                            {error && (
-                                <View style={[styles.errorContainer, { backgroundColor: theme.colors.destructive }]}>
-                                    <ThemedText style={styles.errorText} lightColor="#fff" darkColor="#fff">{error}</ThemedText>
-                                </View>
-                            )}
+                        {error ? (
+                            <View style={styles.errorBox}>
+                                <Ionicons name="alert-circle-outline" size={16} color="#DC2626" style={{ marginRight: 6 }} />
+                                <Text style={styles.errorText}>{error}</Text>
+                            </View>
+                        ) : null}
 
-                            <ThemedTextInput
-                                label="Email"
+                        {/* Email */}
+                        <Text style={styles.label}>Email</Text>
+                        <View style={styles.inputWrapper}>
+                            <Ionicons name="mail-outline" size={18} color="#94A3B8" style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
                                 placeholder="Enter your email"
+                                placeholderTextColor="#94A3B8"
                                 value={email}
                                 onChangeText={setEmail}
                                 autoCapitalize="none"
                                 keyboardType="email-address"
                                 editable={!loading}
                             />
+                        </View>
 
-                            <ThemedTextInput
-                                label="Password"
+                        {/* Password */}
+                        <Text style={styles.label}>Password</Text>
+                        <View style={styles.inputWrapper}>
+                            <Ionicons name="lock-closed-outline" size={18} color="#94A3B8" style={styles.inputIcon} />
+                            <TextInput
+                                style={[styles.input, { flex: 1 }]}
                                 placeholder="Enter your password"
+                                placeholderTextColor="#94A3B8"
                                 value={password}
                                 onChangeText={setPassword}
-                                secureTextEntry
+                                secureTextEntry={!showPassword}
                                 editable={!loading}
                             />
+                            <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={{ padding: 4 }}>
+                                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color="#94A3B8" />
+                            </TouchableOpacity>
+                        </View>
 
-                            <ThemedButton
-                                title={loading ? 'Logging in...' : 'Login'}
-                                onPress={handleLogin}
-                                disabled={loading}
-                                style={{ marginTop: 8 }}
-                            />
+                        <Pressable style={styles.forgotRow}>
+                            <Text style={styles.forgotText}>Forgot Password?</Text>
+                        </Pressable>
 
-                            <Pressable style={styles.forgotPassword}>
-                                <ThemedText type="link">Forgot Password?</ThemedText>
-                            </Pressable>
+                        {/* Login button */}
+                        <TouchableOpacity
+                            style={[styles.loginBtn, loading && { opacity: 0.7 }]}
+                            onPress={handleLogin}
+                            disabled={loading}
+                            activeOpacity={0.85}
+                        >
+                            {loading
+                                ? <ActivityIndicator color="#fff" />
+                                : <Text style={styles.loginBtnText}>Login</Text>
+                            }
+                        </TouchableOpacity>
 
-                            <View style={[styles.demoBox, { backgroundColor: theme.colors.secondary }]}>
-                                <ThemedText style={styles.demoTitle}>Demo Credentials (Server-side):</ThemedText>
-                                {demoCredentials.map((cred, index) => (
-                                    <View key={index}>
-                                        {cred.description && (index === 0 || demoCredentials[index - 1].description !== cred.description) ? (
-                                            <ThemedText style={styles.demoSectionTitle}>{cred.description}:</ThemedText>
-                                        ) : null}
-                                        <View style={styles.demoRow}>
-                                            <View style={styles.demoUserIcon}>
-                                                <Ionicons name={cred.icon as any} size={16} color={theme.colors.mutedForeground} />
-                                            </View>
-                                            <ThemedText style={styles.demoText}>
-                                                {cred.email} / {cred.password}
-                                            </ThemedText>
-                                            <Pressable
-                                                onPress={() => autofill(cred.email, cred.password)}
-                                                style={styles.autofillButton}
-                                            >
-                                                <Ionicons name="log-in-outline" size={20} color={theme.colors.primary} />
-                                            </Pressable>
-                                        </View>
+                        {/* Demo credentials */}
+                        <View style={styles.demoBox}>
+                            <Text style={styles.demoTitle}>Demo Credentials</Text>
+                            {demoCredentials.map((cred, index) => (
+                                <TouchableOpacity
+                                    key={index}
+                                    style={styles.demoRow}
+                                    onPress={() => autofill(cred.email, cred.password)}
+                                    activeOpacity={0.7}
+                                >
+                                    <View style={styles.demoIconWrap}>
+                                        <Ionicons name={cred.icon as any} size={14} color={BLUE} />
                                     </View>
-                                ))}
-                            </View>
-                        </ThemedCard>
-                    </ScrollView>
-                </KeyboardAvoidingView>
-            </SafeAreaView>
-        </ThemedView>
+                                    <View style={{ flex: 1 }}>
+                                        {cred.description && (index === 0 || demoCredentials[index - 1].description !== cred.description) ? (
+                                            <Text style={styles.demoRole}>{cred.description}</Text>
+                                        ) : null}
+                                        <Text style={styles.demoCredText}>
+                                            {cred.email} / {cred.password}
+                                        </Text>
+                                    </View>
+                                    <Ionicons name="log-in-outline" size={18} color={BLUE} />
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 
-
 const styles = StyleSheet.create({
-    container: {
+    safe: {
         flex: 1,
+        backgroundColor: BLUE,
     },
-    scrollContent: {
+    scroll: {
         flexGrow: 1,
-        padding: 20,
-        paddingTop: 40,
-        paddingBottom: 40,
     },
+
+    // ── Header (blue section) ──────────────────────────────────────────────────
     header: {
+        backgroundColor: BLUE,
         alignItems: 'center',
-        marginBottom: 40,
+        paddingTop: 36,
+        paddingBottom: 48,
+        paddingHorizontal: 24,
     },
-    logoContainer: {
-        width: 80,
-        height: 80,
+    logoBox: {
+        width: 72,
+        height: 72,
         borderRadius: 20,
+        backgroundColor: '#fff',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 16,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.15,
         shadowRadius: 8,
-        elevation: 5,
+        elevation: 6,
     },
-    headerTitle: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        marginBottom: 8,
+    appName: {
+        fontSize: 30,
+        fontWeight: '800',
+        color: '#fff',
+        letterSpacing: 0.5,
+        marginBottom: 6,
     },
-    headerSubtitle: {
-        fontSize: 16,
+    appSub: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.85)',
         textAlign: 'center',
     },
+
+    // ── White card (rounded top) ───────────────────────────────────────────────
     card: {
-        borderRadius: 30,
-        padding: 24,
+        flex: 1,
+        backgroundColor: '#F0F4F8',
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        padding: 28,
+        paddingBottom: 48,
+        marginTop: -20,      // overlap the blue header slightly
     },
     cardTitle: {
-        textAlign: 'center',
-        marginBottom: 24,
+        fontSize: 24,
+        fontWeight: '800',
+        color: '#111827',
+        marginBottom: 4,
     },
-    errorContainer: {
-        padding: 12,
+    cardSub: {
+        fontSize: 14,
+        color: '#6B7280',
+        marginBottom: 28,
+    },
+
+    // ── Error ─────────────────────────────────────────────────────────────────
+    errorBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FEE2E2',
         borderRadius: 10,
+        padding: 12,
         marginBottom: 16,
     },
     errorText: {
-        fontSize: 14,
-        textAlign: 'center',
+        color: '#DC2626',
+        fontSize: 13,
+        flex: 1,
     },
-    forgotPassword: {
+
+    // ── Inputs ────────────────────────────────────────────────────────────────
+    label: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#374151',
+        marginBottom: 6,
+    },
+    inputWrapper: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 16,
+        backgroundColor: '#fff',
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        paddingHorizontal: 12,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 4,
+        elevation: 1,
     },
+    inputIcon: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        height: 48,
+        fontSize: 15,
+        color: '#111827',
+    },
+
+    forgotRow: {
+        alignItems: 'flex-end',
+        marginTop: -8,
+        marginBottom: 20,
+    },
+    forgotText: {
+        fontSize: 13,
+        color: BLUE,
+        fontWeight: '600',
+    },
+
+    // ── Login button ──────────────────────────────────────────────────────────
+    loginBtn: {
+        backgroundColor: BLUE,
+        borderRadius: 16,
+        height: 52,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 24,
+        shadowColor: BLUE,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    loginBtnText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+    },
+
+    // ── Demo credentials ──────────────────────────────────────────────────────
     demoBox: {
-        marginTop: 24,
+        backgroundColor: '#fff',
         borderRadius: 16,
         padding: 16,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
     },
     demoTitle: {
         fontSize: 12,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    demoSectionTitle: {
-        fontSize: 11,
-        fontWeight: 'bold',
-        marginTop: 8,
-        marginBottom: 4,
+        fontWeight: '700',
+        color: '#6B7280',
+        textTransform: 'uppercase',
+        letterSpacing: 0.8,
+        marginBottom: 10,
     },
     demoRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 6,
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+        gap: 10,
     },
-    demoUserIcon: {
-        marginRight: 8,
+    demoIconWrap: {
+        width: 28,
+        height: 28,
+        borderRadius: 8,
+        backgroundColor: '#EFF6FF',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    demoText: {
+    demoRole: {
+        fontSize: 10,
+        fontWeight: '700',
+        color: BLUE,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 1,
+    },
+    demoCredText: {
         fontSize: 12,
-        flex: 1,
-    },
-    autofillButton: {
-        padding: 4,
-        marginLeft: 8,
+        color: '#374151',
     },
 });

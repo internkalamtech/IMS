@@ -15,6 +15,7 @@ from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     Column,
     DateTime,
     Float,
@@ -124,6 +125,65 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
+# Association table linking parent and student users.
+# Authoritative source for parent-facing endpoints (attendance, leave, etc.).
+parent_student = Table(
+    "parent_student",
+    Base.metadata,
+    Column("parent_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("student_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
+class AttendanceModel(Base):
+    """
+    Daily attendance record for a student.
+    status: 'present' | 'absent' | 'leave' | 'holiday' | 'not-marked'
+    """
+    __tablename__ = "attendances"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    date: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="not-marked")
+    marked_by_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+
+    student: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[student_id])
+
+
+class LeaveRequestModel(Base):
+    """
+    Leave request submitted by a parent for a student.
+    status: 'pending' | 'approved' | 'rejected'
+    """
+    __tablename__ = "leave_requests"
+    __table_args__ = (
+        CheckConstraint(
+            "status in ('pending', 'approved', 'rejected')",
+            name="ck_leave_requests_status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    start_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    end_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    reason: Mapped[str] = mapped_column(String(500), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    teacher_note: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    reviewed_by_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    applied_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    student: Mapped["UserModel"] = relationship("UserModel", foreign_keys=[student_id])
+
+
+# =========================
+# 📚 HOMEWORK MODEL
+# =========================
 class HomeworkModel(Base):
     """
     Homework database model.
@@ -218,7 +278,8 @@ class_subject_link = Table(
 )
 
 
-# Association table for many-to-many relationship between students and parents
+# Association table for many-to-many relationship between students and parents.
+# Legacy domain link for Student/Parent records; not used by parent-facing endpoints (they use parent_student).
 student_parent_link = Table(
     "student_parent_link",
     Base.metadata,

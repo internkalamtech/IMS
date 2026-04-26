@@ -153,6 +153,73 @@ class DashboardResponse(BaseModel):
     stats: list[StatItem]
 
 
+# ─── Attendance schemas (Issues #298–#300) ────────────────────────────────────
+
+class ChildSummaryResponse(BaseModel):
+    """Summary card for a single child — shown on the Multi-Child screen (#298)."""
+    id: str
+    name: str
+    grade: str
+    rollNo: str
+    presentDays: int = 0
+    absentDays: int = 0
+    totalDays: int = 0
+    overallAttendance: float      # e.g. 93.3
+    monthlyAttendance: float
+    status: str                   # e.g. "Present Today"
+    statusColor: str              # hex colour for status badge
+    emoji: str = "👦"
+
+
+class MonthSummary(BaseModel):
+    """Aggregate counts shown at the top of the Calendar screen (#299)."""
+    present: int
+    absent: int
+    leave: int
+    holiday: int
+    notMarked: int
+
+
+class CalendarDay(BaseModel):
+    """Single day cell in the attendance calendar grid (#299)."""
+    day: int
+    status: str   # 'present' | 'absent' | 'leave' | 'holiday' | 'not-marked'
+
+
+class LeaveHistoryItem(BaseModel):
+    """One entry in the leave-history list (#299)."""
+    id: str
+    dateRange: str
+    days: int
+    reason: str
+    status: str
+    appliedDate: str
+    teacherNote: str | None = None
+
+
+class AttendanceCalendarResponse(BaseModel):
+    """Full response for the calendar endpoint (#299 / #300)."""
+    monthSummary: MonthSummary
+    days: list[CalendarDay]
+    leaveHistory: list[LeaveHistoryItem]
+
+
+class LeaveRequestCreate(BaseModel):
+    """Request body for submitting a leave application."""
+    startDate: str   # YYYY-MM-DD
+    endDate: str     # YYYY-MM-DD
+    reason: str
+
+
+class LeaveRequestResponse(BaseModel):
+    """Response after successfully creating a leave request."""
+    id: str
+    dateRange: str
+    days: int
+    reason: str
+    status: str
+    appliedDate: str
+    teacherNote: str | None = None
 class AcademicSummaryResponse(BaseModel):
     """Response schema for the academic summary endpoint."""
 
