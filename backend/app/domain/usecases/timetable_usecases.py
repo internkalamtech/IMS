@@ -8,7 +8,7 @@ from typing import List
 
 from app.domain.entities.timetable import TimetableDay, TimetablePeriod
 from app.domain.repositories.timetable_repository import (
-    TimetableRepositoryInterface
+    TimetableRepository,
 )
 
 
@@ -17,7 +17,7 @@ class GetTimetableForClassUseCase:
     Use case for getting timetable data for a class.
     """
 
-    def __init__(self, timetable_repository: TimetableRepositoryInterface):
+    def __init__(self, timetable_repository: TimetableRepository):
         """
         Initialize use case with repository.
 
@@ -44,7 +44,7 @@ class GetDailyTimetableForClassUseCase:
     Use case for getting daily timetable data for a class.
     """
 
-    def __init__(self, timetable_repository: TimetableRepositoryInterface):
+    def __init__(self, timetable_repository: TimetableRepository):
         """
         Initialize use case with repository.
 

@@ -339,10 +339,19 @@ export default function TimetableScreen() {
                             <Ionicons name="arrow-back" size={24} color={theme.colors.primaryForeground} />
                         </TouchableOpacity>
                         <View style={styles.headerTitleWrap}>
-                            <ThemedText style={styles.headerTitle} type="title" color="primaryForeground">
+                            <ThemedText
+                                style={styles.headerTitle}
+                                type="title"
+                                lightColor={theme.colors.primaryForeground}
+                                darkColor={theme.colors.primaryForeground}
+                            >
                                 Child Timetable
                             </ThemedText>
-                            <ThemedText style={styles.headerSubtitle} color="primaryForeground">
+                            <ThemedText
+                                style={styles.headerSubtitle}
+                                lightColor={theme.colors.primaryForeground}
+                                darkColor={theme.colors.primaryForeground}
+                            >
                                 {selectedChild.name}
                             </ThemedText>
                         </View>

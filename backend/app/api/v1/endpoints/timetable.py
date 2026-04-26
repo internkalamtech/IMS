@@ -18,6 +18,7 @@ from app.api.schemas import (
     TimetablePeriodResponse,
 )
 from app.domain.entities.timetable import TimetableDay, TimetablePeriod
+from app.domain.repositories.timetable_repository import TimetableRepository
 from app.domain.entities.user import User
 from app.domain.usecases.timetable_usecases import (
     GetDailyTimetableForClassUseCase,
@@ -29,8 +30,8 @@ from app.infrastructure.database.models import (
     TeacherModel,
     TimetablePeriodModel,
 )
-from app.infrastructure.repositories.timetable_repository import (
-    TimetableRepository
+from app.infrastructure.repositories.timetable_repository_impl import (
+    TimetableRepositoryImpl,
 )
 
 router = APIRouter(prefix="/timetable", tags=["timetable"])
@@ -40,7 +41,7 @@ def get_timetable_repository(
     session: Session = Depends(get_db)
 ) -> TimetableRepository:
     """Dependency to get timetable repository."""
-    return TimetableRepository(session)
+    return TimetableRepositoryImpl(session)
 
 
 def get_timetable_usecase(

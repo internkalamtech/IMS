@@ -56,7 +56,7 @@ export default function StudentDirectory() {
       style={[styles.card, { backgroundColor: theme.colors.card }]}
      onPress={() =>
   router.push({
-    pathname: "/student-profile",
+    pathname: "/student-profile" as any,
     params: {
       name: item.name,
       roll: item.roll,

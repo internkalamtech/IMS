@@ -14,7 +14,7 @@ type FilterTab = 'All' | 'Expiring' | 'Expired';
 
 export default function ComplianceDocumentsScreen() {
     const router = useRouter();
-    const { theme, isDark } = useTheme();
+    const { theme } = useTheme();
     const { documents, loading, refreshing, onRefresh, error } = useComplianceDocuments();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<FilterTab>('All');
@@ -23,7 +23,7 @@ export default function ComplianceDocumentsScreen() {
     useFocusEffect(
         useCallback(() => {
             onRefresh();
-        }, [])
+        }, [onRefresh])
     );
 
     // Calculate metrics
@@ -66,13 +66,12 @@ export default function ComplianceDocumentsScreen() {
     };
 
     const handleEdit = (docId: number) => {
-        router.push({ pathname: '/add-edit-compliance-document', params: { id: docId } });
+        router.push({ pathname: '/add-edit-compliance-document' as any, params: { id: docId } });
     };
 
     const renderDocumentCard = ({ item }: { item: any }) => {
         const isExpired = item.status === 'Expired';
         const isExpiring = item.status === 'Expiring' || item.status === 'Expiring-Soon';
-        const isValid = item.status === 'Valid';
 
         let badgeColor = '#dcfce7';
         let badgeTextColor = '#166534';
@@ -155,9 +154,9 @@ export default function ComplianceDocumentsScreen() {
                             <ThemedText style={styles.headerTitle} lightColor="#fff" darkColor="#fff" type="title">Compliance Documents</ThemedText>
                             <ThemedText style={styles.headerSubtitle} lightColor="#fff" darkColor="#fff">{totalCount} documents tracked</ThemedText>
                         </View>
-                        <TouchableOpacity style={styles.uploadButton} onPress={() => router.push('/add-edit-compliance-document')}>
+                        <TouchableOpacity style={styles.uploadButton} onPress={() => router.push('/add-edit-compliance-document' as any)}>
                             <Ionicons name="push-outline" size={16} color={theme.colors.primary} />
-                            <ThemedText style={[styles.uploadButtonText, { color: theme.colors.primary }]}>Upload</ThemedText>
+                            <ThemedText style={styles.uploadButtonText} lightColor={theme.colors.primary} darkColor={theme.colors.primary}>Upload</ThemedText>
                         </TouchableOpacity>
                     </View>
 

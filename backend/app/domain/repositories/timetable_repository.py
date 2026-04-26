@@ -10,7 +10,7 @@ from typing import List
 from app.domain.entities.timetable import TimetablePeriod
 
 
-class TimetableRepositoryInterface(ABC):
+class TimetableRepository(ABC):
     """
     Interface for timetable repository operations.
     """

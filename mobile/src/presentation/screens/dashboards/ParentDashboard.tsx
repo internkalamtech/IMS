@@ -22,15 +22,17 @@ const ACTIVE_CHILD = {
 
 export default function ParentDashboard() {
     const { logout, user } = useAuth();
-    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
+    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
     const router = useRouter();
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
 
-    const getStatValue = (label: string, defaultValue: string = '0%') => {
+    const getStatValue = (label: string, defaultValue: string | number = '0%') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
     };
+
+    const pendingHomework = getStatValue('Pending Homework', 0);
 
     const handleQuickAction = (action: any) => {
         if (action.title === 'Timetable') {
@@ -43,6 +45,15 @@ export default function ParentDashboard() {
             });
         }
         // Add other action handlers as needed
+    };
+
+    const handleHomeworkCounterPress = () => {
+        router.push({
+            pathname: '/academics' as any,
+            params: {
+                initialTab: 'homework',
+            },
+        });
     };
 
     return (
@@ -135,7 +146,7 @@ export default function ParentDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickActionPress} />
+                    <QuickActionGrid actions={quickActions} onActionPress={handleQuickAction} />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>

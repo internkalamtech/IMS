@@ -2,6 +2,12 @@
 SQLAlchemy database models for the IMS application.
 
 These models represent the database schema using SQLAlchemy ORM.
+
+Best practices followed:
+- Declarative base for model definition
+- Proper relationships and foreign keys
+- Timestamps for audit trail
+- Indexes for performance
 """
 
 from datetime import datetime
@@ -49,7 +55,12 @@ user_roles = Table(
 # 👤 USER MODEL
 # =========================
 class UserModel(Base):
-    """User database model."""
+    """
+    User database model.
+
+    Represents a user with authentication credentials
+    and associated roles.
+    """
 
     __tablename__ = "users"
 
@@ -89,7 +100,11 @@ class UserModel(Base):
 # 🎭 ROLE MODEL
 # =========================
 class RoleModel(Base):
-    """Role database model."""
+    """
+    Role database model.
+
+    Represents roles like admin, teacher, student, etc.
+    """
 
     __tablename__ = "roles"
 
@@ -183,8 +198,72 @@ class ClassSectionModel(Base):
     )
 
 
-# Association table for many-to-many between class section
-# and subject
+class TeacherModel(Base):
+    """Teacher profile linked to an application user."""
+
+    __tablename__ = "teachers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    user: Mapped["UserModel"] = relationship("UserModel")
+
+
+class RoomModel(Base):
+    """Classroom/room reference used by timetable periods."""
+
+    __tablename__ = "rooms"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+
+
+class TimetablePeriodModel(Base):
+    """Database model for a single timetable period entry."""
+
+    __tablename__ = "timetable_periods"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    class_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("class_sections.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    subject_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    teacher_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("teachers.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    room_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("rooms.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    day_of_week: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    start_time: Mapped[str] = mapped_column(String(5), nullable=False)
+    end_time: Mapped[str] = mapped_column(String(5), nullable=False)
+    period_number: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    class_section: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
+    subject: Mapped["SubjectModel"] = relationship("SubjectModel")
+    teacher: Mapped["TeacherModel"] = relationship("TeacherModel")
+    room: Mapped["RoomModel"] = relationship("RoomModel")
+
+
+# Association table for many-to-many relationship between
+# ClassSection and Subject
 class_subject_link = Table(
     "class_subject_link",
     Base.metadata,
@@ -233,9 +312,7 @@ class StudentModel(Base):
     __tablename__ = "students"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=True
-    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
     roll_number: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
     )
@@ -258,17 +335,7 @@ class StudentModel(Base):
         nullable=False,
     )
 
-    user: Mapped[Optional["UserModel"]] = relationship(
-        "UserModel", backref="student_profile"
-    )
-    class_section: Mapped[Optional["ClassSectionModel"]] = relationship(
-        "ClassSectionModel"
-    )
-    parents: Mapped[List["ParentModel"]] = relationship(
-        "ParentModel",
-        secondary=parent_student,
-        back_populates="students",
-    )
+    # Relationships
     fee_structures: Mapped[List["FeeStructureModel"]] = relationship(
         "FeeStructureModel", 
         back_populates="student",
@@ -297,14 +364,18 @@ class StudentModel(Base):
 
 
 class FeeStructureModel(Base):
-    """Fee structure database model."""
+    """
+    Fee structure database model.
+
+    Represents the fee details for a student, including total fee,
+    amount paid, and outstanding balance.
+    """
 
     __tablename__ = "fee_structures"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     student_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("students.id", ondelete="CASCADE"),
-        nullable=False
+        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
     )
     total_fee: Mapped[float] = mapped_column(Float, nullable=False)
     amount_paid: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
@@ -322,6 +393,7 @@ class FeeStructureModel(Base):
         nullable=False,
     )
 
+    # Relationships
     student: Mapped["StudentModel"] = relationship(
         "StudentModel", back_populates="fee_structures"
     )
@@ -336,9 +408,20 @@ class FeeStructureModel(Base):
         """Outstanding balance."""
         return self.total_fee - self.amount_paid
 
+    def __repr__(self) -> str:
+        return (
+            f"<FeeStructure(id={self.id}, "
+            f"student_id={self.student_id}, "
+            f"total={self.total_fee})>"
+        )
+
 
 class PaymentModel(Base):
-    """Payment database model."""
+    """
+    Payment database model.
+
+    Represents an individual payment transaction recorded for a student.
+    """
 
     __tablename__ = "payments"
 

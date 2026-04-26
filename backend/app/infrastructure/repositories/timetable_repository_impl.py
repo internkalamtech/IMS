@@ -10,10 +10,11 @@ from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from app.domain.entities.timetable import TimetablePeriod
+from app.domain.repositories.timetable_repository import TimetableRepository
 from app.infrastructure.database.models import TimetablePeriodModel
 
 
-class TimetableRepository:
+class TimetableRepositoryImpl(TimetableRepository):
     """
     Repository for timetable operations.
     """
