@@ -679,6 +679,7 @@ export default function StudentRegistrationForm({
                   </ThemedText>
                 </View>
                 <ThemedText style={styles.sectionDescription} type="default">
+                  Please provide your parent or guardian&apos;s contact information
                   Please provide your parent or guardian&apos;s contact
                   information
                 </ThemedText>
