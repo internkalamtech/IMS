@@ -157,6 +157,34 @@ async def test_create_enrollments_rejects_for_unauthorized_role(
 
 
 @pytest.mark.asyncio
+async def test_create_enrollments_allows_admin_role(
+    transport_repo: InMemoryStudentTransportRepository,
+):
+    _set_current_user("admin")
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/transport/enrollments",
+            json={
+                "enrollments": [
+                    {
+                        "studentId": 1,
+                        "routeId": "route_010",
+                        "stopId": 2,
+                    }
+                ]
+            },
+        )
+
+    assert response.status_code == 201
+    assert response.json()["count"] == 1
+    assert response.json()["enrollments"][0]["studentId"] == 1
+    assert response.json()["enrollments"][0]["routeId"] == "route_010"
+    assert response.json()["enrollments"][0]["stopId"] == 2
+
+
+@pytest.mark.asyncio
 async def test_get_students_by_route_rejects_for_unauthorized_role(
     transport_repo: InMemoryStudentTransportRepository,
 ):
@@ -168,6 +196,32 @@ async def test_get_students_by_route_rejects_for_unauthorized_role(
 
     assert response.status_code == 403
     assert response.json()["detail"] == "Insufficient permissions"
+
+
+@pytest.mark.asyncio
+async def test_get_students_by_route_allows_transport_role(
+    transport_repo: InMemoryStudentTransportRepository,
+):
+    _set_current_user("transport")
+
+    await transport_repo.create_enrollment(
+        student_id=1,
+        route_id="route_077",
+        stop_id=10,
+        pickup_time=None,
+        dropoff_time=None,
+    )
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/api/v1/transport/routes/route_077/students")
+
+    assert response.status_code == 200
+    body = response.json()
+
+    assert body["routeId"] == "route_077"
+    assert body["totalStudents"] == 1
+    assert [student["studentId"] for student in body["students"]] == [1]
 
 
 @pytest.mark.asyncio
