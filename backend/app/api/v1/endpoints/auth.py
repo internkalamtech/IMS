@@ -42,12 +42,13 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     },
     summary="User login",
     description=(
-        "Authenticate a user with email and password, "
+        "Authenticate a user with email and password,"
         "return user data with JWT access token."
     ),
 )
 async def login(
-    request: LoginRequest, db: AsyncSession = Depends(get_db)
+    request: LoginRequest,
+    db: AsyncSession = Depends(get_db),
 ) -> LoginResponse:
     """
     Login endpoint.
