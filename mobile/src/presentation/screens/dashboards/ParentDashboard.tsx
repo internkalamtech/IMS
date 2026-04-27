@@ -16,7 +16,7 @@ const { width } = Dimensions.get('window');
 
 export default function ParentDashboard() {
     const { logout, user } = useAuth();
-    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
+    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
     const router = useRouter();
 
