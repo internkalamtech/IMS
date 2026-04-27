@@ -585,13 +585,11 @@ class StudentTransportEnrollmentItem(BaseModel):
     """Created enrollment response item."""
 
     id: int
-    student_id: int = Field(..., alias="studentId")
-    route_id: str = Field(..., alias="routeId")
-    stop_id: int = Field(..., alias="stopId")
-    pickup_time: Optional[str] = Field(default=None, alias="pickupTime")
-    dropoff_time: Optional[str] = Field(default=None, alias="dropoffTime")
-
-    model_config = {"populate_by_name": True}
+    student_id: int
+    route_id: str
+    stop_id: int
+    pickup_time: Optional[str] = None
+    dropoff_time: Optional[str] = None
 
 
 class CreateStudentTransportEnrollmentsResponse(BaseModel):
@@ -605,23 +603,19 @@ class CreateStudentTransportEnrollmentsResponse(BaseModel):
 class RouteManifestStudentItem(BaseModel):
     """Student manifest item for a specific route."""
 
-    student_id: int = Field(..., alias="studentId")
-    student_name: str = Field(..., alias="studentName")
-    stop_id: int = Field(..., alias="stopId")
-    pickup_time: Optional[str] = Field(default=None, alias="pickupTime")
-    dropoff_time: Optional[str] = Field(default=None, alias="dropoffTime")
-
-    model_config = {"populate_by_name": True}
+    student_id: int
+    student_name: str
+    stop_id: int
+    pickup_time: Optional[str] = None
+    dropoff_time: Optional[str] = None
 
 
 class RouteManifestResponse(BaseModel):
     """Route manifest response schema."""
 
-    route_id: str = Field(..., alias="routeId", min_length=1)
-    total_students: int = Field(..., alias="totalStudents")
+    route_id: str
+    total_students: int
     students: List[RouteManifestStudentItem]
-
-    model_config = {"populate_by_name": True}
 
 
 class TripCreateRequest(BaseModel):
