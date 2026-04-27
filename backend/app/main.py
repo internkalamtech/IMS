@@ -10,6 +10,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.api.students import router as students_router
 from app.api.v1 import router as api_v1_router
 from app.core.config import settings
 from app.core.errors import IMSException
@@ -96,6 +97,7 @@ app.add_middleware(
 
 # Include API routers
 app.include_router(api_v1_router, prefix="/api")
+app.include_router(students_router, prefix="/api")
 
 
 

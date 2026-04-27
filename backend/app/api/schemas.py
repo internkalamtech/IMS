@@ -4,7 +4,7 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
@@ -808,6 +808,50 @@ class StudentAcademicResponse(BaseModel):
     student_id: int
     exams: list[ExamResponse] = []
     results: list[StudentResultResponse] = []
+
+    model_config = {"from_attributes": True}
+
+
+class StudentExamResponse(BaseModel):
+    """Response schema for student exam schedule and results."""
+
+    examId: str
+    subject: str
+    date: date
+    status: Literal["scheduled", "completed"]
+    score: float | None = None
+    grade: str | None = None
+    maxMarks: float
+
+    model_config = {"from_attributes": True}
+
+
+class StudentExamListResponse(BaseModel):
+    """Response schema for student exam schedules and grades."""
+
+    studentId: str
+    exams: list[StudentExamResponse] = []
+
+    model_config = {"from_attributes": True}
+
+
+class StudentConductRemarkResponse(BaseModel):
+    """Response schema for student conduct remark summary."""
+
+    remarkId: int
+    date: date
+    teacher: str | None = None
+    remark: str
+    severity: Literal["low", "medium", "high"] | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class StudentConductResponse(BaseModel):
+    """Response schema for student conduct remarks."""
+
+    studentId: str
+    conductRemarks: list[StudentConductRemarkResponse] = []
 
     model_config = {"from_attributes": True}
 

@@ -652,6 +652,11 @@ class StudentResultModel(Base):
 
     exam: Mapped["ExamModel"] = relationship("ExamModel", back_populates="results")
     student: Mapped["StudentModel"] = relationship("StudentModel")
+    subject_results: Mapped[List["SubjectResultModel"]] = relationship(
+        "SubjectResultModel",
+        back_populates="student_result",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         return (
@@ -659,6 +664,55 @@ class StudentResultModel(Base):
             f"student_id={self.student_id}, "
             f"exam_id={self.exam_id}, "
             f"grade='{self.grade}')>"
+        )
+
+
+class SubjectResultModel(Base):
+    """
+    Subject result database model.
+
+    Represents a student's marks for a particular subject within an exam.
+    """
+
+    __tablename__ = "subject_results"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_result_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("student_results.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    subject_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    obtained_marks: Mapped[float] = mapped_column(Float, nullable=False)
+    max_marks: Mapped[float] = mapped_column(Float, nullable=False, default=100.0)
+    percentage: Mapped[float] = mapped_column(Float, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    student_result: Mapped["StudentResultModel"] = relationship(
+        "StudentResultModel",
+        back_populates="subject_results",
+    )
+    subject: Mapped["SubjectModel"] = relationship("SubjectModel")
+
+    def __repr__(self) -> str:
+        return (
+            f"<SubjectResult(id={self.id}, "
+            f"student_result_id={self.student_result_id}, "
+            f"subject_id={self.subject_id})>"
         )
 
 
