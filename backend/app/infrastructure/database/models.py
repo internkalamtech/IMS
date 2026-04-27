@@ -11,7 +11,7 @@ Best practices followed:
 """
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -21,7 +21,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    Table,
+    Table, 
     Text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -124,34 +124,42 @@ class RoleModel(Base):
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
-# =========================
-# 📚 HOMEWORK MODEL
-# =========================
 class HomeworkModel(Base):
-    __tablename__ = "homeworks"
+    """
+    Homework database model.
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, index=True)
+    Represents a homework assignment assigned to a student (child).
+    Used to calculate pending homework counts per child.
+    """
 
-    title: Mapped[str] = mapped_column(String(255))
-    description: Mapped[str] = mapped_column(Text)
+    __tablename__ = "homework"
 
-    subject: Mapped[str] = mapped_column(String(100))
-    className: Mapped[str] = mapped_column(String(50))
-
-    dueDate: Mapped[str] = mapped_column(String(50))
-
-    assignType: Mapped[str] = mapped_column(String(20))  # ALL / INDIVIDUAL
-
-    students: Mapped[str] = mapped_column(Text)  # comma-separated
-
-    teacherId: Mapped[str] = mapped_column(String(255))
-
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    child_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    subject: Mapped[str] = mapped_column(String(100), nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="pending",
+        index=True,
+    )  # 'pending', 'submitted', 'overdue'
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=datetime.utcnow, nullable=False
     )
 
     def __repr__(self) -> str:
-        return f"<Homework(id={self.id}, title='{self.title}')>"
+        return (
+            f"<Homework(id={self.id}, child_id={self.child_id}, "
+            f"title='{self.title}', status='{self.status}')>"
+        )
+    
 class SubjectModel(Base):
     """
     Subject database model.
@@ -576,6 +584,49 @@ class ParentModel(Base):
         )
 
 
+class StaffModel(Base):
+    """
+    Staff database model.
+
+    Single table to store staff common fields and optional,
+    role-specific columns (nullable).
+    """
+
+    __tablename__ = "staff"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(255), unique=True, nullable=False, index=True
+    )
+    phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    # Role-specific optional fields
+    class_assigned_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("class_sections.id", ondelete="SET NULL"), nullable=True
+    )
+    class_assigned_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    subjects: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    license: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    class_assigned: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
+
+    def __repr__(self) -> str:
+        return (
+            f"<Staff(id={self.id}, "
+            f"email='{self.email}', "
+            f"name='{self.name}', "
+            f"role='{self.role}')>"
+        )
 class DocumentModel(Base):
     """
     Compliance Document database model.
