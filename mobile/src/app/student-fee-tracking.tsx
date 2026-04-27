@@ -160,7 +160,7 @@ export default function StudentFeeTrackingScreen() {
                         </ThemedCard>
 
                         <ThemedCard style={styles.statCard} padding={12}>
-                            <Ionicons name="percent" size={24} color="#3b82f6" style={{ marginBottom: 8 }} />
+                            <Ionicons name="trending-up" size={24} color="#3b82f6" style={{ marginBottom: 8 }} />
                             <ThemedText lightColor="#666" darkColor="#999" style={styles.statLabel}>
                                 Progress
                             </ThemedText>

@@ -43,7 +43,7 @@ export default function ParentDashboard() {
             name: 'Priya Sharma',
             totalFees: 50000,
             paidAmount: 50000,
-            nextDueDate: null,
+            nextDueDate: undefined,
         },
     ];
 

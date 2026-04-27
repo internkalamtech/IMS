@@ -286,7 +286,7 @@ export default function PersonalFeeStatusLedgerScreen() {
                                         <Ionicons 
                                             name={expandedReceiptId === receipt.id ? 'chevron-up' : 'chevron-down'} 
                                             size={16} 
-                                            color={theme.colors.text}
+                                            color={theme.colors.foreground}
                                         />
                                     </View>
                                 </TouchableOpacity>
