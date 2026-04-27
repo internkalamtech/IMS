@@ -42,18 +42,6 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
 
-    @field_validator("debug", mode="before")
-    @classmethod
-    def parse_debug(cls, v):
-        """Parse booleans and environment-style debug values."""
-        if isinstance(v, str):
-            normalized = v.strip().lower()
-            if normalized in {"release", "production", "prod", "false", "0", "no"}:
-                return False
-            if normalized in {"development", "dev", "debug", "true", "1", "yes"}:
-                return True
-        return v
-
     @field_validator("cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):

@@ -15,8 +15,6 @@ from .staff import router as staff_router
 
 __all__ = [
     "auth",
-    "dashboard",
-    "documents",
     "driver",
     "health",
     "enrollment",

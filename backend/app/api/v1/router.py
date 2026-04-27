@@ -13,7 +13,6 @@ from app.api.v1.endpoints import (
     driver,
     enrollment,
     health,
-    homework,
     payments,
     students,
     subjects,
@@ -30,7 +29,6 @@ router = APIRouter(prefix="/v1")
 router.include_router(auth.router)
 router.include_router(health.router)
 router.include_router(dashboard.router)
-router.include_router(homework.router) 
 router.include_router(driver.router)
 router.include_router(class_subjects_router)
 router.include_router(payments.router)
