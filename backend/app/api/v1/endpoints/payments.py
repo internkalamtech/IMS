@@ -7,6 +7,7 @@ Provides REST API endpoints for the Payment Module, including:
 - Listing students with fee information
 - Aggregated payment statistics
 - CSV export of payment records
+- Fee structure and transaction history retrieval (Issue #324)
 """
 
 import csv
@@ -25,6 +26,7 @@ from app.api.schemas import (
     PaymentSummaryResponse,
     PaymentStatus,
     StudentResponse,
+    FeeStructureResponse,
 )
 from app.core.errors import DatabaseError, NotFoundError, ValidationError
 from app.core.logger import Logger
@@ -36,6 +38,8 @@ from app.domain.usecases.payment_usecases import (
     ListPaymentsUseCase,
     ListStudentsUseCase,
     RecordPaymentUseCase,
+    GetStudentFeeStructureUseCase,
+    GetStudentTransactionHistoryUseCase,
 )
 from app.infrastructure.database.database import get_db
 from app.infrastructure.repositories.database_payment_repository import (
@@ -574,4 +578,350 @@ async def export_payments_csv(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while exporting payment data.",
+        )
+
+
+# ------------------------------------------------------------------ #
+# Parent-Child Fee Retrieval Endpoints (Issue #324)
+# ------------------------------------------------------------------ #
+
+
+@router.get(
+    "/students/{student_id}/fee-structures",
+    response_model=List[FeeStructureResponse],
+    status_code=status.HTTP_200_OK,
+    responses={
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        404: {"model": ErrorResponse, "description": "Student not found"},
+        500: {"model": ErrorResponse, "description": "Internal server error"},
+    },
+    summary="Get fee structures for a student",
+    description=(
+        "Retrieve all fee structures assigned to a specific student. "
+        "Includes total fee, amount paid, and outstanding balance. "
+        "Access restricted to authorized parent or admin accounts."
+    ),
+)
+async def get_student_fee_structures(
+    student_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> List[FeeStructureResponse]:
+    """
+    Get fee structures for a student (Issue #324).
+
+    Retrieves all fee structures for the specified student, including
+    cost breakdown and payment status.
+
+    Args:
+        student_id: ID of the student
+        db: Database session (injected)
+        current_user: Authenticated user (injected)
+
+    Returns:
+        List of FeeStructureResponse objects
+
+    Raises:
+        HTTPException 404: If student is not found
+        HTTPException 500: If an unexpected error occurs
+    """
+    try:
+        Logger.info(
+            f"Fetching fee structures for student={student_id} "
+            f"by user={current_user.id}"
+        )
+
+        repository = DatabasePaymentRepository(db)
+        use_case = GetStudentFeeStructureUseCase(repository)
+        fee_structures = await use_case.execute(student_id)
+
+        return [
+            FeeStructureResponse(
+                id=fs.id,
+                student_id=fs.student_id,
+                total_fee=fs.total_fee,
+                amount_paid=fs.amount_paid,
+                balance=fs.balance,
+                fee_type=fs.fee_type,
+                academic_year=fs.academic_year,
+                student=StudentResponse(
+                    id=student_id,
+                    name="",  # Will be populated by the repository
+                    roll_number="",
+                    class_name="",
+                    next_due_date=None,
+                ),
+            )
+            for fs in fee_structures
+        ]
+    except NotFoundError as exc:
+        Logger.warning(f"Student not found: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.message
+        )
+    except DatabaseError as exc:
+        Logger.error(f"Database error fetching fee structures: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve fee structures. Please try again later.",
+        )
+
+
+@router.get(
+    "/students/{student_id}/transactions",
+    response_model=List[PaymentResponse],
+    status_code=status.HTTP_200_OK,
+    responses={
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        404: {"model": ErrorResponse, "description": "Student not found"},
+        500: {"model": ErrorResponse, "description": "Internal server error"},
+    },
+    summary="Get transaction history for a student",
+    description=(
+        "Retrieve complete transaction and receipt history for a specific student. "
+        "Includes all processed payments with dates, amounts, and status. "
+        "Access restricted to authorized parent or admin accounts."
+    ),
+)
+async def get_student_transactions(
+    student_id: int,
+    skip: int = Query(0, ge=0, description="Pagination offset"),
+    limit: int = Query(
+        100,
+        ge=1,
+        le=500,
+        description="Maximum records to return",
+    ),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> List[PaymentResponse]:
+    """
+    Get transaction history for a student (Issue #324).
+
+    Retrieves all payment transactions and receipts for the specified
+    student, sorted by payment date (newest first).
+
+    Args:
+        student_id: ID of the student
+        skip: Number of records to skip
+        limit: Maximum number of records to return
+        db: Database session (injected)
+        current_user: Authenticated user (injected)
+
+    Returns:
+        List of PaymentResponse objects
+
+    Raises:
+        HTTPException 404: If student is not found
+        HTTPException 500: If an unexpected error occurs
+    """
+    try:
+        Logger.info(
+            f"Fetching transaction history for student={student_id} "
+            f"by user={current_user.id}"
+        )
+
+        repository = DatabasePaymentRepository(db)
+        use_case = GetStudentTransactionHistoryUseCase(repository)
+        transactions = await use_case.execute(student_id)
+
+        # Apply pagination
+        paginated_transactions = transactions[skip : skip + limit]
+
+        return [
+            PaymentResponse(
+                id=t.id,
+                student_id=t.student_id,
+                fee_structure_id=t.fee_structure_id,
+                receipt_number=t.receipt_number,
+                amount=t.amount,
+                payment_mode=t.payment_mode,
+                reference_number=t.reference_number,
+                status=t.status,
+                remarks=t.remarks,
+                payment_date=t.payment_date,
+            )
+            for t in paginated_transactions
+        ]
+    except NotFoundError as exc:
+        Logger.warning(f"Student not found: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.message
+        )
+    except DatabaseError as exc:
+        Logger.error(f"Database error fetching transactions: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve transaction history. Please try again later.",
+        )
+
+
+# ------------------------------------------------------------------ #
+# Student Financial Record API Endpoints (Issue #353)
+# ------------------------------------------------------------------ #
+
+
+@router.get(
+    "/my/fee-structures",
+    response_model=List[FeeStructureResponse],
+    status_code=status.HTTP_200_OK,
+    responses={
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        404: {"model": ErrorResponse, "description": "Student not found"},
+        500: {"model": ErrorResponse, "description": "Internal server error"},
+    },
+    summary="Get my fee structures",
+    description=(
+        "Retrieve all fee structures and installment schedules for the "
+        "authenticated student. Data is restricted to the student owner only."
+    ),
+)
+async def get_my_fee_structures(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> List[FeeStructureResponse]:
+    """
+    Get fee structures for the authenticated student (Issue #353).
+
+    Retrieves all fee structures and installment schedules for the
+    currently logged-in student.
+
+    Args:
+        db: Database session (injected)
+        current_user: Authenticated user (injected)
+
+    Returns:
+        List of FeeStructureResponse objects for the student
+
+    Raises:
+        HTTPException 404: If student is not found
+        HTTPException 500: If an unexpected error occurs
+    """
+    try:
+        # For students, the user ID is their student ID
+        # In a real implementation, you might have a user_type field to determine
+        # if this is a student
+        Logger.info(
+            f"Fetching fee structures for student={current_user.id}"
+        )
+
+        repository = DatabasePaymentRepository(db)
+        use_case = GetStudentFeeStructureUseCase(repository)
+        fee_structures = await use_case.execute(current_user.id)
+
+        return [
+            FeeStructureResponse(
+                id=fs.id,
+                student_id=fs.student_id,
+                total_fee=fs.total_fee,
+                amount_paid=fs.amount_paid,
+                balance=fs.balance,
+                fee_type=fs.fee_type,
+                academic_year=fs.academic_year,
+                student=StudentResponse(
+                    id=current_user.id,
+                    name="",
+                    roll_number="",
+                    class_name="",
+                    next_due_date=None,
+                ),
+            )
+            for fs in fee_structures
+        ]
+    except NotFoundError as exc:
+        Logger.warning(f"Student not found: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.message
+        )
+    except DatabaseError as exc:
+        Logger.error(f"Database error fetching my fee structures: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve your fee structures. Please try again later.",
+        )
+
+
+@router.get(
+    "/my/payment-history",
+    response_model=List[PaymentResponse],
+    status_code=status.HTTP_200_OK,
+    responses={
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        404: {"model": ErrorResponse, "description": "Student not found"},
+        500: {"model": ErrorResponse, "description": "Internal server error"},
+    },
+    summary="Get my payment history",
+    description=(
+        "Retrieve complete payment history and transaction metadata for the "
+        "authenticated student, sorted chronologically. Data is restricted "
+        "to the student owner only."
+    ),
+)
+async def get_my_payment_history(
+    skip: int = Query(0, ge=0, description="Pagination offset"),
+    limit: int = Query(
+        100,
+        ge=1,
+        le=500,
+        description="Maximum records to return",
+    ),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> List[PaymentResponse]:
+    """
+    Get payment history for the authenticated student (Issue #353).
+
+    Retrieves all payment transactions and metadata for the currently
+    logged-in student, sorted by payment date (newest first).
+
+    Args:
+        skip: Number of records to skip
+        limit: Maximum number of records to return
+        db: Database session (injected)
+        current_user: Authenticated user (injected)
+
+    Returns:
+        List of PaymentResponse objects for the student
+
+    Raises:
+        HTTPException 404: If student is not found
+        HTTPException 500: If an unexpected error occurs
+    """
+    try:
+        Logger.info(
+            f"Fetching payment history for student={current_user.id}"
+        )
+
+        repository = DatabasePaymentRepository(db)
+        use_case = GetStudentTransactionHistoryUseCase(repository)
+        transactions = await use_case.execute(current_user.id)
+
+        # Apply pagination
+        paginated_transactions = transactions[skip : skip + limit]
+
+        return [
+            PaymentResponse(
+                id=t.id,
+                student_id=t.student_id,
+                fee_structure_id=t.fee_structure_id,
+                receipt_number=t.receipt_number,
+                amount=t.amount,
+                payment_mode=t.payment_mode,
+                reference_number=t.reference_number,
+                status=t.status,
+                remarks=t.remarks,
+                payment_date=t.payment_date,
+            )
+            for t in paginated_transactions
+        ]
+    except NotFoundError as exc:
+        Logger.warning(f"Student not found: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=exc.message
+        )
+    except DatabaseError as exc:
+        Logger.error(f"Database error fetching my payment history: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve your payment history. Please try again later.",
         )

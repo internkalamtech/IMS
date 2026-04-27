@@ -4,16 +4,17 @@ Use cases for student and parent enrollment.
 Use cases encapsulate business logic for creating students with parent links.
 """
 
-from typing import Optional
+from typing import Optional, List, Tuple
 
-from app.core.errors import ValidationError, DatabaseError
+from app.core.errors import ValidationError, DatabaseError, NotFoundError
 from app.core.logger import Logger
 from app.domain.entities.parent import Parent
-from app.domain.entities.payment import Student
+from app.domain.entities.payment import Student, FeeStructure, Payment
 from app.domain.repositories.enrollment_repository import (
     ParentRepository,
     EnrollmentRepository,
 )
+from app.domain.repositories.payment_repository import PaymentRepository
 
 
 class CreateStudentWithParentUseCase:
@@ -209,3 +210,71 @@ class CreateStudentWithParentUseCase:
 
         if not relationship or not relationship.strip():
             raise ValidationError("Relationship to student is required")
+
+
+class GetParentFeeMonitoringUseCase:
+    """
+    Use case for retrieving fee monitoring data for a parent's children.
+
+    Retrieves detailed fee and payment information for all students
+    linked to a parent, including fee breakdowns, balances, and
+    payment history (ledger).
+    """
+
+    def __init__(
+        self,
+        parent_repo: ParentRepository,
+        payment_repo: PaymentRepository,
+    ):
+        """
+        Initialize the use case.
+
+        Args:
+            parent_repo: Repository for parent operations
+            payment_repo: Repository for payment operations
+        """
+        self.parent_repo = parent_repo
+        self.payment_repo = payment_repo
+
+    async def execute(
+        self, parent_id: int
+    ) -> Tuple[Parent, List[Tuple[Student, List[Tuple[FeeStructure, List[Payment]]]]]]:
+        """
+        Retrieve fee monitoring data for all children of a parent.
+
+        Args:
+            parent_id: ID of the parent
+
+        Returns:
+            Tuple of (Parent entity, List of (Student, List of (FeeStructure, List of Payment)))
+
+        Raises:
+            NotFoundError: If parent is not found
+        """
+        # Get parent
+        parent = await self.parent_repo.get_parent_by_id(parent_id)
+        if parent is None:
+            raise NotFoundError(f"Parent with id {parent_id} not found.")
+
+        # Get all students for the parent
+        students = await self.parent_repo.get_students_for_parent(parent_id)
+
+        # Build detailed structure with fee and payment info for each student
+        children_data = []
+        for student in students:
+            # Get fee structures for this student
+            fee_structures = await self.payment_repo.get_fee_structures_by_student(
+                student.id
+            )
+
+            # Get payments (ledger entries) for each fee structure
+            fee_with_payments = []
+            for fee in fee_structures:
+                payments = await self.payment_repo.get_payments_by_fee_structure(
+                    fee.id
+                )
+                fee_with_payments.append((fee, payments))
+
+            children_data.append((student, fee_with_payments))
+
+        return parent, children_data
