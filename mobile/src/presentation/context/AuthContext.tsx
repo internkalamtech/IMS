@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(loggedInUser);
         } catch (e: any) {
             setError(e.message || 'Login failed');
-            throw e; // Rethrow to allow component to handle it if needed
+             throw e; // Rethrow to allow component to handle it if needed
         } finally {
             setLoading(false);
         }

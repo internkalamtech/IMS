@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     auth,
     class_subjects_router,
     dashboard,
+    driver,
     enrollment,
     health,
     payments,
@@ -18,7 +19,6 @@ from app.api.v1.endpoints import (
     trips, 
     documents, 
     )
-from app.api.v1.endpoints.payments import router as payments_router
 
 from app.api.v1.endpoints.staff import router as staff_router
 
@@ -29,6 +29,7 @@ router = APIRouter(prefix="/v1")
 router.include_router(auth.router)
 router.include_router(health.router)
 router.include_router(dashboard.router)
+router.include_router(driver.router)
 router.include_router(class_subjects_router)
 router.include_router(payments.router)
 router.include_router(students.router)

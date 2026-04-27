@@ -2,8 +2,11 @@
 
 from . import (
     auth,
-    health,
+    dashboard,
+    documents,
+    driver,
     enrollment,
+    health,
     trips,
 )
 
@@ -12,6 +15,7 @@ from .staff import router as staff_router
 
 __all__ = [
     "auth",
+    "driver",
     "health",
     "enrollment",
     "class_subjects_router",

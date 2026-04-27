@@ -11,6 +11,7 @@ Following best practices:
 """
 
 import asyncio
+from datetime import date, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +20,12 @@ from app.core.logger import Logger
 from app.core.password import hash_password
 from app.infrastructure.database.database import AsyncSessionLocal, init_db
 from app.infrastructure.database.models import (
+    DriverVehicleAssignmentModel,
+    RoleModel,
+    UserModel,
+    VehicleModel,
+    VehicleComplianceDocumentModel,
+    VehicleMaintenanceTaskModel,
     HomeworkModel,
     RoleModel,
     UserModel,
@@ -144,6 +151,20 @@ ROLES = [
     },
 ]
 
+DRIVER_VEHICLE_ID = 1
+
+DRIVER_DOCUMENTS = [
+    ("Driving License", 180),
+    ("Bus Insurance", 21),
+    ("Fitness Certificate", -3),
+]
+
+DRIVER_MAINTENANCE_TASKS = [
+    ("Oil Change", -20, "Completed"),
+    ("Brake Inspection", 2, "In Progress"),
+    ("Tire Check", 14, "Scheduled"),
+]
+
 
 async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     """
@@ -227,6 +248,86 @@ async def create_users(
     await db.commit()
 
 
+async def seed_driver_compliance(db: AsyncSession) -> None:
+    """Create demo vehicle assignment, documents, and maintenance tasks."""
+    Logger.info("Creating driver compliance demo data...")
+
+    result = await db.execute(
+        select(UserModel).where(UserModel.email == "driver@myuser.com")
+    )
+    driver = result.unique().scalar_one_or_none()
+    if not driver:
+        Logger.warning("Driver demo user missing; skipping driver compliance seed")
+        return
+
+    vehicle_result = await db.execute(
+        select(VehicleModel).where(VehicleModel.id == DRIVER_VEHICLE_ID)
+    )
+    if not vehicle_result.scalar_one_or_none():
+        db.add(
+            VehicleModel(
+                id=DRIVER_VEHICLE_ID,
+                registration_number="BUS-101",
+                display_name="School Bus 101",
+            )
+        )
+        await db.flush()
+
+    assignment_result = await db.execute(
+        select(DriverVehicleAssignmentModel).where(
+            DriverVehicleAssignmentModel.user_id == driver.id
+        )
+    )
+    assignment = assignment_result.scalar_one_or_none()
+    if not assignment:
+        db.add(
+            DriverVehicleAssignmentModel(
+                user_id=driver.id,
+                vehicle_id=DRIVER_VEHICLE_ID,
+            )
+        )
+
+    for title, days_offset in DRIVER_DOCUMENTS:
+        document_result = await db.execute(
+            select(VehicleComplianceDocumentModel).where(
+                VehicleComplianceDocumentModel.vehicle_id == DRIVER_VEHICLE_ID,
+                VehicleComplianceDocumentModel.title == title,
+            )
+        )
+        document = document_result.scalar_one_or_none()
+        expiry_date = date.today() + timedelta(days=days_offset)
+        if document:
+            document.expiry_date = expiry_date
+        else:
+            db.add(
+                VehicleComplianceDocumentModel(
+                    vehicle_id=DRIVER_VEHICLE_ID,
+                    title=title,
+                    expiry_date=expiry_date,
+                )
+            )
+
+    for title, days_offset, status in DRIVER_MAINTENANCE_TASKS:
+        task_result = await db.execute(
+            select(VehicleMaintenanceTaskModel).where(
+                VehicleMaintenanceTaskModel.vehicle_id == DRIVER_VEHICLE_ID,
+                VehicleMaintenanceTaskModel.title == title,
+            )
+        )
+        task = task_result.scalar_one_or_none()
+        scheduled_date = date.today() + timedelta(days=days_offset)
+        if task:
+            task.scheduled_date = scheduled_date
+            task.status = status
+        else:
+            db.add(
+                VehicleMaintenanceTaskModel(
+                    vehicle_id=DRIVER_VEHICLE_ID,
+                    title=title,
+                    scheduled_date=scheduled_date,
+                    status=status,
+                )
+            )
 async def create_homework(db: AsyncSession) -> None:
     """
     Create demo homework assignments for the student demo user.
@@ -303,6 +404,8 @@ async def seed_database() -> None:
             # Create users
             await create_users(db, roles_map)
 
+            # Create driver compliance demo data
+            await seed_driver_compliance(db)
             # Create homework assignments
             await create_homework(db)
 
