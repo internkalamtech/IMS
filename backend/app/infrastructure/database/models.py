@@ -160,6 +160,7 @@ class HomeworkModel(Base):
             f"title='{self.title}', status='{self.status}')>"
         )
     
+
 class SubjectModel(Base):
     """
     Subject database model.
@@ -390,6 +391,13 @@ class PaymentModel(Base):
         "FeeStructureModel", back_populates="payments"
     )
 
+    def __repr__(self) -> str:
+        return (
+            f"<Payment(id={self.id}, "
+            f"student_id={self.student_id}, "
+            f"amount={self.amount})>"
+        )
+
 
 # ============ TRANSPORT MODELS ============
 
@@ -444,28 +452,6 @@ class TripModel(Base):
         )
 
 
-# ================================================================
-# EXAM & ACADEMIC PERFORMANCE MODELS
-# ================================================================
-
-class ExamModel(Base):
-    """
-    Exam database model.
-
-    Represents exam schedules and metadata for classes.
-    """
-
-    __tablename__ = "exams"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    class_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("class_sections.id", ondelete="CASCADE"), nullable=False
-    )
-    academic_year: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="2026-27"
-    )
 class TripStopModel(Base):
     """
     Trip Stop database model.
@@ -501,6 +487,45 @@ class TripStopModel(Base):
     )
 
     # Relationships
+    trip: Mapped["TripModel"] = relationship("TripModel", back_populates="stops")
+
+    def __repr__(self) -> str:
+        return (
+            f"<TripStop(id={self.id}, "
+            f"location='{self.location_name}', "
+            f"sequence={self.stop_sequence})>"
+        )
+
+
+# ================================================================
+# EXAM & ACADEMIC PERFORMANCE MODELS
+# ================================================================
+
+class ExamModel(Base):
+    """
+    Exam database model.
+
+    Represents exam schedules and metadata for classes.
+    """
+
+    __tablename__ = "exams"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    class_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("class_sections.id", ondelete="CASCADE"), nullable=False
+    )
+    academic_year: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="2026-27"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
     schedules: Mapped[List["ExamScheduleModel"]] = relationship(
         "ExamScheduleModel", back_populates="exam", cascade="all, delete-orphan"
     )
@@ -531,13 +556,21 @@ class ExamScheduleModel(Base):
     exam_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     max_marks: Mapped[float] = mapped_column(Float, nullable=False, default=100.0)
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
-    trip: Mapped["TripModel"] = relationship("TripModel", back_populates="stops")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    exam: Mapped["ExamModel"] = relationship("ExamModel", back_populates="schedules")
+    subject: Mapped["SubjectModel"] = relationship("SubjectModel")
 
     def __repr__(self) -> str:
         return (
-            f"<TripStop(id={self.id}, "
-            f"location='{self.location_name}', "
-            f"sequence={self.stop_sequence})>"
+            f"<ExamSchedule(id={self.id}, "
+            f"exam_id={self.exam_id}, "
+            f"subject_id={self.subject_id})>"
         )
 
 
@@ -575,11 +608,17 @@ class StudentBoardingModel(Base):
     )
 
     # Relationships
-    exam: Mapped["ExamModel"] = relationship("ExamModel", back_populates="schedules")
-    subject: Mapped["SubjectModel"] = relationship("SubjectModel")
+    trip: Mapped["TripModel"] = relationship("TripModel", back_populates="boardings")
+    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="boardings")
+    stop: Mapped["TripStopModel"] = relationship("TripStopModel")
 
     def __repr__(self) -> str:
-        return f"<ExamSchedule(id={self.id}, exam_id={self.exam_id})>"
+        return (
+            f"<StudentBoarding(id={self.id}, "
+            f"student_id={self.student_id}, "
+            f"trip_id={self.trip_id}, "
+            f"status='{self.status}')>"
+        )
 
 
 class StudentResultModel(Base):
@@ -604,16 +643,22 @@ class StudentResultModel(Base):
     grade: Mapped[str] = mapped_column(String(5), nullable=False)  # A+, A, B, C, D, F
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="Pass")  # Pass/Fail
     rank: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    trip: Mapped["TripModel"] = relationship("TripModel", back_populates="boardings")
-    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="boardings")
-    stop: Mapped["TripStopModel"] = relationship("TripStopModel")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    exam: Mapped["ExamModel"] = relationship("ExamModel", back_populates="results")
+    student: Mapped["StudentModel"] = relationship("StudentModel")
 
     def __repr__(self) -> str:
         return (
-            f"<StudentBoarding(id={self.id}, "
+            f"<StudentResult(id={self.id}, "
             f"student_id={self.student_id}, "
-            f"trip_id={self.trip_id}, "
-            f"status='{self.status}')>"
+            f"exam_id={self.exam_id}, "
+            f"grade='{self.grade}')>"
         )
 
 
@@ -651,35 +696,6 @@ class ParentModel(Base):
     )
 
     # Relationships
-    student: Mapped["StudentModel"] = relationship("StudentModel")
-    exam: Mapped["ExamModel"] = relationship("ExamModel", back_populates="results")
-    subject_results: Mapped[List["SubjectResultModel"]] = relationship(
-        "SubjectResultModel", back_populates="result", cascade="all, delete-orphan"
-    )
-
-    def __repr__(self) -> str:
-        return f"<StudentResult(id={self.id}, student_id={self.student_id}, exam_id={self.exam_id})>"
-
-
-class SubjectResultModel(Base):
-    """
-    Subject-wise result database model.
-
-    Represents marks obtained in individual subjects within an exam.
-    """
-
-    __tablename__ = "subject_results"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    result_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("student_results.id", ondelete="CASCADE"), nullable=False
-    )
-    subject_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False
-    )
-    obtained_marks: Mapped[float] = mapped_column(Float, nullable=False)
-    max_marks: Mapped[float] = mapped_column(Float, nullable=False, default=100.0)
-    percentage: Mapped[float] = mapped_column(Float, nullable=False)
     students: Mapped[List["StudentModel"]] = relationship(
         "StudentModel",
         secondary=student_parent_link,
@@ -725,20 +741,18 @@ class StaffModel(Base):
         DateTime, default=datetime.utcnow, nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
 
-    # Relationships
-    result: Mapped["StudentResultModel"] = relationship(
-        "StudentResultModel", back_populates="subject_results"
-    )
-    subject: Mapped["SubjectModel"] = relationship("SubjectModel")
+    class_assigned: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
 
     def __repr__(self) -> str:
-        return f"<SubjectResult(id={self.id}, result_id={self.result_id})>"
+        return (
+            f"<Staff(id={self.id}, "
+            f"email='{self.email}', "
+            f"name='{self.name}', "
+            f"role='{self.role}')>"
+        )
 
 
 # ================================================================
@@ -827,114 +841,9 @@ class ConductReplyModel(Base):
 
 
 # ================================================================
-# SUPPORTING ENTITIES
+# COMPLIANCE & DOCUMENT MODELS
 # ================================================================
 
-user_roles = Table(
-    "user_roles",
-    Base.metadata,
-    Column(
-        "user_id",
-        ForeignKey("users.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-    Column(
-        "role_id",
-        ForeignKey("roles.id", ondelete="CASCADE"),
-        primary_key=True,
-    ),
-)
-
-
-class UserModel(Base):
-    """User database model."""
-
-    __tablename__ = "users"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-
-    roles: Mapped[list["RoleModel"]] = relationship(
-        "RoleModel",
-        secondary=user_roles,
-        back_populates="users",
-    )
-
-    def __repr__(self) -> str:
-        return f"<User(id={self.id}, email='{self.email}')>"
-
-
-class RoleModel(Base):
-    """Role database model."""
-
-    __tablename__ = "roles"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
-
-    users: Mapped[list["UserModel"]] = relationship(
-        "UserModel",
-        secondary=user_roles,
-        back_populates="roles",
-    )
-
-    def __repr__(self) -> str:
-        return f"<Role(id={self.id}, name='{self.name}')>"
-
-
-class ClassSectionModel(Base):
-    """Class section database model."""
-
-    __tablename__ = "class_sections"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-
-    def __repr__(self) -> str:
-        return f"<ClassSection(id={self.id}, name='{self.name}')>"
-
-
-class StudentModel(Base):
-    """Student database model."""
-
-    __tablename__ = "students"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    class_section_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("class_sections.id", ondelete="SET NULL"), nullable=True
-    )
-
-    def __repr__(self) -> str:
-        return f"<Student(id={self.id}, name='{self.name}')>"
-
-
-class SubjectModel(Base):
-    """Subject database model."""
-
-    __tablename__ = "subjects"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-
-    def __repr__(self) -> str:
-        return f"<Subject(id={self.id}, name='{self.name}')>"
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
-
-    class_assigned: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
-
-    def __repr__(self) -> str:
-        return (
-            f"<Staff(id={self.id}, "
-            f"email='{self.email}', "
-            f"name='{self.name}', "
-            f"role='{self.role}')>"
-        )
 class DocumentModel(Base):
     """
     Compliance Document database model.
@@ -945,7 +854,6 @@ class DocumentModel(Base):
     __tablename__ = "compliance_documents"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     file_path: Mapped[str] = mapped_column(String(512), nullable=False)
@@ -981,6 +889,7 @@ class DocumentModel(Base):
     uploaded_by: Mapped["UserModel"] = relationship(
         "UserModel", foreign_keys=[uploaded_by_id]
     )
+    
 
     def __repr__(self) -> str:
         return f"<Document(id={self.id}, title='{self.title}')>"
