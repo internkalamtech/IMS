@@ -742,6 +742,80 @@ class PaymentSummaryResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
+# ============ FEE MONITORING & LEDGER SCHEMAS ============
+
+
+class FeeLedgerEntryResponse(BaseModel):
+    """
+    Single entry in a fee ledger.
+    
+    Represents a payment transaction or fee record.
+    """
+
+    id: int
+    receipt_number: str
+    amount: float
+    payment_mode: PaymentMode
+    status: PaymentStatus
+    payment_date: datetime
+    reference_number: Optional[str] = None
+    remarks: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class FeeMonitoringResponse(BaseModel):
+    """
+    Fee monitoring data for a single student.
+    
+    Includes fee breakdown, payment status, and installment schedule.
+    """
+
+    student_id: int
+    student_name: str
+    roll_number: str
+    class_name: str
+    
+    # Fee structure details
+    fee_id: int
+    fee_type: str
+    academic_year: str
+    total_fee: float
+    amount_paid: float
+    balance: float
+    
+    # Status and dates
+    next_due_date: Optional[datetime] = None
+    fee_status: PaymentStatus
+    
+    # Ledger (payment history)
+    ledger: List[FeeLedgerEntryResponse] = []
+
+    model_config = {"from_attributes": True}
+
+
+class ParentFeeLedgerResponse(BaseModel):
+    """
+    Complete fee monitoring data for a parent.
+    
+    Includes fee data for all children linked to the parent.
+    """
+
+    parent_id: int
+    parent_name: str
+    
+    # Summary statistics
+    total_collectible: float
+    total_collected: float
+    total_pending: float
+    total_balance: float
+    
+    # Per-child fee monitoring data
+    children_fees: List[FeeMonitoringResponse] = []
+
+    model_config = {"from_attributes": True}
+
     
 # ============ TRIP SCHEMAS ============
 

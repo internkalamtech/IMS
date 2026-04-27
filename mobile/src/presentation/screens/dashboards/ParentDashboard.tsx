@@ -1,6 +1,7 @@
 import { DASHBOARD_CONFIG } from '@/core/config/dashboard';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { QuickActionGrid } from '@/presentation/components/dashboard/QuickActionGrid';
+import { FeeSummaryCard } from '@/presentation/components/dashboard/FeeSummaryCard';
 import { ThemedCard } from '@/presentation/components/ThemedCard';
 import { ThemedText } from '@/presentation/components/ThemedText';
 import { ThemedView } from '@/presentation/components/ThemedView';
@@ -8,7 +9,7 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,6 +20,7 @@ export default function ParentDashboard() {
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
     const router = useRouter();
+    const [selectedChildIndex, setSelectedChildIndex] = useState(0);
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
 
@@ -27,6 +29,25 @@ export default function ParentDashboard() {
     };
 
     const pendingHomework = Number(getStatValue('Pending Homework', '5'));
+
+    // Sample fee data - In a real app, this would come from the API
+    // This demonstrates the fee summary component
+    const childrenFeeData = [
+        {
+            name: 'Aarav Kumar',
+            totalFees: 50000,
+            paidAmount: 35000,
+            nextDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+        {
+            name: 'Priya Sharma',
+            totalFees: 50000,
+            paidAmount: 50000,
+            nextDueDate: null,
+        },
+    ];
+
+    const currentChildFees = childrenFeeData[selectedChildIndex] || childrenFeeData[0];
 
     const handleHomeworkCounterPress = () => {
         router.push('/academics?initialTab=homework');
@@ -129,6 +150,19 @@ export default function ParentDashboard() {
                     </View>
 
                     <QuickActionGrid actions={quickActions} onActionPress={handleQuickActionPress} />
+
+                    {/* Fee Summary - Issue #322 */}
+                    <View style={styles.sectionHeader}>
+                        <ThemedText style={styles.sectionTitle} type="subtitle">Fee Details</ThemedText>
+                    </View>
+
+                    <View style={{ paddingHorizontal: 16 }}>
+                        <FeeSummaryCard 
+                            totalFees={currentChildFees.totalFees}
+                            paidAmount={currentChildFees.paidAmount}
+                            nextDueDate={currentChildFees.nextDueDate}
+                        />
+                    </View>
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>

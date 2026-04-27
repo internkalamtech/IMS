@@ -350,4 +350,72 @@ class GetStudentUseCase:
         if student is None:
             raise NotFoundError(f"Student with id {student_id} not found.")
         return student
+
+
+class GetStudentFeeStructureUseCase:
+    """Use case for retrieving fee structure for a specific student."""
+
+    def __init__(self, repository: PaymentRepository) -> None:
+        """
+        Initialise with a payment repository.
+
+        Args:
+            repository: Concrete implementation of PaymentRepository
+        """
+        self.repository = repository
+
+    async def execute(self, student_id: int) -> List:
+        """
+        Retrieve all fee structures for a student.
+
+        Args:
+            student_id: Unique identifier of the student
+
+        Returns:
+            List of FeeStructure entities
+
+        Raises:
+            NotFoundError: If student does not exist
+        """
+        # Verify student exists
+        student = await self.repository.get_student_by_id(student_id)
+        if student is None:
+            raise NotFoundError(f"Student with id {student_id} not found.")
+
+        # Get fee structures
+        return await self.repository.get_fee_structures_by_student(student_id)
+
+
+class GetStudentTransactionHistoryUseCase:
+    """Use case for retrieving transaction history for a specific student."""
+
+    def __init__(self, repository: PaymentRepository) -> None:
+        """
+        Initialise with a payment repository.
+
+        Args:
+            repository: Concrete implementation of PaymentRepository
+        """
+        self.repository = repository
+
+    async def execute(self, student_id: int) -> List[Payment]:
+        """
+        Retrieve all payment transactions for a student.
+
+        Args:
+            student_id: Unique identifier of the student
+
+        Returns:
+            List of Payment entities for the student
+
+        Raises:
+            NotFoundError: If student does not exist
+        """
+        # Verify student exists
+        student = await self.repository.get_student_by_id(student_id)
+        if student is None:
+            raise NotFoundError(f"Student with id {student_id} not found.")
+
+        # Get all payments for the student
+        return await self.repository.list_payments(student_id=student_id)
     

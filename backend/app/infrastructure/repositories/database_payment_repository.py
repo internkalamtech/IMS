@@ -488,3 +488,63 @@ class DatabasePaymentRepository(PaymentRepository):
             raise DatabaseError(
                 "Failed to check receipt number."
             ) from exc
+
+    async def get_fee_structures_by_student(
+        self, student_id: int
+    ) -> List[FeeStructure]:
+        """
+        Get all fee structures for a specific student.
+
+        Args:
+            student_id: ID of the student
+
+        Returns:
+            List of FeeStructure entities for the student
+        """
+        try:
+            result = await self.db.execute(
+                select(FeeStructureModel).where(
+                    FeeStructureModel.student_id == student_id
+                )
+            )
+            models = result.scalars().all()
+            return [self._fee_structure_to_entity(m) for m in models]
+        except Exception as exc:
+            Logger.error(
+                f"Error fetching fee structures for student "
+                f"{student_id}: {exc}"
+            )
+            raise DatabaseError(
+                "Failed to fetch fee structures."
+            ) from exc
+
+    async def get_payments_by_fee_structure(
+        self, fee_structure_id: int
+    ) -> List[Payment]:
+        """
+        Get all payments for a specific fee structure (ledger entries).
+
+        Args:
+            fee_structure_id: ID of the fee structure
+
+        Returns:
+            List of Payment entities for the fee structure, sorted by date
+        """
+        try:
+            result = await self.db.execute(
+                select(PaymentModel)
+                .where(
+                    PaymentModel.fee_structure_id == fee_structure_id
+                )
+                .order_by(PaymentModel.payment_date.desc())
+            )
+            models = result.scalars().all()
+            return [self._payment_to_entity(m) for m in models]
+        except Exception as exc:
+            Logger.error(
+                f"Error fetching payments for fee structure "
+                f"{fee_structure_id}: {exc}"
+            )
+            raise DatabaseError(
+                "Failed to fetch payments."
+            ) from exc

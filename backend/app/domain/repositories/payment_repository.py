@@ -205,3 +205,33 @@ class PaymentRepository(ABC):
             True if the receipt number exists, False otherwise
         """
         pass
+
+    @abstractmethod
+    async def get_fee_structures_by_student(
+        self, student_id: int
+    ) -> List[FeeStructure]:
+        """
+        Get all fee structures for a specific student.
+
+        Args:
+            student_id: ID of the student
+
+        Returns:
+            List of FeeStructure entities for the student
+        """
+        pass
+
+    @abstractmethod
+    async def get_payments_by_fee_structure(
+        self, fee_structure_id: int
+    ) -> List[Payment]:
+        """
+        Get all payments for a specific fee structure (ledger entries).
+
+        Args:
+            fee_structure_id: ID of the fee structure
+
+        Returns:
+            List of Payment entities for the fee structure, sorted by date
+        """
+        pass
