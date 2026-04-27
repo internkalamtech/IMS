@@ -20,9 +20,7 @@ class StudentTransportRepository:
         self.db = db
 
     async def get_student_by_id(self, student_id: int) -> StudentModel | None:
-        result = await self.db.execute(
-            select(StudentModel).where(StudentModel.id == student_id)
-        )
+        result = await self.db.execute(select(StudentModel).where(StudentModel.id == student_id))
         return result.unique().scalar_one_or_none()
 
     async def get_enrollment(
@@ -82,9 +80,7 @@ class StudentTransportRepository:
             )
         return existing
 
-    async def list_students_by_route(
-        self, route_id: str
-    ) -> list[StudentTransportEnrollmentModel]:
+    async def list_students_by_route(self, route_id: str) -> list[StudentTransportEnrollmentModel]:
         result = await self.db.execute(
             select(StudentTransportEnrollmentModel)
             .options(selectinload(StudentTransportEnrollmentModel.student))

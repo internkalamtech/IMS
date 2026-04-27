@@ -64,15 +64,11 @@ async def create_student_transport_enrollments(
     response_model=RouteManifestResponse,
     status_code=status.HTTP_200_OK,
     summary="Get students by route",
-    description=(
-        "Retrieve route-wise student list for driver manifest generation."
-    ),
+    description=("Retrieve route-wise student list for driver manifest generation."),
 )
 async def get_students_by_route(
     route_id: str,
-    _current_user: User = Depends(
-        require_roles("admin", "transport", "driver")
-    ),
+    _current_user: User = Depends(require_roles("admin", "transport", "driver")),
     db: AsyncSession = Depends(get_db),
 ) -> RouteManifestResponse:
     repository = StudentTransportRepository(db)

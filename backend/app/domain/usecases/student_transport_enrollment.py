@@ -13,13 +13,9 @@ class StudentTransportEnrollmentUseCase:
         created_items = []
 
         for item in enrollments:
-            student = await self.repository.get_student_by_id(
-                item["student_id"]
-            )
+            student = await self.repository.get_student_by_id(item["student_id"])
             if not student:
-                raise NotFoundError(
-                    f"Student with id {item['student_id']} not found"
-                )
+                raise NotFoundError(f"Student with id {item['student_id']} not found")
 
             created = await self.repository.create_enrollment(
                 student_id=item["student_id"],
@@ -36,14 +32,10 @@ class StudentTransportEnrollmentUseCase:
                     "route_id": created.route_id,
                     "stop_id": created.stop_id,
                     "pickup_time": (
-                        created.pickup_time.isoformat()
-                        if created.pickup_time
-                        else None
+                        created.pickup_time.isoformat() if created.pickup_time else None
                     ),
                     "dropoff_time": (
-                        created.dropoff_time.isoformat()
-                        if created.dropoff_time
-                        else None
+                        created.dropoff_time.isoformat() if created.dropoff_time else None
                     ),
                 }
             )
@@ -61,14 +53,10 @@ class StudentTransportEnrollmentUseCase:
                     "student_name": enrollment.student.name,
                     "stop_id": enrollment.stop_id,
                     "pickup_time": (
-                        enrollment.pickup_time.isoformat()
-                        if enrollment.pickup_time
-                        else None
+                        enrollment.pickup_time.isoformat() if enrollment.pickup_time else None
                     ),
                     "dropoff_time": (
-                        enrollment.dropoff_time.isoformat()
-                        if enrollment.dropoff_time
-                        else None
+                        enrollment.dropoff_time.isoformat() if enrollment.dropoff_time else None
                     ),
                 }
             )

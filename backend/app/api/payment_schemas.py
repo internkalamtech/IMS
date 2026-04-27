@@ -5,7 +5,6 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
-
 PaymentMode = Literal["Cash", "UPI", "Card"]
 PaymentStatus = Literal["Paid", "Partial", "Pending", "Failed", "Overdue"]
 
@@ -24,9 +23,7 @@ class PaymentCreate(BaseModel):
     def validate_reference_number_for_digital_payments(self):
         if self.payment_mode in {"UPI", "Card"}:
             if not self.reference_number or not self.reference_number.strip():
-                raise ValueError(
-                    "reference_number is required for UPI or Card payments"
-                )
+                raise ValueError("reference_number is required for UPI or Card payments")
         return self
 
 
