@@ -38,8 +38,9 @@ export function FeeSummaryCard({ totalFees, paidAmount, nextDueDate }: FeeSummar
 
     return (
         <TouchableOpacity onPress={handleViewDetails} activeOpacity={0.8}>
-            {/* Header */}
-            <View style={styles.headerRow}>
+            <ThemedCard style={styles.container}>
+                {/* Header */}
+                <View style={styles.headerRow}>
                 <ThemedText type="subtitle" style={styles.title}>Fee Summary</ThemedText>
                 <View style={[styles.badge, { backgroundColor: percentagePaid > 75 ? '#10b98120' : '#f5a62320' }]}>
                     <ThemedText style={[styles.badgeText, { color: percentagePaid > 75 ? '#10b981' : '#f5a623' }]}>
@@ -139,7 +140,7 @@ export function FeeSummaryCard({ totalFees, paidAmount, nextDueDate }: FeeSummar
                 <ThemedText style={styles.viewDetailsText}>View Breakdown & Installments</ThemedText>
                 <Ionicons name="chevron-forward" size={18} color={theme.colors.primary} />
             </View>
-        </ThemedCard>
+            </ThemedCard>
         </TouchableOpacity>
     );
 }
