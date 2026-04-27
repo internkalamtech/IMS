@@ -21,12 +21,6 @@ export const DASHBOARD_CONFIG = {
     },
     teacher: {
         quickActions: [
-            { id: 1, title: 'Attendance', icon: 'checkbox', color: ColorPalettes.emerald[500], route: '/attendance' },
-            { id: 2, title: 'Homework', icon: 'book', color: ColorPalettes.blue[500] },
-            { id: 3, title: 'Results', icon: 'school', color: ColorPalettes.amber[500] },
-            { id: 4, title: 'Leaves', icon: 'document-text', color: ColorPalettes.purple[500] },
-            { id: 5, title: 'Schedule', icon: 'calendar', color: ColorPalettes.indigo[500] },
-            { id: 6, title: 'Messages', icon: 'chatbubbles', color: ColorPalettes.pink[500] },
             { id: 1, title: 'Attendance', icon: 'checkbox', color: ColorPalettes.emerald[500], route: '/attendance'},
             { id: 2, title: 'Homework', icon: 'book', color: ColorPalettes.blue[500], route: '/homework' },
             { id: 3, title: 'Students', icon: 'people', color: ColorPalettes.green[500], route: '/student-directory' },
@@ -50,7 +44,7 @@ export const DASHBOARD_CONFIG = {
         quickActions: [
             { id: 1, title: 'Timetable', icon: 'calendar', color: ColorPalettes.blue[500] },
             { id: 2, title: 'Attendance', icon: 'checkmark-circle', color: ColorPalettes.emerald[500] },
-            { id: 3, title: 'Academics', icon: 'book', color: ColorPalettes.purple[500], route: '/academics' },
+            { id: 3, title: 'Academics', icon: 'book', color: ColorPalettes.purple[500] },
             { id: 4, title: 'Fees', icon: 'cash', color: ColorPalettes.emerald[500] }, // Keeping original color for now, even if amber seems better for cash
             { id: 5, title: 'Transport', icon: 'bus', color: ColorPalettes.amber[500] },
             { id: 6, title: 'Exams', icon: 'document-text', color: ColorPalettes.red[500] },
@@ -68,7 +62,7 @@ export const DASHBOARD_CONFIG = {
     transport: {
         quickActions: [
             { id: 1, title: 'Route\nPlanning', icon: 'map', color: ColorPalettes.emerald[500] },
-            { id: 2, title: 'Compliance\nDocs', icon: 'document', color: ColorPalettes.purple[500], route: '/compliance-documents' },
+            { id: 2, title: 'Compliance\nDocs', icon: 'document', color: ColorPalettes.purple[500] },
             { id: 3, title: 'Assign\nBus', icon: 'bus', color: ColorPalettes.blue[500] },
             { id: 4, title: 'Student\nAssignments', icon: 'people', color: ColorPalettes.indigo[500] },
             { id: 5, title: 'Driver\nManagement', icon: 'person', color: ColorPalettes.cyan[500] },

@@ -4,15 +4,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { QuickActionGrid } from "@/presentation/components/dashboard/QuickActionGrid";
 import { RecentUpdates } from "@/presentation/components/dashboard/RecentUpdates";
 import { DASHBOARD_CONFIG } from "@/core/config/dashboard";
-import { useRouter } from "expo-router";
 //import { API_BASE_URL } from "@/core/config/api";
 
 const quickActions =
-    DASHBOARD_CONFIG?.teacher?.quickActions || []; 
+    DASHBOARD_CONFIG?.teacher?.quickActions || [];
+
+
 const Teacher2Dashboard = () => {
     const [updates, setUpdates] = useState<any[]>([]);
     const [loaded, setLoaded] = useState(false); // ✅ prevent premature render
-    const router = useRouter();
+
     useEffect(() => {
         const fetchUpdates = async () => {
             try {
@@ -74,16 +75,7 @@ const Teacher2Dashboard = () => {
                 </View>
 
                 <View style={styles.gridWrapper}>
-                   <QuickActionGrid
-    actions={quickActions}
-    onActionPress={(action) => {
-        console.log("Clicked action:", action.title);
-
-        if (action.title?.toLowerCase().trim() === "attendance") {
-            router.push("/attendance");
-        }
-    }}
-/>
+                    <QuickActionGrid actions={quickActions} />
                 </View>
 
                 {/* RECENT UPDATES */}

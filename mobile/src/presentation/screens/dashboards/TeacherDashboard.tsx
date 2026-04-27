@@ -7,93 +7,204 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
-import { useDashboard } from '@/presentation/hooks/useDashboard';
 import {
-  Dimensions,
   RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
   TouchableOpacity,
   View,
-} 
-from 'react-native';
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-const { width } = Dimensions.get('window');
-
 export default function TeacherDashboard() {
-    const { logout, user } = useAuth();
-    const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
-    const { theme } = useTheme();
-    const router = useRouter();
+  const router = useRouter();
+  const { logout, user } = useAuth();
+  const { theme } = useTheme();
 
-    const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
+  const refreshing = false;
 
-    const upcomingClasses = [
-        { id: 1, subject: 'Mathematics', class: 'Class 10-A', time: '09:00 AM', color: '#3b82f6' },
-        { id: 2, subject: 'Science', class: 'Class 9-B', time: '10:30 AM', color: '#10b981' },
-        { id: 3, subject: 'Physics', class: 'Class 11-A', time: '12:00 PM', color: '#a855f7' },
-    ];
+  const onRefresh = () => {
+    console.log('Refreshing...');
+  };
 
-   const getStatValue = (label: string, defaultValue: string = '0') => {
-  return dashboardData?.stats?.find((s: any) => s.label === label)?.value || defaultValue;
-};
+  // SAFE ACCESS
+  const quickActions =
+    DASHBOARD_CONFIG?.teacher?.quickActions || [];
 
-    return (
-        <ThemedView style={styles.container}>
-            <StatusBar barStyle="light-content" />
-            <ScrollView
-  style={styles.scrollView}
-  contentContainerStyle={styles.scrollContent}
-  refreshControl={
-    <RefreshControl
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-      tintColor={theme.colors.primaryForeground}
-    />
-  }
-  >
+  const upcomingClasses = [
+    {
+      id: 1,
+      subject: 'Mathematics',
+      class: 'Class 10-A',
+      time: '09:00 AM',
+      color: '#4CAF50',
+    },
+    {
+      id: 2,
+      subject: 'Science',
+      class: 'Class 9-B',
+      time: '10:30 AM',
+      color: '#2196F3',
+    },
+    {
+      id: 3,
+      subject: 'Physics',
+      class: 'Class 11-A',
+      time: '12:00 PM',
+      color: '#FF9800',
+    },
+  ];
 
-                {/* Main Content */}
-                <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
-                    {/* Quick Actions */}
-                    <View style={styles.sectionHeader}>
-                        <ThemedText style={styles.sectionTitle} type="subtitle">Teacher Tools</ThemedText>
-                    </View>
-                     <QuickActionGrid
-                        actions={quickActions}
-                         onActionPress={(action) => {
-                         if (action.title === "Attendance") {
-                   router.push("/attendance");
+  useEffect(() => {
+    if (!user) {
+      router.replace('/');
     }
-  }}
-/>
+  }, [user, router]);
 
-                    {/* Upcoming Classes */}
-                    <View style={styles.sectionHeader}>
-                        <ThemedText style={styles.sectionTitle} type="subtitle">Upcoming Classes</ThemedText>
-                    </View>
-                    <ThemedCard style={styles.updatesCard} padding={0}>
-                        {upcomingClasses.map((item, index) => (
-                            <View key={item.id} style={[
-                                styles.updateItem,
-                                index !== upcomingClasses.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
-                            ]}>
-                                <View style={[styles.classColorBar, { backgroundColor: item.color }]} />
-                                <View style={styles.updateContent}>
-                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">{item.subject}</ThemedText>
-                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">{item.class}</ThemedText>
-                                </View>
-                                <View style={[styles.timeTag, { backgroundColor: theme.colors.primary + '10' }]}>
-                                    <ThemedText style={{ color: theme.colors.primary, fontSize: 12 }} type="defaultSemiBold">{item.time}</ThemedText>
-                                </View>
-                            </View>
-                        ))}
-                    </ThemedCard>
+  return (
+    <ThemedView style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
+      >
+        {/* HEADER */}
+        <View
+          style={[
+            styles.banner,
+            {
+              backgroundColor: theme?.colors?.primary,
+            },
+          ]}
+        >
+          <SafeAreaView edges={['top']}>
+            <View style={styles.headerContent}>
+              <View>
+                <ThemedText
+                  style={styles.userName}
+                  type="defaultSemiBold"
+                  lightColor={theme.colors.primaryForeground}
+                  darkColor={theme.colors.primaryForeground}
+                >
+                  Hello, {user?.name?.split(' ')[0] || 'Teacher'} 👋
+                </ThemedText>
+
+                <ThemedText
+                  style={styles.subtitle}
+                  lightColor={theme.colors.primaryForeground}
+                  darkColor={theme.colors.primaryForeground}
+                >
+                  Your academic day at a glance
+                </ThemedText>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => {
+                  logout();
+                  router.replace('/');
+                }}
+              >
+                <Ionicons
+                  name="log-out-outline"
+                  size={24}
+                  color={theme.colors.primaryForeground}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Quick Actions */}
+            <QuickActionGrid
+              actions={quickActions}
+              onActionPress={(action) => {
+                if (action.route) {
+                  router.push(action.route as any);
+                }
+              }}
+            />
+
+            {/* Upcoming Classes */}
+            <View style={styles.sectionHeader}>
+              <ThemedText
+                style={styles.sectionTitle}
+                type="defaultSemiBold"
+              >
+                Upcoming Classes
+              </ThemedText>
+            </View>
+
+            <ThemedCard
+              style={styles.updatesCard}
+              padding={0}
+            >
+              {upcomingClasses.map((item, index) => (
+                <View
+                  key={item.id}
+                  style={[
+                    styles.updateItem,
+                    index !== upcomingClasses.length - 1 && {
+                      borderBottomWidth: 1,
+                      borderBottomColor:
+                        theme.colors.border,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.classColorBar,
+                      {
+                        backgroundColor: item.color,
+                      },
+                    ]}
+                  />
+
+                  <View style={styles.updateContent}>
+                    <ThemedText
+                      style={styles.updateTitle}
+                      type="defaultSemiBold"
+                    >
+                      {item.subject}
+                    </ThemedText>
+
+                    <ThemedText
+                      style={styles.updateSubtitle}
+                      lightColor="#666"
+                      darkColor="#999"
+                    >
+                      {item.class}
+                    </ThemedText>
+                  </View>
+
+                  <View
+                    style={[
+                      styles.timeTag,
+                      {
+                        backgroundColor:
+                          theme.colors.primary + '10',
+                      },
+                    ]}
+                  >
+                    <ThemedText
+                      style={{
+                        color: theme.colors.primary,
+                        fontSize: 12,
+                      }}
+                      type="defaultSemiBold"
+                    >
+                      {item.time}
+                    </ThemedText>
+                  </View>
                 </View>
-
+              ))}
+            </ThemedCard>
+          </SafeAreaView>
+        </View>
       </ScrollView>
     </ThemedView>
   );
@@ -103,18 +214,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
-  flex: 1,
-},
 
-scrollContent: {
-  paddingBottom: 24,
-},
-mainContent: {
-  flex: 1,
-  paddingHorizontal: 16,
-  paddingTop: 16,
-},
   banner: {
     padding: 20,
   },

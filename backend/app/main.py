@@ -9,16 +9,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
+from app.api.v1 import router as api_v1_router
 from app.core.config import settings
 from app.core.errors import IMSException
 from app.core.logger import Logger
 from app.infrastructure.database.database import init_db, close_db
-from pydantic import BaseModel
-from sqlalchemy import text
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.infrastructure.database.database import get_db
-from app.api.v1.router import router as api_router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -103,6 +100,7 @@ app.add_middleware(
 )
 
 # Include API routers
+app.include_router(api_v1_router, prefix="/api")
 
 
 
@@ -119,4 +117,3 @@ async def root() -> dict:
         "docs": "/docs",
         "health": "/api/v1/health",
     }
-app.include_router(api_router) 
