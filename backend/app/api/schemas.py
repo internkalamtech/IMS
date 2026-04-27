@@ -4,7 +4,7 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, EmailStr, Field, model_validator
@@ -742,6 +742,170 @@ class PaymentSummaryResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
+# ================================================================
+# EXAM & ACADEMIC PERFORMANCE SCHEMAS
+# ================================================================
+
+class ExamScheduleResponse(BaseModel):
+    """Response schema for exam schedule."""
+
+    id: int
+    subject_id: int
+    subject_name: Optional[str] = None
+    exam_date: datetime
+    max_marks: float
+    duration_minutes: int
+
+    model_config = {"from_attributes": True}
+
+
+class ExamResponse(BaseModel):
+    """Response schema for exam with schedules."""
+
+    id: int
+    title: str
+    description: Optional[str] = None
+    class_id: int
+    academic_year: str
+    schedules: list[ExamScheduleResponse] = []
+
+    model_config = {"from_attributes": True}
+
+
+class SubjectResultResponse(BaseModel):
+    """Response schema for subject-wise marks."""
+
+    subject_id: int
+    subject_name: Optional[str] = None
+    obtained_marks: float
+    max_marks: float
+    percentage: float
+
+    model_config = {"from_attributes": True}
+
+
+class StudentResultResponse(BaseModel):
+    """Response schema for student exam results."""
+
+    id: int
+    exam_id: int
+    exam_title: Optional[str] = None
+    total_marks: float
+    obtained_marks: float
+    percentage: float
+    grade: str
+    status: str
+    rank: Optional[int] = None
+    subject_results: list[SubjectResultResponse] = []
+
+    model_config = {"from_attributes": True}
+
+
+class StudentAcademicResponse(BaseModel):
+    """Response schema for student academic profile."""
+
+    student_id: int
+    exams: list[ExamResponse] = []
+    results: list[StudentResultResponse] = []
+
+    model_config = {"from_attributes": True}
+
+
+class StudentExamResponse(BaseModel):
+    """Response schema for student exam schedule and results."""
+
+    examId: str
+    subject: str
+    date: date
+    status: Literal["scheduled", "completed"]
+    score: float | None = None
+    grade: str | None = None
+    maxMarks: float
+
+    model_config = {"from_attributes": True}
+
+
+class StudentExamListResponse(BaseModel):
+    """Response schema for student exam schedules and grades."""
+
+    studentId: str
+    exams: list[StudentExamResponse] = []
+
+    model_config = {"from_attributes": True}
+
+
+class StudentConductRemarkResponse(BaseModel):
+    """Response schema for student conduct remark summary."""
+
+    remarkId: int
+    date: date
+    teacher: str | None = None
+    remark: str
+    severity: Literal["low", "medium", "high"] | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class StudentConductResponse(BaseModel):
+    """Response schema for student conduct remarks."""
+
+    studentId: str
+    conductRemarks: list[StudentConductRemarkResponse] = []
+
+    model_config = {"from_attributes": True}
+
+
+# ================================================================
+# CONDUCT & BEHAVIORAL SCHEMAS
+# ================================================================
+
+class ConductReplyResponse(BaseModel):
+    """Response schema for conduct remark replies."""
+
+    id: int
+    parent_id: int
+    parent_name: Optional[str] = None
+    reply_text: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ConductRemarkResponse(BaseModel):
+    """Response schema for conduct remarks."""
+
+    id: int
+    student_id: int
+    teacher_id: Optional[int] = None
+    teacher_name: Optional[str] = None
+    category: str
+    title: str
+    remarks: str
+    is_acknowledged: bool
+    acknowledged_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    replies: list[ConductReplyResponse] = []
+
+    model_config = {"from_attributes": True}
+
+
+class ConductReplyCreate(BaseModel):
+    """Request schema for creating conduct reply."""
+
+    reply_text: str = Field(..., min_length=1, max_length=1000)
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "reply_text": "Thank you for the feedback."
+                }
+            ]
+        }
+    }
     
 # ============ TRIP SCHEMAS ============
 

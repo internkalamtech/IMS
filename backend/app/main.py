@@ -10,6 +10,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.api.students import router as students_router
 from app.api.v1 import router as api_v1_router
 from app.core.config import settings
 from app.core.errors import IMSException
@@ -26,9 +27,7 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     Logger.info("Starting IMS Backend...")
-    Logger.info(
-        f"Environment: {'Development' if settings.debug else 'Production'}"
-    )
+    Logger.info(f"Environment: {'Development' if settings.debug else 'Production'}")
 
     try:
         await init_db()
@@ -83,10 +82,7 @@ async def log_requests(request: Request, call_next):
     """Log all HTTP requests."""
     Logger.info(f"{request.method} {request.url.path}")
     response = await call_next(request)
-    Logger.info(
-        f"{request.method} {request.url.path} - "
-        f"{response.status_code}"
-    )
+    Logger.info(f"{request.method} {request.url.path} - {response.status_code}")
     return response
 
 
@@ -101,6 +97,7 @@ app.add_middleware(
 
 # Include API routers
 app.include_router(api_v1_router, prefix="/api")
+app.include_router(students_router, prefix="/api")
 
 
 

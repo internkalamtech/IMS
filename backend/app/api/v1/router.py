@@ -9,6 +9,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth,
     class_subjects_router,
+    student_profile,
     dashboard,
     enrollment,
     health,
@@ -29,6 +30,7 @@ router = APIRouter(prefix="/v1")
 router.include_router(auth.router)
 router.include_router(health.router)
 router.include_router(dashboard.router)
+router.include_router(student_profile.router)
 router.include_router(class_subjects_router)
 router.include_router(payments.router)
 router.include_router(students.router)

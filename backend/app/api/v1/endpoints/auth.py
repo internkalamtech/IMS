@@ -75,12 +75,7 @@ async def login(
         user = await use_case.execute(request.email, request.password)
 
         # Create access token
-        access_token = create_access_token(
-            data={
-                "sub": user.id,
-                "email": user.email,
-            }
-        )
+        access_token = create_access_token(data={"sub": user.id, "email": user.email})
 
         Logger.info(f"Login successful for user: {user.email}")
 
@@ -92,11 +87,7 @@ async def login(
                 email=user.email,
                 role=user.role,
                 roles=[
-                    RoleResponse(
-                        id=r.id,
-                        name=r.name,
-                        description=r.description,
-                    )
+                    RoleResponse(id=r.id, name=r.name, description=r.description)
                     for r in user.roles
                 ],
                 avatarUrl=user.avatar_url,
@@ -105,9 +96,7 @@ async def login(
         )
 
     except AuthenticationError as e:
-        Logger.warning(
-            f"Authentication failed for {request.email}: {e.message}"
-        )
+        Logger.warning(f"Authentication failed for {request.email}: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=e.message,
@@ -119,10 +108,7 @@ async def login(
             detail=str(e),
         )
     except DatabaseError as e:
-        Logger.error(
-            f"Database error during login: {e.message}",
-            exc_info=True,
-        )
+        Logger.error(f"Database error during login: {e.message}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred during login. Please try again later.",
@@ -267,18 +253,13 @@ async def get_demo_credentials(
         ]
         credentials.sort(
             key=lambda x: (
-                role_order.index(x.role.lower())
-                if x.role.lower() in role_order
-                else 99
+                role_order.index(x.role.lower()) if x.role.lower() in role_order else 99
             )
         )
 
         return DemoCredentialsResponse(credentials=credentials)
 
     except Exception as e:
-        Logger.error(
-            f"Error fetching demo credentials: {str(e)}",
-            exc_info=True,
-        )
+        Logger.error(f"Error fetching demo credentials: {str(e)}", exc_info=True)
         # Fallback to empty list if something goes wrong, but log the error
         return DemoCredentialsResponse(credentials=[])
