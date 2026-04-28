@@ -81,7 +81,6 @@ async def get_dashboard_stats(
             StatItem(label="Active Trips", value="5"),
             StatItem(label="Total Students", value="245"),
         ]
-
     return DashboardResponse(role=role_label, stats=stats)
 
 

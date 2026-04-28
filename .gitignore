@@ -94,3 +94,5 @@ backend/*.sqlite3
 
 # OS
 Thumbs.db
+
+package-lock.json
