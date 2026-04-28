@@ -10,18 +10,15 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { Dimensions } from 'react-native';
+import {
+    RefreshControl,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
-const { width } = Dimensions.get('window');
-
-import { RefreshControl,
-        ScrollView,
-        StatusBar,
-        TouchableOpacity,
-        View,
-        StyleSheet
-       } from "react-native";
 export default function AdminDashboard() {
     const { logout, user } = useAuth();
     const router = useRouter();
@@ -29,18 +26,6 @@ export default function AdminDashboard() {
     const { theme, isDark } = useTheme();
 
     const quickActions = DASHBOARD_CONFIG.admin.quickActions;
-
-    const handleActionPress = (action: any) => {
-      if (action.title === "Manage Classes") {
-                router.push('../manage-classes');
-      } else if (action.title === "Manage Users") {
-                router.push('../add-user');
-      }
-    };
-
-  const getStatValue = (label: string, defaultValue: string = '0') => {
-    return dashboardData?.stats?.find((s) => s.label === label)?.value || defaultValue;
-  };
 
   const stats = [
     { title: 'Total Students', value: dashboardData?.stats?.find((s) => s.label === 'Total Students')?.value || '1,250', icon: 'people' },
@@ -62,10 +47,10 @@ export default function AdminDashboard() {
           <SafeAreaView edges={['top']}>
             <View style={styles.headerContent}>
               <View>
-                <ThemedText style={styles.userName} type="title" color="primaryForeground">
+                <ThemedText style={styles.userName} type="title" color={theme.colors.primaryForeground}>
                   {user?.name || 'Admin'}
                 </ThemedText>
-                <ThemedText style={styles.subtitle} color="primaryForeground">
+                <ThemedText style={styles.subtitle} color={theme.colors.primaryForeground}>
                   Institute Management Overview
                 </ThemedText>
               </View>
@@ -81,10 +66,10 @@ export default function AdminDashboard() {
                     <Ionicons name={stat.icon as any} size={24} color={theme.colors.primaryForeground} />
                   </View>
                   <View>
-                    <ThemedText style={styles.bannerStatValue} type="title" color="primaryForeground">
+                    <ThemedText style={styles.bannerStatValue} type="title" color={theme.colors.primaryForeground}>
                       {stat.value}
                     </ThemedText>
-                    <ThemedText style={styles.bannerStatTitle} color="primaryForeground">
+                    <ThemedText style={styles.bannerStatTitle} color={theme.colors.primaryForeground}>
                       {stat.title}
                     </ThemedText>
                   </View>
@@ -105,7 +90,7 @@ export default function AdminDashboard() {
                         actions={quickActions}
                         onActionPress={(action) => {
                             if (action.title === 'Manage Classes') {
-                                router.push('/(tabs)/classes');
+                                router.push('/classes');
                             }
                             if (action.title === 'Timetable') {
                                 router.push('/timetable-classes');
@@ -118,7 +103,7 @@ export default function AdminDashboard() {
               Recent Updates
             </ThemedText>
             <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-              <ThemedText style={styles.badgeText} color="primaryForeground">
+              <ThemedText style={styles.badgeText} color={theme.colors.primaryForeground}>
                 3 new
               </ThemedText>
             </View>

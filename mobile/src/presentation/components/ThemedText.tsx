@@ -3,6 +3,7 @@ import { useTheme } from '@/core/theme/ThemeContext';
 export type ThemedTextProps = TextProps & {
     lightColor?: string;
     darkColor?: string;
+    color?: string;
     type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
 };
 
@@ -10,15 +11,15 @@ export function ThemedText({
     style,
     lightColor,
     darkColor,
+    color,
     type = 'default',
     ...rest
 }: ThemedTextProps) {
     const { theme, isDark } = useTheme();
 
-    // Simplified color priority:
-    // 1. Explicit light/dark color props
-    // 2. Default based on type
-     const selectedColor =
+    // Color priority: explicit color > light/dark color > type default
+    const selectedColor =
+    color ??
     (isDark ? darkColor : lightColor) ??
     (type === 'link' ? theme.colors.primary : theme.colors.foreground);
     return (
