@@ -19,6 +19,12 @@ from app.infrastructure.database.database import init_db, close_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Application lifespan manager.
+
+    Handles startup and shutdown events.
+    """
+    # Startup
     Logger.info("Starting IMS Backend...")
     Logger.info(f"Environment: {'Development' if settings.debug else 'Production'}")
 
@@ -31,12 +37,13 @@ async def lifespan(app: FastAPI):
 
     yield
 
+    # Shutdown
     Logger.info("Shutting down IMS Backend...")
     await close_db()
     Logger.info("Database connections closed")
 
 
-# App
+# Create FastAPI application
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
@@ -47,9 +54,11 @@ app = FastAPI(
 )
 
 
-# Exception handlers
+# Global exception handler
 @app.exception_handler(IMSException)
 async def ims_exception_handler(request: Request, exc: IMSException):
+    """Handle custom IMS exceptions."""
+    Logger.warning(f"IMS Exception: {exc.message} (status: {exc.status_code})")
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.message},
@@ -58,22 +67,25 @@ async def ims_exception_handler(request: Request, exc: IMSException):
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
+    """Handle unexpected exceptions."""
+    Logger.error(f"Unexpected exception: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "An unexpected error occurred"},
     )
 
 
-# Middleware
+# Request logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
+    """Log all HTTP requests."""
     Logger.info(f"{request.method} {request.url.path}")
     response = await call_next(request)
     Logger.info(f"{request.method} {request.url.path} - {response.status_code}")
     return response
 
 
-# CORS
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -82,28 +94,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Routers
+# Include API routers
 app.include_router(api_v1_router, prefix="/api")
 
 
-# Root
+
 @app.get("/", tags=["Root"])
 async def root() -> dict:
+    """
+    Root endpoint.
+
+    Returns basic information about the API.
+    """
     return {
         "name": settings.app_name,
         "version": settings.app_version,
         "docs": "/docs",
         "health": "/api/v1/health",
-    }
-
-
-# ✅ Admin Dashboard API (ISSUE FIX)
-@app.get("/api/admin/dashboard", tags=["Admin"])
-async def admin_dashboard():
-    return {
-        "total_users": 120,
-        "active_users": 95,
-        "total_courses": 15,
-        "revenue": 50000
     }
