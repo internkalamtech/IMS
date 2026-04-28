@@ -26,10 +26,7 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
     response_model=DashboardResponse,
     status_code=status.HTTP_200_OK,
     summary="Get dashboard statistics",
-    description=(
-        "Retrieve dashboard statistics based on the "
-        "authenticated user's role."
-    ),
+    description=("Retrieve dashboard statistics based on the " "authenticated user's role."),
 )
 async def get_dashboard_stats(
     current_user: User = Depends(get_current_user),
