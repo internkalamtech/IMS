@@ -159,6 +159,63 @@ async def list_documents(
     return response_list
 
 
+@router.put("/{document_id}", response_model=DocumentResponse)
+async def update_document(
+    document_id: int,
+    title: Optional[str] = Form(None),
+    expiry_date: Optional[datetime] = Form(None),
+    branch: Optional[str] = Form(None),
+    scope: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update an existing compliance document."""
+    repo = DocumentRepository(db)
+    document = await repo.get_by_id(document_id)
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found",
+        )
+
+    update_data = {}
+    if title is not None: update_data["title"] = title
+    if expiry_date is not None: update_data["expiry_date"] = expiry_date
+    if branch is not None: update_data["branch"] = branch
+    if scope is not None: update_data["scope"] = scope
+    
+    if file and file.filename:
+        safe_filename = f"{current_user.id}_{datetime.utcnow().timestamp()}_{file.filename.replace(' ', '_')}"
+        file_path = os.path.join(UPLOAD_DIRECTORY, safe_filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        update_data["original_filename"] = file.filename
+        update_data["file_path"] = file_path
+        update_data["content_type"] = file.content_type or "application/octet-stream"
+
+    updated_doc = await repo.update(document, update_data)
+    await db.commit()
+    await db.refresh(updated_doc)
+
+    doc_status, days_left = calculate_status_and_days_left(updated_doc.expiry_date)
+
+    return {
+        "id": updated_doc.id,
+        "title": updated_doc.title,
+        "branch": updated_doc.branch,
+        "scope": updated_doc.scope,
+        "expiry_date": updated_doc.expiry_date,
+        "original_filename": updated_doc.original_filename,
+        "content_type": updated_doc.content_type,
+        "upload_date": updated_doc.upload_date,
+        "uploaded_by_id": updated_doc.uploaded_by_id,
+        "days_left": days_left,
+        "status": doc_status,
+    }
+
 @router.get("/{document_id}/download")
 async def download_document(
     document_id: int,

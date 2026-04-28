@@ -11,6 +11,11 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
+
 import { RefreshControl,
         ScrollView,
         StatusBar,
@@ -94,7 +99,17 @@ return (
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
+                    <QuickActionGrid
+                        actions={quickActions}
+                        onActionPress={(action) => {
+                            if (action.title === 'Manage Classes') {
+                                router.push('/(tabs)/classes');
+                            }
+                            if (action.title === 'Timetable') {
+                                router.push('/timetable-classes');
+                            }
+                        }}
+                    />
 
                     {/* Fee Analytics */}
                     <FeeAnalyticsCard theme={theme} isDark={isDark} />
