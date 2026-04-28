@@ -51,4 +51,22 @@ export const DASHBOARD_CONFIG = {
             { id: 7, title: 'Conduct', icon: 'alert-circle', color: ColorPalettes.amber[500] },
         ] as QuickAction[],
     },
+     driver: {
+        quickActions: [
+           { id: 1, title: 'Report Incident', icon: 'warning', color: ColorPalettes.red[500] },
+            { id: 2, title: 'My Incidents', icon: 'list', color: ColorPalettes.blue[500] },
+            { id: 3, title: 'My Route', icon: 'map', color: ColorPalettes.emerald[500] },
+            { id: 4, title: 'Schedule', icon: 'calendar', color: ColorPalettes.indigo[500] },
+        ] as QuickAction[],
+    },
+    transport: {
+        quickActions: [
+            { id: 1, title: 'Route\nPlanning', icon: 'map', color: ColorPalettes.emerald[500] },
+            { id: 2, title: 'Compliance\nDocs', icon: 'document', color: ColorPalettes.purple[500], route: '/compliance-documents' },
+            { id: 3, title: 'Assign\nBus', icon: 'bus', color: ColorPalettes.blue[500] },
+            { id: 4, title: 'Student\nAssignments', icon: 'people', color: ColorPalettes.indigo[500] },
+            { id: 5, title: 'Driver\nManagement', icon: 'person', color: ColorPalettes.cyan[500] },
+            { id: 6, title: 'Trip\nTracking', icon: 'location', color: ColorPalettes.amber[500] },
+        ] as QuickAction[],
+    },
 };
