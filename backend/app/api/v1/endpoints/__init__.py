@@ -21,5 +21,8 @@ __all__ = [
 	"enrollment",
     "student_academic",
     "dashboard", "class_subjects_router", "documents",
+    "enrollment",
+    "class_subjects_router",
+    "staff_router",
     "trips",
 ]

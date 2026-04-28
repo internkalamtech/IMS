@@ -20,7 +20,7 @@ from app.api.v1.endpoints import (
     students,
     subjects,
     student_academic,
-    trips, 
+    trips,  
     documents, 
     )
 from app.api.v1.endpoints.payments import router as payments_router
