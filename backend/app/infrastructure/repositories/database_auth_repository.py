@@ -14,6 +14,7 @@ Following Clean Architecture principles:
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 from app.core.errors import (
     AuthenticationError,
     DatabaseError,
@@ -125,7 +126,6 @@ class DatabaseAuthRepository(AuthRepository):
             return self._to_domain_entity(user_model)
 
         except Exception as e:
-            from app.core.errors import NotFoundError
 
             if isinstance(e, NotFoundError):
                 raise

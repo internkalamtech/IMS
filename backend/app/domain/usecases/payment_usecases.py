@@ -347,3 +347,4 @@ class GetStudentUseCase:
         if student is None:
             raise NotFoundError(f"Student with id {student_id} not found.")
         return student
+    
