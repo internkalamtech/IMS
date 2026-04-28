@@ -8,19 +8,20 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     auth,
-    health,
+    classes,
     dashboard,
     enrollment,
-    students,
     enrollment_router,
-    subjects,
-    payments,
-    trips,
+    health,
     homework_router,
     class_subjects_router,
+    payments,
+    students,
+    subjects,
     transport_enrollments_router,
+    trips,
 )
-from app.api.v1.endpoints import documents
+from app.api.v1.endpoints import documents, timetables
 from app.api.v1.endpoints.staff import router as staff_router
 
 # Create v1 router
@@ -30,6 +31,8 @@ router = APIRouter(prefix="/v1")
 router.include_router(auth.router)
 router.include_router(health.router)
 router.include_router(dashboard.router)
+router.include_router(classes.router, prefix="/classes", tags=["classes"])
+router.include_router(timetables.router, prefix="/timetables", tags=["timetables"])
 router.include_router(enrollment.router)
 router.include_router(students.router)
 router.include_router(enrollment_router)
