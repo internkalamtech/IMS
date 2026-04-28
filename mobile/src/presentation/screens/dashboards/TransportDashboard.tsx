@@ -8,31 +8,30 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import {
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function AdminDashboard() {
+export default function TransportDashboard() {
   const { logout, user } = useAuth();
   const { data: dashboardData, refreshing, onRefresh } = useDashboard();
   const { theme, isDark } = useTheme();
 
-  const quickActions = DASHBOARD_CONFIG.admin.quickActions;
+  const quickActions = DASHBOARD_CONFIG.transport.quickActions;
 
   const getStatValue = (label: string, defaultValue: string = '0') => {
     return dashboardData?.stats?.find((s) => s.label === label)?.value || defaultValue;
   };
 
   const stats = [
-    { title: 'Total Students', value: dashboardData?.stats?.find((s) => s.label === 'Total Students')?.value || '1,250', icon: 'people' },
-    { title: 'Faculty Members', value: dashboardData?.stats?.find((s) => s.label === 'Faculty Members')?.value || '85', icon: 'school' },
-    { title: 'Monthly Revenue', value: dashboardData?.stats?.find((s) => s.label === 'Monthly Revenue')?.value || '$45k', icon: 'cash' },
+    { title: 'Active Routes', value: getStatValue('Active Routes', '14'), icon: 'bus' },
+    { title: 'Fleet Availability', value: getStatValue('Fleet Availability', '92%'), icon: 'car' },
+    { title: 'Pending Requests', value: getStatValue('Pending Requests', '5'), icon: 'alert-circle' },
+  ];
+
+  const updates = [
+    { id: '1', title: 'Route 12 completed on time', time: '15 min ago' },
+    { id: '2', title: 'Bus #8 requires inspection', time: '1 hour ago' },
+    { id: '3', title: 'New driver assigned to Route 3', time: 'Yesterday' },
   ];
 
   return (
@@ -45,15 +44,15 @@ export default function AdminDashboard() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
         }
       >
-        <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
+        <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}> 
           <SafeAreaView edges={['top']}>
             <View style={styles.headerContent}>
               <View>
                 <ThemedText style={styles.userName} type="title" color="primaryForeground">
-                  {user?.name || 'Admin'}
+                  {user?.name || 'Transport Manager'}
                 </ThemedText>
                 <ThemedText style={styles.subtitle} color="primaryForeground">
-                  Institute Management Overview
+                  Transport operations at a glance
                 </ThemedText>
               </View>
               <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
@@ -81,7 +80,7 @@ export default function AdminDashboard() {
           </SafeAreaView>
         </View>
 
-        <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
+        <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}> 
           <View style={styles.sectionHeader}>
             <ThemedText style={styles.sectionTitle} type="subtitle">
               Quick Actions
@@ -92,39 +91,33 @@ export default function AdminDashboard() {
 
           <View style={styles.sectionHeader}>
             <ThemedText style={styles.sectionTitle} type="subtitle">
-              Recent Updates
+              Recent Transport Updates
             </ThemedText>
-            <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
+            <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}> 
               <ThemedText style={styles.badgeText} color="primaryForeground">
-                3 new
+                {updates.length} new
               </ThemedText>
             </View>
           </View>
 
           <ThemedCard style={styles.updatesCard} padding={0}>
-            {[1, 2, 3].map((item, index) => (
+            {updates.map((item, index) => (
               <View
-                key={item}
+                key={item.id}
                 style={[
                   styles.updateItem,
-                  index !== 2 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+                  index !== updates.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border },
                 ]}
               >
-                <View style={[styles.updateIcon, { backgroundColor: theme.colors.primary + '10' }]}>
-                  <Ionicons name="people-outline" size={20} color={theme.colors.primary} />
+                <View style={[styles.updateIcon, { backgroundColor: theme.colors.primary + '10' }]}> 
+                  <Ionicons name="bus-outline" size={20} color={theme.colors.primary} />
                 </View>
                 <View style={styles.updateContent}>
                   <ThemedText style={styles.updateTitle} type="defaultSemiBold">
-                    New Student Enrolled
+                    {item.title}
                   </ThemedText>
-                  <ThemedText style={styles.updateSubtitle}>Class 7-B • Roll 24</ThemedText>
-                  <ThemedText style={styles.updateTime}>2 hours ago</ThemedText>
+                  <ThemedText style={styles.updateTime}>{item.time}</ThemedText>
                 </View>
-                <TouchableOpacity>
-                  <ThemedText style={styles.viewLink} type="link">
-                    View →
-                  </ThemedText>
-                </TouchableOpacity>
               </View>
             ))}
           </ThemedCard>
@@ -179,7 +172,6 @@ const styles = StyleSheet.create({
   },
   updateContent: { flex: 1 },
   updateTitle: { fontSize: 15, marginBottom: 2 },
-  updateSubtitle: { fontSize: 13, marginBottom: 4 },
-  updateTime: { fontSize: 11 },
-  viewLink: { fontSize: 13, fontWeight: '600' },
+  updateTime: { fontSize: 11, color: '#6b7280' },
+  badgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
 });
