@@ -31,12 +31,16 @@ interface FormClassData {
 export default function AddUserScreen() {
   const { theme, isDark } = useTheme();
   const [classes, setClasses] = useState<ClassData[]>([]);
+  const [subjects, setSubjects] = useState<
+    Array<{ id?: number; name: string }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchClasses();
+    fetchSubjects();
   }, []);
 
   const fetchClasses = async () => {
@@ -57,6 +61,21 @@ export default function AddUserScreen() {
       ]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSubjects = async () => {
+    try {
+      const api = ApiClient.getInstance().getAxios();
+      const response = await api.get("/subjects");
+      setSubjects(response.data || []);
+    } catch (error) {
+      console.error("Failed to fetch subjects:", error);
+      setSubjects([
+        { id: 1, name: "Math" },
+        { id: 2, name: "Science" },
+        { id: 3, name: "English" },
+      ]);
     }
   };
 
@@ -96,19 +115,49 @@ export default function AddUserScreen() {
           return true;
         }
       } else {
-        // For other roles, use standard user creation endpoint
-        const payload = {
-          name: formData.name,
-          email: formData.email,
-          role: formData.role.toLowerCase(),
-        };
+        // For staff roles (Teacher, Driver, Admin, Transport) use /staff
+        const staffRoles = ["Teacher", "Driver", "Admin", "Transport"];
 
-        const response = await api.post("/users", payload);
+        if (staffRoles.includes(formData.role)) {
+          const payload: any = {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            role: formData.role.toLowerCase(),
+          };
 
-        if (response.status === 201 || response.status === 200) {
-          setSuccessMessage(`✓ ${formData.name} registered successfully!`);
-          setTimeout(() => router.back(), 1500);
-          return true;
+          if (formData.role === "Teacher") {
+            payload.subjects = formData.subjects || [];
+            if (formData.classId)
+              payload.class_assigned_id = parseInt(formData.classId);
+          }
+
+          if (formData.role === "Driver") {
+            payload.license = formData.license || "";
+          }
+
+          const response = await api.post("/staff", payload);
+
+          if (response.status === 201 || response.status === 200) {
+            setSuccessMessage(`✓ ${formData.name} registered successfully!`);
+            setTimeout(() => router.back(), 1500);
+            return true;
+          }
+        } else {
+          // Fallback to generic users endpoint
+          const payload = {
+            name: formData.name,
+            email: formData.email,
+            role: formData.role.toLowerCase(),
+          };
+
+          const response = await api.post("/users", payload);
+
+          if (response.status === 201 || response.status === 200) {
+            setSuccessMessage(`✓ ${formData.name} registered successfully!`);
+            setTimeout(() => router.back(), 1500);
+            return true;
+          }
         }
       }
 
@@ -190,7 +239,8 @@ export default function AddUserScreen() {
 
         {/* Form */}
         <StudentRegistrationForm
-          classes={classes.map(c => ({ id: String(c.id), name: c.name }))}
+          classes={classes.map((c) => ({ id: String(c.id), name: c.name }))}
+          availableSubjects={subjects}
           onSubmit={handleSubmit}
           submitting={submitting}
           onCancel={handleCancel}
