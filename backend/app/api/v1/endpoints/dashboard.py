@@ -60,19 +60,5 @@ async def get_dashboard_stats(
             StatItem(label="Overall GPA", value="3.8"),
             StatItem(label="Assignments Due", value=3),
         ]
-    elif role == "transport":
-        role_label = "Transport Manager"
-        stats = [
-            StatItem(label="Active Routes", value=14),
-            StatItem(label="Fleet Availability", value="92%"),
-            StatItem(label="Pending Requests", value=5),
-        ]
-    elif role == "driver":
-        role_label = "Driver"
-        stats = [
-            StatItem(label="Assigned Trips", value=6),
-            StatItem(label="On-Time Rate", value="98%"),
-            StatItem(label="Pending Maintenance", value=1),
-        ]
 
     return DashboardResponse(role=role_label, stats=stats)

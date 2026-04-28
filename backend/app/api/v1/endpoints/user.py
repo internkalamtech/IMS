@@ -1,23 +1,31 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.infrastructure.database.database import get_db
-from app.infrastructure.database.models import UserModel
-from app.api.schemas import UserCreate
+from app.infrastructure.database.models import RoleModel, UserModel
+
 router = APIRouter()
 
-@router.post("/users")
-async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db)):
-    user = UserModel(
-        name=data.name,
-        email=data.email
-    )
 
-    db.add(user)
-    await db.flush()   # pushes insert to DB
+@router.get("/users")
+async def get_users(role: Optional[str] = None, db: AsyncSession = Depends(get_db)):
+    query = select(UserModel)
 
-    return {
-        "message": "User created",
-        "id": user.id,
-        "name": user.name,
-        "email": user.email
-    }
+    if role:
+        query = query.join(UserModel.roles).where(RoleModel.name == role.strip().lower())
+
+    result = await db.execute(query)
+    users = result.scalars().all()
+
+    return [
+        {
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "roles": [role.name for role in user.roles],
+        }
+        for user in users
+    ]

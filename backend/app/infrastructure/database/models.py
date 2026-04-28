@@ -116,3 +116,76 @@ class RoleModel(Base):
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
+
+
+class_subject_association = Table(
+    "class_subjects",
+    Base.metadata,
+    Column(
+        "class_id",
+        Integer,
+        ForeignKey("class_sections.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "subject_id",
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+
+class ClassSectionModel(Base):
+    """Represents a class section in the system."""
+
+    __tablename__ = "class_sections"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    section: Mapped[str] = mapped_column(String(100), nullable=False)
+    academic_period_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    teacher_user_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    subject: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    total_students: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    teacher: Mapped["UserModel" | None] = relationship(
+        "UserModel",
+        lazy="joined",
+        foreign_keys=[teacher_user_id],
+        uselist=False,
+    )
+    subjects: Mapped[List["SubjectModel"]] = relationship(
+        "SubjectModel",
+        secondary=class_subject_association,
+        back_populates="classes",
+        lazy="selectin",
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<ClassSection(id={self.id}, name='{self.name}', section='{self.section}')>"
+        )
+
+
+class SubjectModel(Base):
+    """Represents a subject that can be associated with a class."""
+
+    __tablename__ = "subjects"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+
+    classes: Mapped[List[ClassSectionModel]] = relationship(
+        "ClassSectionModel",
+        secondary=class_subject_association,
+        back_populates="subjects",
+    )
+
+    def __repr__(self) -> str:
+        return f"<Subject(id={self.id}, name='{self.name}')>"
