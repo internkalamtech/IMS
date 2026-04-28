@@ -42,13 +42,10 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     },
     summary="User login",
     description=(
-        "Authenticate a user with email and password, "
-        "return user data with JWT access token."
+        "Authenticate a user with email and password, " "return user data with JWT access token."
     ),
 )
-async def login(
-    request: LoginRequest, db: AsyncSession = Depends(get_db)
-) -> LoginResponse:
+async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)) -> LoginResponse:
     """
     Login endpoint.
 
@@ -74,9 +71,7 @@ async def login(
         user = await use_case.execute(request.email, request.password)
 
         # Create access token
-        access_token = create_access_token(
-            data={"sub": user.id, "email": user.email}
-        )
+        access_token = create_access_token(data={"sub": user.id, "email": user.email})
 
         Logger.info(f"Login successful for user: {user.email}")
 
@@ -88,9 +83,7 @@ async def login(
                 email=user.email,
                 role=user.role,
                 roles=[
-                    RoleResponse(
-                        id=r.id, name=r.name, description=r.description
-                    )
+                    RoleResponse(id=r.id, name=r.name, description=r.description)
                     for r in user.roles
                 ],
                 avatarUrl=user.avatar_url,
@@ -99,9 +92,7 @@ async def login(
         )
 
     except AuthenticationError as e:
-        Logger.warning(
-            f"Authentication failed for {request.email}: {e.message}"
-        )
+        Logger.warning(f"Authentication failed for {request.email}: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=e.message,
@@ -113,9 +104,7 @@ async def login(
             detail=str(e),
         )
     except DatabaseError as e:
-        Logger.error(
-            f"Database error during login: {e.message}", exc_info=True
-        )
+        Logger.error(f"Database error during login: {e.message}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred during login. Please try again later.",
@@ -242,9 +231,7 @@ async def get_demo_credentials(
                     email=user.email,
                     password=f"{email_prefix}123",
                     description=(
-                        "Transport Roles"
-                        if role_name in transport_roles
-                        else "Core Roles"
+                        "Transport Roles" if role_name in transport_roles else "Core Roles"
                     ),
                 )
             )
@@ -259,18 +246,12 @@ async def get_demo_credentials(
             "driver",
         ]
         credentials.sort(
-            key=lambda x: (
-                role_order.index(x.role.lower())
-                if x.role.lower() in role_order
-                else 99
-            )
+            key=lambda x: (role_order.index(x.role.lower()) if x.role.lower() in role_order else 99)
         )
 
         return DemoCredentialsResponse(credentials=credentials)
 
     except Exception as e:
-        Logger.error(
-            f"Error fetching demo credentials: {str(e)}", exc_info=True
-        )
+        Logger.error(f"Error fetching demo credentials: {str(e)}", exc_info=True)
         # Fallback to empty list if something goes wrong, but log the error
         return DemoCredentialsResponse(credentials=[])

@@ -8,22 +8,35 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import {
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { Dimensions } from 'react-native';
 
+const { width } = Dimensions.get('window');
+
+import { RefreshControl,
+        ScrollView,
+        StatusBar,
+        TouchableOpacity,
+        View,
+        StyleSheet
+       } from "react-native";
 export default function AdminDashboard() {
-  const { logout, user } = useAuth();
-  const { data: dashboardData, refreshing, onRefresh } = useDashboard();
-  const { theme, isDark } = useTheme();
+    const { logout, user } = useAuth();
+    const router = useRouter();
+    const { data: dashboardData, refreshing, onRefresh } = useDashboard();
+    const { theme, isDark } = useTheme();
 
-  const quickActions = DASHBOARD_CONFIG.admin.quickActions;
+    const quickActions = DASHBOARD_CONFIG.admin.quickActions;
+
+    const handleActionPress = (action: any) => {
+      if (action.title === "Manage Classes") {
+                router.push('../manage-classes');
+      } else if (action.title === "Manage Users") {
+                router.push('../add-user');
+      }
+    };
 
   const getStatValue = (label: string, defaultValue: string = '0') => {
     return dashboardData?.stats?.find((s) => s.label === label)?.value || defaultValue;
@@ -88,7 +101,17 @@ export default function AdminDashboard() {
             </ThemedText>
           </View>
 
-          <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid
+                        actions={quickActions}
+                        onActionPress={(action) => {
+                            if (action.title === 'Manage Classes') {
+                                router.push('/(tabs)/classes');
+                            }
+                            if (action.title === 'Timetable') {
+                                router.push('/timetable-classes');
+                            }
+                        }}
+                    />
 
           <View style={styles.sectionHeader}>
             <ThemedText style={styles.sectionTitle} type="subtitle">
@@ -133,7 +156,6 @@ export default function AdminDashboard() {
     </ThemedView>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollView: { flex: 1 },
