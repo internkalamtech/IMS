@@ -14,7 +14,7 @@ from app.infrastructure.database.database import get_db
 from app.infrastructure.database.models import ClassSectionModel
 from app.infrastructure.repositories.class_repository import ClassRepository
 from app.infrastructure.repositories.subject_repository import (
-    SubjectRepository
+    SubjectRepository,
 )
 from app.domain.usecases.update_class_subjects import (
     UpdateClassSubjectsUseCase,
