@@ -806,3 +806,25 @@ class StudentBoardingResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# =========================
+# 📅 ATTENDANCE SCHEMAS
+# =========================
+
+class AttendanceCreate(BaseModel):
+    student_id: int
+    class_name: str
+    subject: str
+    date: datetime
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
+
+
+class AttendanceUpdate(BaseModel):
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
+
+class StudentCreate(BaseModel):
+    name: str
+    roll_number: str
+    class_name: str

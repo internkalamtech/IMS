@@ -12,7 +12,10 @@ export default function RootLayout() {
       <ThemeProvider>
         <SafeAreaProvider>
           <StatusBar style="auto" />
-           <Stack screenOptions={{ headerShown: false }} />
+           <Stack screenOptions={{ headerShown: false }}>
+  <Stack.Screen name="(tabs)" />
+  <Stack.Screen name="attendance" />
+</Stack>
         </SafeAreaProvider>
       </ThemeProvider>
     </AuthProvider>
