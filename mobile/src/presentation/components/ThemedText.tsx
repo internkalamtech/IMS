@@ -1,9 +1,13 @@
 import { StyleSheet, Text, type TextProps } from 'react-native';
+
 import { useTheme } from '@/core/theme/ThemeContext';
+import { ThemeColors } from '@/core/theme/theme';
+
 export type ThemedTextProps = TextProps & {
     lightColor?: string;
     darkColor?: string;
     type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+    color?: keyof ThemeColors; // Support for semantic theme colors
 };
 
 export function ThemedText({
@@ -11,16 +15,31 @@ export function ThemedText({
     lightColor,
     darkColor,
     type = 'default',
+    color: themeColorKey,
     ...rest
 }: ThemedTextProps) {
     const { theme, isDark } = useTheme();
 
-    // Simplified color priority:
-    // 1. Explicit light/dark color props
-    // 2. Default based on type
-     const selectedColor =
-    (isDark ? darkColor : lightColor) ??
-    (type === 'link' ? theme.colors.primary : theme.colors.foreground);
+    const textColor = isDark ? darkColor : lightColor;
+
+    // Determine color priority:
+    // 1. Explicit light/dark prop
+    // 2. Semantic theme color key (e.g. 'primary')
+    // 3. Default based on type
+    // 4. Default foreground
+
+    let selectedColor = textColor;
+    if (!selectedColor && themeColorKey) {
+        selectedColor = theme.colors[themeColorKey];
+    }
+    if (!selectedColor) {
+        if (type === 'link') {
+            selectedColor = theme.colors.primary;
+        } else {
+            selectedColor = theme.colors.foreground;
+        }
+    }
+
     return (
         <Text
             style={[

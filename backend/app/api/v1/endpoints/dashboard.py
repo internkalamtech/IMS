@@ -1,22 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from fastapi import APIRouter, Depends, status
 from app.api.dependencies import get_current_user
-from app.api.schemas import (
-    AcademicSummaryResponse,
-    DashboardResponse,
-    StatItem,
-)
-from app.core.errors import DatabaseError
-from app.core.logger import Logger
+from app.api.schemas import DashboardResponse, StatItem
 from app.domain.entities.user import User
-from app.domain.usecases.homework_usecases import (
-    GetPendingHomeworkCountUseCase,
-)
-from app.infrastructure.database.database import get_db
-from app.infrastructure.repositories.database_homework_repository import (
-    DatabaseHomeworkRepository,
-)
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
@@ -26,7 +11,10 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
     response_model=DashboardResponse,
     status_code=status.HTTP_200_OK,
     summary="Get dashboard statistics",
-    description=("Retrieve dashboard statistics based on the " "authenticated user's role."),
+    description=(
+        "Retrieve dashboard statistics based on the "
+        "authenticated user's role."
+    ),
 )
 async def get_dashboard_stats(
     current_user: User = Depends(get_current_user),
@@ -61,9 +49,8 @@ async def get_dashboard_stats(
     elif role == "parent":
         role_label = "Parent"
         stats = [
-            StatItem(label="Attendance", value="92%"),
-            StatItem(label="Avg Marks", value="88%"),
-            StatItem(label="Pending Homework", value=5),
+            StatItem(label="Attendance (Aarav)", value="92%"),
+            StatItem(label="Last Exam Score", value="88/100"),
             StatItem(label="Fee Status", value="Paid"),
         ]
     elif role == "student":
@@ -76,69 +63,16 @@ async def get_dashboard_stats(
     elif role == "transport":
         role_label = "Transport Manager"
         stats = [
-            StatItem(label="Total Routes", value="12"),
-            StatItem(label="Total Buses", value="8"),
-            StatItem(label="Active Trips", value="5"),
-            StatItem(label="Total Students", value="245"),
+            StatItem(label="Active Routes", value=14),
+            StatItem(label="Fleet Availability", value="92%"),
+            StatItem(label="Pending Requests", value=5),
+        ]
+    elif role == "driver":
+        role_label = "Driver"
+        stats = [
+            StatItem(label="Assigned Trips", value=6),
+            StatItem(label="On-Time Rate", value="98%"),
+            StatItem(label="Pending Maintenance", value=1),
         ]
 
     return DashboardResponse(role=role_label, stats=stats)
-
-
-@router.get(
-    "/academic-summary",
-    response_model=AcademicSummaryResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Get academic summary for a child",
-    description=(
-        "Aggregate GET endpoint to return counts of pending homework "
-        "for a given childId. Requires authentication."
-    ),
-)
-async def get_academic_summary(
-    child_id: str = Query(
-        ...,
-        alias="childId",
-        description="The unique identifier of the child (student)",
-    ),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> AcademicSummaryResponse:
-    """
-    Get academic summary endpoint.
-
-    Returns the count of pending homework assignments for the specified child.
-    Pending homework includes assignments with status 'pending' or 'overdue'.
-    """
-    try:
-        # Validate childId format
-        if not child_id or not child_id.strip():
-            raise ValueError("childId is required")
-
-        # Repository and use case setup
-        repository = DatabaseHomeworkRepository(db)
-        use_case = GetPendingHomeworkCountUseCase(repository)
-
-        # Execute use case to get pending homework count
-        count = await use_case.execute(child_id)
-
-        return AcademicSummaryResponse(
-            child_id=child_id,
-            pending_homework_count=count,
-        )
-
-    except ValueError as e:
-        Logger.warning(f"Invalid or missing childId in academic-summary: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
-        )
-    except DatabaseError as e:
-        Logger.error(
-            f"Database error in academic-summary endpoint: {e}",
-            exc_info=True,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to fetch academic summary",
-        )

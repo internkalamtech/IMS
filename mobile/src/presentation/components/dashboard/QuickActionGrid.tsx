@@ -1,4 +1,4 @@
-import { QuickAction } from '@/core/config/dashboard'; 
+import { QuickAction } from '@/core/config/dashboard';
 import { ThemedText } from '@/presentation/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
@@ -10,13 +10,14 @@ interface QuickActionGridProps {
 }
 
 export function QuickActionGrid({ actions, onActionPress }: QuickActionGridProps) {
-   return (
+    return (
         <View style={styles.container}>
             {actions.map((action) => (
                 <TouchableOpacity
                     key={action.id}
                     style={styles.item}
-                    onPress={() => onActionPress?.(action)}              >
+                    onPress={() => onActionPress?.(action)}
+                >
                     <View style={[styles.iconContainer, { backgroundColor: action.color + '15' }]}>
                         <Ionicons name={action.icon as any} size={28} color={action.color} />
                     </View>

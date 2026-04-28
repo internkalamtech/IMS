@@ -15,7 +15,7 @@ export function ThemedTextInput({
     error,
     ...rest
 }: ThemedTextInputProps) {
-    const { theme } = useTheme();
+    const { theme, isDark } = useTheme();
 
     const borderColor = error ? theme.colors.destructive : theme.colors.border;
     const backgroundColor = theme.colors.input;

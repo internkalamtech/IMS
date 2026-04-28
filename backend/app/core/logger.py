@@ -34,7 +34,8 @@ class ColoredFormatter(logging.Formatter):
         """Format log record with colors."""
         if record.levelname in self.COLORS:
             record.levelname = (
-                f"{self.COLORS[record.levelname]}{record.levelname}" f"{self.COLORS['RESET']}"
+                f"{self.COLORS[record.levelname]}{record.levelname}"
+                f"{self.COLORS['RESET']}"
             )
         return super().format(record)
 
@@ -71,7 +72,8 @@ def setup_logging() -> logging.Logger:
         file_handler = logging.FileHandler(logs_dir / "ims.log")
         file_handler.setLevel(logging.INFO)
         file_formatter = logging.Formatter(
-            "[%(asctime)s] [%(levelname)s] [%(name)s] " "[%(funcName)s:%(lineno)d] %(message)s",
+            "[%(asctime)s] [%(levelname)s] [%(name)s] "
+            "[%(funcName)s:%(lineno)d] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
         file_handler.setFormatter(file_formatter)
