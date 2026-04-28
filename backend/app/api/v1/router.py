@@ -10,6 +10,8 @@ from app.api.v1.endpoints import (
     auth,
     health,
     dashboard,
+    classes,
+    timetables,
     students,
     enrollment_router,
     subjects,
@@ -29,6 +31,8 @@ router = APIRouter(prefix="/v1")
 router.include_router(auth.router)
 router.include_router(health.router)
 router.include_router(dashboard.router)
+router.include_router(classes.router, prefix="/classes", tags=["classes"])
+router.include_router(timetables.router, prefix="/timetables", tags=["timetables"])
 router.include_router(enrollment_router)
 router.include_router(students.router)
 router.include_router(subjects.router)
