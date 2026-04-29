@@ -6,7 +6,6 @@ import { ThemedText } from '@/presentation/components/ThemedText';
 import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -29,6 +28,9 @@ export default function TeacherDashboard() {
   const router = useRouter();
   const { logout, user } = useAuth();
   const { theme } = useTheme();
+  const [data, setData] = useState<DashboardData | null>(null);
+ const [loading, setLoading] = useState(true);
+ const [error, setError] = useState<string | null>(null);
 
   const refreshing = false;
 
@@ -69,6 +71,39 @@ export default function TeacherDashboard() {
       router.replace('/');
     }
   }, [user, router]);
+  useEffect(() => {
+  const fetchDashboard = async () => {
+    try {
+      const res = await fetch('http://10.0.2.2:8000/teacher/dashboard');
+
+      if (!res.ok) throw new Error('Failed');
+
+      const json = await res.json();
+      setData(json);
+    } catch (err) {
+      setError('Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDashboard();
+}, []);
+if (loading) {
+  return (
+    <ThemedView style={styles.container}>
+      <ThemedText>Loading...</ThemedText>
+    </ThemedView>
+  );
+}
+
+if (error) {
+  return (
+    <ThemedView style={styles.container}>
+      <ThemedText>{error}</ThemedText>
+    </ThemedView>
+  );
+}
 
   return (
     <ThemedView style={styles.container}>
@@ -135,6 +170,17 @@ export default function TeacherDashboard() {
                 }
               }}
             />
+            <View style={styles.sectionHeader}>
+  <ThemedText style={styles.sectionTitle} type="defaultSemiBold">
+    Dashboard Summary
+  </ThemedText>
+</View>
+
+<ThemedCard style={styles.updatesCard}>
+  <ThemedText>Total Students: {data?.totalStudents || 0}</ThemedText>
+  <ThemedText>Total Classes: {data?.totalClasses || 0}</ThemedText>
+  <ThemedText>Notifications: {data?.notifications || 0}</ThemedText>
+</ThemedCard>
 
             {/* Upcoming Classes */}
             <View style={styles.sectionHeader}>
@@ -150,7 +196,8 @@ export default function TeacherDashboard() {
               style={styles.updatesCard}
               padding={0}
             >
-              {upcomingClasses.map((item, index) => (
+              {
+              upcomingClasses.map((item, index) => (
                 <View
                   key={item.id}
                   style={[
