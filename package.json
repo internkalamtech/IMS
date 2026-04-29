@@ -1,26 +1,32 @@
 {
-    "name": "ims-monorepo",
-    "version": "1.0.0",
-    "description": "Institute Management System - Monorepo with React Native frontend and Python backend",
-    "private": true,
-    "scripts": {
-        "mobile": "cd mobile && npm start",
-        "mobile:install": "cd mobile && npm install",
-        "backend": "cd backend && node start.js",
-        "backend:setup": "cd backend && node setup.js",
-        "dev": "concurrently \"npm run mobile\" \"npm run backend\"",
-        "install:all": "npm run mobile:install && npm run backend:setup",
-        "lint:mobile": "cd mobile && npm run lint"
-    },
-    "devDependencies": {
-        "concurrently": "^9.1.2"
-    },
-    "keywords": [
-        "institute-management",
-        "react-native",
-        "fastapi",
-        "monorepo"
-    ],
-    "author": "",
-    "license": "ISC"
+  "name": "ims-monorepo",
+  "version": "1.0.0",
+  "description": "Institute Management System - Monorepo with React Native frontend and Python backend",
+  "private": true,
+  "scripts": {
+    "mobile": "cd mobile && npm start",
+    "mobile:install": "cd mobile && npm install",
+    "backend": "cd backend && venv\\Scripts\\activate && python run.py",
+    "backend:setup": "cd backend && python -m venv venv && venv\\Scripts\\activate && pip install -r requirements.txt",
+    "dev": "concurrently \"npm run mobile\" \"npm run backend\"",
+    "install:all": "npm run mobile:install && echo Backend dependencies: run 'npm run backend:setup' to create venv and install Python packages",
+    "lint:mobile": "cd mobile && npm run lint"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.10",
+    "concurrently": "^9.1.2",
+    "typescript": "~5.9.2"
+  },
+  "keywords": [
+    "institute-management",
+    "react-native",
+    "fastapi",
+    "monorepo"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@react-native-picker/picker": "^2.11.4",
+    "expo": "^55.0.15"
+  }
 }
