@@ -73,7 +73,9 @@ export default function DriverDashboard() {
                 endingTrip={endingTrip}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                onCheckInAtStop={checkInAtStop}
+                onCheckInAtStop={async () => {
+                    await checkInAtStop();
+                }}
                 onEndTrip={onEndTrip}
             />
         );
