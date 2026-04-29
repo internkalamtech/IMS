@@ -1,4 +1,4 @@
- """
+"""
 Unit tests for student enrollment with parent link.
 
 Tests for API endpoints, use cases, and repositories.
