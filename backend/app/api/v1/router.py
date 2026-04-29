@@ -16,6 +16,7 @@ from app.api.v1.endpoints import (
     homework_router,
     class_subjects_router,
     payments,
+    student_academic,
     students,
     subjects,
     transport_enrollments_router,
@@ -34,6 +35,7 @@ router.include_router(dashboard.router)
 router.include_router(classes.router, prefix="/classes", tags=["classes"])
 router.include_router(timetables.router, prefix="/timetables", tags=["timetables"])
 router.include_router(enrollment.router)
+router.include_router(student_academic.router)
 router.include_router(students.router)
 router.include_router(enrollment_router)
 router.include_router(subjects.router)
