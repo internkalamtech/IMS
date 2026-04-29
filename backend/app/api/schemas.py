@@ -14,21 +14,10 @@ class LoginRequest(BaseModel):
     """Request schema for login endpoint."""
 
     email: EmailStr
-    password: str = Field(
-        ...,
-        min_length=6,
-        description="User password (minimum 6 characters)",
-    )
+    password: str = Field(..., min_length=6, description="User password (minimum 6 characters)")
 
     model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "email": "admin@myuser.com",
-                    "password": "admin123",
-                }
-            ]
-        }
+        "json_schema_extra": {"examples": [{"email": "admin@myuser.com", "password": "admin123"}]}
     }
 
 
@@ -36,14 +25,7 @@ class RoleResponse(BaseModel):
     """Response schema for role data."""
 
     id: str
-    name: Literal[
-        "admin",
-        "teacher",
-        "student",
-        "parent",
-        "transport",
-        "driver",
-    ]
+    name: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     description: str | None = None
 
 
@@ -53,12 +35,7 @@ class UserResponse(BaseModel):
     id: str
     name: str
     email: str
-    role: Literal["admin",
-                  "teacher",
-                  "student",
-                  "parent",
-                  "transport",
-                  "driver"]
+    role: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -114,13 +91,7 @@ class ErrorResponse(BaseModel):
 
     detail: str
 
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {"detail": "Error message"}
-            ]
-        }
-    }
+    model_config = {"json_schema_extra": {"examples": [{"detail": "Error message"}]}}
 
 
 class DemoCredential(BaseModel):
@@ -151,6 +122,13 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
+
+
+class AcademicSummaryResponse(BaseModel):
+    """Response schema for the academic summary endpoint."""
+
+    child_id: str
+    pending_homework_count: int
 
 
 # Transport-related schemas
@@ -440,6 +418,39 @@ class ParentResponse(BaseModel):
             ]
         }
     }
+
+
+class StaffCreate(BaseModel):
+    """Request schema for creating a staff user."""
+
+    name: str = Field(..., min_length=1, max_length=255, description="Full name")
+    email: EmailStr = Field(..., description="Staff email")
+    phone: str = Field(..., min_length=7, max_length=20, description="Contact phone")
+    role: Literal["admin", "teacher", "transport", "driver"] = Field(
+        ..., description="Staff role"
+    )
+
+    # Role-specific optional fields
+    subjects: Optional[List[str]] = Field(None, description="List of subjects (for teachers)")
+    class_assigned_id: Optional[int] = Field(None, description="Class section id assigned to teacher")
+    license: Optional[str] = Field(None, description="Driver license number (for drivers)")
+
+
+class StaffResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone: str
+    role: str
+    subjects: Optional[List[str]] = None
+    class_assigned_id: Optional[int] = None
+    class_assigned_name: Optional[str] = None
+    license: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
 
 
 class StudentResponse(BaseModel):
@@ -806,3 +817,140 @@ class StudentBoardingResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ============ STUDENT ACADEMIC DATA SCHEMAS ============
+
+
+class TimetableResponse(BaseModel):
+    """Response schema for timetable entry."""
+    
+    id: Optional[int] = None
+    day: str = Field(..., description="Day of the week (Monday-Sunday)")
+    time_slot: str = Field(..., description="Time slot (e.g., '09:00-10:00')")
+    subject: str = Field(..., description="Subject name")
+    teacher_name: Optional[str] = Field(None, description="Name of the teacher")
+    classroom: Optional[str] = Field(None, description="Classroom number/name")
+    class_id: int = Field(..., description="Class ID")
+    created_at: Optional[datetime] = None
+
+    model_config = {
+        "from_attributes": True,
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "day": "Monday",
+                    "time_slot": "09:00-10:00",
+                    "subject": "Mathematics",
+                    "teacher_name": "Mr. Smith",
+                    "classroom": "A1",
+                    "class_id": 1,
+                    "created_at": "2024-02-16T09:00:00",
+                }
+            ]
+        }
+    }
+
+
+class MaterialResponse(BaseModel):
+    """Response schema for learning materials."""
+    
+    id: Optional[int] = None
+    title: str = Field(..., description="Material title")
+    description: Optional[str] = Field(None, description="Material description")
+    subject: str = Field(..., description="Subject name")
+    material_type: str = Field(..., description="Type: PDF, Video, Document, etc.")
+    file_url: Optional[str] = Field(None, description="URL to download/access material")
+    upload_date: Optional[datetime] = None
+    created_by: Optional[str] = Field(None, description="Name of teacher who uploaded")
+
+    model_config = {
+        "from_attributes": True,
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "title": "Chapter 5: Algebra Fundamentals",
+                    "description": "Introduction to basic algebra concepts",
+                    "subject": "Mathematics",
+                    "material_type": "PDF",
+                    "file_url": "https://storage.example.com/materials/algebra.pdf",
+                    "upload_date": "2024-02-15T14:30:00",
+                    "created_by": "Mr. Smith",
+                }
+            ]
+        }
+    }
+
+
+class StudentTimetableResponse(BaseModel):
+    """Response schema for student timetable request."""
+    
+    timetable: List[TimetableResponse] = Field(..., description="List of timetable entries")
+    class_id: int = Field(..., description="Student's class ID")
+    class_name: str = Field(..., description="Student's class name")
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "timetable": [
+                        {
+                            "id": 1,
+                            "day": "Monday",
+                            "time_slot": "09:00-10:00",
+                            "subject": "Mathematics",
+                            "teacher_name": "Mr. Smith",
+                            "classroom": "A1",
+                            "class_id": 1,
+                            "created_at": "2024-02-16T09:00:00",
+                        }
+                    ],
+                    "class_id": 1,
+                    "class_name": "Grade 6-A",
+                }
+            ]
+        }
+    }
+
+
+class StudentHomeworkMaterialsResponse(BaseModel):
+    """Response schema for student homework and materials."""
+    
+    homework: List[dict] = Field(..., description="List of homework assigned to student's class")
+    materials: List[MaterialResponse] = Field(..., description="List of materials for student's subjects")
+    class_id: int = Field(..., description="Student's class ID")
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "homework": [
+                        {
+                            "id": "hw-123",
+                            "title": "Algebra Practice",
+                            "description": "Solve exercises 1-20 from chapter 5",
+                            "subject": "Mathematics",
+                            "className": "Grade 6-A",
+                            "dueDate": "2024-02-18",
+                            "assignType": "ALL",
+                        }
+                    ],
+                    "materials": [
+                        {
+                            "id": 1,
+                            "title": "Chapter 5: Algebra Fundamentals",
+                            "description": "Introduction to basic algebra concepts",
+                            "subject": "Mathematics",
+                            "material_type": "PDF",
+                            "file_url": "https://storage.example.com/materials/algebra.pdf",
+                            "upload_date": "2024-02-15T14:30:00",
+                            "created_by": "Mr. Smith",
+                        }
+                    ],
+                    "class_id": 1,
+                }
+            ]
+        }
+    }
