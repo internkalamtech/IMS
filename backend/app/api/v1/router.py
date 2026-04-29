@@ -23,7 +23,7 @@ from app.api.v1.endpoints import (
     homework,
     classes,
     timetables,
-    )
+)
 
 from app.api.v1.endpoints.staff import router as staff_router
 

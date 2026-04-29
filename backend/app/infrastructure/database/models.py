@@ -12,6 +12,7 @@ Best practices followed:
 
 from datetime import datetime
 from typing import List, Optional
+from sqlalchemy import UniqueConstraint
 
 from sqlalchemy import (
     Boolean,
@@ -684,7 +685,14 @@ class AttendanceModel(Base):
     """
 
     __tablename__ = "attendance"
-
+    __table_args__ = (
+        UniqueConstraint(
+            "student_id",
+            "subject",
+            "date",
+            name="unique_attendance_per_student_subject_date"
+        ),
+    )
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
     student_id: Mapped[int] = mapped_column(

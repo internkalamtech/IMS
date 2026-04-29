@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -17,6 +17,13 @@ async def create_attendance(
     db: Session = Depends(get_db),
 ):
     try:
+        # ✅ Future date validation
+        if payload.date.date() > date.today():
+            raise HTTPException(
+                status_code=400,
+                detail="Attendance cannot be marked for future dates"
+            )
+
         return await repo.create_attendance(
             db,
             payload.student_id,
@@ -29,6 +36,7 @@ async def create_attendance(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.put("/{attendance_id}")
 async def update_attendance(
     attendance_id: int,
@@ -36,6 +44,13 @@ async def update_attendance(
     db: Session = Depends(get_db),
 ):
     try:
+        # ✅ Basic validation
+        if payload.teacher_id <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid teacher_id"
+            )
+
         return await repo.update_attendance(
             db,
             attendance_id,
@@ -44,3 +59,11 @@ async def update_attendance(
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    
+@router.get("/")
+async def get_attendance(
+    student_id: int | None = None,
+    date: date | None = None,
+    db: Session = Depends(get_db),
+):
+    return await repo.get_filtered_attendance(db, student_id, date)
