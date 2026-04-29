@@ -10,8 +10,17 @@ from . import (
     auth,
     health,
     enrollment,
+    student_academic,
     trips,
 )
 
 from .class_subjects import router as class_subjects_router
-from .staff import router as staff_router
+__all__ = [
+    "auth",
+    "health",
+	"enrollment",
+    "student_academic",
+    "dashboard", "class_subjects_router", "documents",
+    "staff_router",
+    "trips",
+]
