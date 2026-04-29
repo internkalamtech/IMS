@@ -53,6 +53,34 @@ export default function TabLayout() {
                     ),
                 }}
             />
+            <Tabs.Screen
+            name="timetable-classes"
+            options={{
+                href: null, // 🔥 hides from tab bar
+            }}
+        />
+
+        <Tabs.Screen
+            name="timetable"
+            options={{
+                href: null, // 🔥 hides from tab bar
+            }}
+        />
+
+        <Tabs.Screen
+            name="classes"
+            options={{
+                href: null, // optional if used
+            }}
+        />
+            {/* Academics screen — accessible via navigation, hidden from tab bar */}
+            <Tabs.Screen
+                name="academics"
+                options={{
+                    href: null, // Hide from tab bar
+                    title: 'Academics',
+                }}
+            />
         </Tabs>
     );
 }
