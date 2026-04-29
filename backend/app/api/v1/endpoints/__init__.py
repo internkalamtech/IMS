@@ -3,14 +3,15 @@
 from app.api.v1.endpoints import auth, health, classes
 
 __all__ = ["auth", "health", "classes","enrollment",
-    "class_subjects_router",
-    "staff_router",
+    "class_subjects_router","student_academic","dashboard",
+    "staff_router","documents",
     "trips",]
 from app.api.v1.endpoints import auth, health, enrollment
 from . import (
     auth,
     health,
     enrollment,
+    student_academic,
     trips,
 )
 
