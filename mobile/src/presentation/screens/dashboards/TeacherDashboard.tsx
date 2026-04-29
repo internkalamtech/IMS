@@ -7,7 +7,6 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard'; 
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -27,6 +26,7 @@ type DashboardData = {
 };
 
 export default function TeacherDashboard() {
+  const router = useRouter();
   const { logout, user } = useAuth();
   const { data: dashboardData, refreshing, onRefresh } = useDashboard();
   const { theme } = useTheme();
@@ -223,6 +223,12 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 
+  sectionHeader: {
+    paddingHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+
   updateItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -237,5 +243,10 @@ const styles = StyleSheet.create({
 
   updateContent: {
     flex: 1,
+  },
+
+  updatesCard: {
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
 });
