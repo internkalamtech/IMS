@@ -818,139 +818,24 @@ class StudentBoardingResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# =========================
+# 📅 ATTENDANCE SCHEMAS
+# =========================
 
-# ============ STUDENT ACADEMIC DATA SCHEMAS ============
-
-
-class TimetableResponse(BaseModel):
-    """Response schema for timetable entry."""
-    
-    id: Optional[int] = None
-    day: str = Field(..., description="Day of the week (Monday-Sunday)")
-    time_slot: str = Field(..., description="Time slot (e.g., '09:00-10:00')")
-    subject: str = Field(..., description="Subject name")
-    teacher_name: Optional[str] = Field(None, description="Name of the teacher")
-    classroom: Optional[str] = Field(None, description="Classroom number/name")
-    class_id: int = Field(..., description="Class ID")
-    created_at: Optional[datetime] = None
-
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "id": 1,
-                    "day": "Monday",
-                    "time_slot": "09:00-10:00",
-                    "subject": "Mathematics",
-                    "teacher_name": "Mr. Smith",
-                    "classroom": "A1",
-                    "class_id": 1,
-                    "created_at": "2024-02-16T09:00:00",
-                }
-            ]
-        }
-    }
+class AttendanceCreate(BaseModel):
+    student_id: int
+    class_name: str
+    subject: str
+    date: datetime
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
 
 
-class MaterialResponse(BaseModel):
-    """Response schema for learning materials."""
-    
-    id: Optional[int] = None
-    title: str = Field(..., description="Material title")
-    description: Optional[str] = Field(None, description="Material description")
-    subject: str = Field(..., description="Subject name")
-    material_type: str = Field(..., description="Type: PDF, Video, Document, etc.")
-    file_url: Optional[str] = Field(None, description="URL to download/access material")
-    upload_date: Optional[datetime] = None
-    created_by: Optional[str] = Field(None, description="Name of teacher who uploaded")
+class AttendanceUpdate(BaseModel):
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
 
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "id": 1,
-                    "title": "Chapter 5: Algebra Fundamentals",
-                    "description": "Introduction to basic algebra concepts",
-                    "subject": "Mathematics",
-                    "material_type": "PDF",
-                    "file_url": "https://storage.example.com/materials/algebra.pdf",
-                    "upload_date": "2024-02-15T14:30:00",
-                    "created_by": "Mr. Smith",
-                }
-            ]
-        }
-    }
-
-
-class StudentTimetableResponse(BaseModel):
-    """Response schema for student timetable request."""
-    
-    timetable: List[TimetableResponse] = Field(..., description="List of timetable entries")
-    class_id: int = Field(..., description="Student's class ID")
-    class_name: str = Field(..., description="Student's class name")
-    
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "timetable": [
-                        {
-                            "id": 1,
-                            "day": "Monday",
-                            "time_slot": "09:00-10:00",
-                            "subject": "Mathematics",
-                            "teacher_name": "Mr. Smith",
-                            "classroom": "A1",
-                            "class_id": 1,
-                            "created_at": "2024-02-16T09:00:00",
-                        }
-                    ],
-                    "class_id": 1,
-                    "class_name": "Grade 6-A",
-                }
-            ]
-        }
-    }
-
-
-class StudentHomeworkMaterialsResponse(BaseModel):
-    """Response schema for student homework and materials."""
-    
-    homework: List[dict] = Field(..., description="List of homework assigned to student's class")
-    materials: List[MaterialResponse] = Field(..., description="List of materials for student's subjects")
-    class_id: int = Field(..., description="Student's class ID")
-    
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "homework": [
-                        {
-                            "id": "hw-123",
-                            "title": "Algebra Practice",
-                            "description": "Solve exercises 1-20 from chapter 5",
-                            "subject": "Mathematics",
-                            "className": "Grade 6-A",
-                            "dueDate": "2024-02-18",
-                            "assignType": "ALL",
-                        }
-                    ],
-                    "materials": [
-                        {
-                            "id": 1,
-                            "title": "Chapter 5: Algebra Fundamentals",
-                            "description": "Introduction to basic algebra concepts",
-                            "subject": "Mathematics",
-                            "material_type": "PDF",
-                            "file_url": "https://storage.example.com/materials/algebra.pdf",
-                            "upload_date": "2024-02-15T14:30:00",
-                            "created_by": "Mr. Smith",
-                        }
-                    ],
-                    "class_id": 1,
-                }
-            ]
-        }
-    }
+class StudentCreate(BaseModel):
+    name: str
+    roll_number: str
+    class_name: str
