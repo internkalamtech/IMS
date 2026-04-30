@@ -29,7 +29,6 @@ from app.api.v1.endpoints.staff import router as staff_router
 
 # Create v1 router
 router = APIRouter(prefix="/v1")
-router.include_router(users.router)
 # Include endpoint routers
 router.include_router(auth.router)
 router.include_router(health.router)
