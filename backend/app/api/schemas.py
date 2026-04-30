@@ -954,3 +954,74 @@ class StudentHomeworkMaterialsResponse(BaseModel):
             ]
         }
     }
+
+
+# ============ INCIDENT SCHEMAS ============
+
+
+class IncidentCreateRequest(BaseModel):
+    """
+    Request body for creating an incident log.
+
+    Implements Issue #281: POST endpoint to create incident logs
+    with geographic coordinates.
+    """
+
+    type: str = Field(
+        ...,
+        description="Incident type: 'Breakdown', 'Accident', or 'Delay'",
+    )
+    severity: str = Field(
+        ...,
+        description="Severity level: 'Low', 'Medium', or 'High'",
+    )
+    description: str = Field(
+        ...,
+        min_length=1,
+        max_length=2000,
+        description="Detailed description of the incident",
+    )
+    latitude: Optional[float] = Field(
+        None,
+        ge=-90.0,
+        le=90.0,
+        description="Latitude coordinate where the incident occurred",
+    )
+    longitude: Optional[float] = Field(
+        None,
+        ge=-180.0,
+        le=180.0,
+        description="Longitude coordinate where the incident occurred",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "type": "Breakdown",
+                    "severity": "High",
+                    "description": "Engine failure on NH-8 Highway near kilometer marker 42.",
+                    "latitude": 28.6139,
+                    "longitude": 77.2090,
+                }
+            ]
+        }
+    }
+
+
+class IncidentResponse(BaseModel):
+    """Response model for an incident log."""
+
+    id: int
+    driver_id: int
+    type: str
+    severity: str
+    description: str
+    status: str = "open"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

@@ -3,7 +3,13 @@ import { Incident, IncidentRepository, IncidentSeverity, IncidentType } from '@/
 export class SubmitIncidentUseCase {
     constructor(private incidentRepository: IncidentRepository) { }
 
-    async execute(type: IncidentType, severity: IncidentSeverity, description: string): Promise<Incident> {
-        return this.incidentRepository.submitIncident(type, severity, description);
+    async execute(
+        type: IncidentType,
+        severity: IncidentSeverity,
+        description: string,
+        latitude?: number | null,
+        longitude?: number | null,
+    ): Promise<Incident> {
+        return this.incidentRepository.submitIncident(type, severity, description, latitude, longitude);
     }
 }

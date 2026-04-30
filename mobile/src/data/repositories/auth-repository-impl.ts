@@ -35,18 +35,20 @@ export class AuthRepositoryImpl implements AuthRepository {
             
             // Fallback to local mock if backend is unreachable or offline
             if (!error.response || error.message.includes('No response')) {
-                Logger.info('Using offline fallback for login');
+                Logger.warn('[Auth] Backend unreachable — using offline mock fallback. API calls WILL fail.');
                 
-                let role: 'admin' | 'teacher' | 'student' | 'parent' = 'admin';
+                let role: 'admin' | 'teacher' | 'student' | 'parent' | 'driver' | 'transport' = 'admin';
                 if (email.includes('teacher')) role = 'teacher';
                 else if (email.includes('student')) role = 'student';
                 else if (email.includes('parent')) role = 'parent';
+                else if (email.includes('driver')) role = 'driver';
+                else if (email.includes('transport')) role = 'transport';
                 
                 const mockUser: User = {
                     id: `mock-${role}-123`,
-                    name: `Demo ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+                    name: `Demo ${role.charAt(0).toUpperCase() + role.slice(1)} (Offline)`,
                     email: email,
-                    role: role,
+                    role: role as any,
                     avatarUrl: undefined,
                 };
 

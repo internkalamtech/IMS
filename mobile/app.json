@@ -39,7 +39,13 @@
           }
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow IMS to access your location to attach GPS coordinates to incident reports."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

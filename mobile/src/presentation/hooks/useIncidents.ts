@@ -4,7 +4,7 @@ import { GetIncidentsUseCase } from '@/domain/usecases/get-incidents-usecase';
 import { SubmitIncidentUseCase } from '@/domain/usecases/submit-incident-usecase';
 import { useCallback, useEffect, useState } from 'react';
 
-// Single instance for in-memory persistence across hook usages
+// Single instance for persistence across hook usages
 const incidentRepository = new IncidentRepositoryImpl();
 const getIncidentsUseCase = new GetIncidentsUseCase(incidentRepository);
 const submitIncidentUseCase = new SubmitIncidentUseCase(incidentRepository);
@@ -42,16 +42,29 @@ export function useIncidents() {
         setRefreshing(false);
     };
 
-    const submitIncident = async (type: IncidentType, severity: IncidentSeverity, description: string) => {
+    const submitIncident = async (
+        type: IncidentType,
+        severity: IncidentSeverity,
+        description: string,
+        latitude?: number | null,
+        longitude?: number | null,
+    ) => {
         setSubmitting(true);
         setError(null);
         try {
-            await submitIncidentUseCase.execute(type, severity, description);
-            await fetchIncidents(); // Refresh the list after submission
+            await submitIncidentUseCase.execute(type, severity, description, latitude, longitude);
+            await fetchIncidents();
             return true;
-        } catch (e) {
-            setError('Failed to submit incident');
-            console.error(e);
+        } catch (e: any) {
+            // Extract the most useful error message for debugging
+            const status = e?.response?.status;
+            const detail = e?.response?.data?.detail;
+            const message = detail
+                ? `Server error ${status}: ${detail}`
+                : e?.message ?? 'Failed to submit incident';
+
+            setError(message);
+            console.error('[useIncidents] submitIncident failed:', message, e);
             return false;
         } finally {
             setSubmitting(false);
