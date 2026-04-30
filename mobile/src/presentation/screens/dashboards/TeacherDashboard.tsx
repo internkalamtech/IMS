@@ -174,8 +174,11 @@ if (error) {
             ))}
           </ThemedCard>
 
+        
+        
+        </SafeAreaView>
         </View>
-      </ScrollView>
+        </ScrollView>
     </ThemedView>
   );
 }
