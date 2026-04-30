@@ -69,10 +69,23 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+ feature/student-profile-ui
+main
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    feature/student-profile-ui
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+ main
 
  feature/student-profile-ui
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
@@ -86,6 +99,10 @@ class UserModel(Base):
         lazy="joined",
     )
 
+ feature/student-profile-ui
+    def __repr__(self) -> str:
+        return f"<User(id={self.id}, " f"email='{self.email}', " f"name='{self.name}')>"
+main
 
 # =========================
 # 🎭 ROLE MODEL
@@ -94,7 +111,11 @@ class RoleModel(Base):
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+ feature/student-profile-ui
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+main
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     users: Mapped[List["UserModel"]] = relationship(

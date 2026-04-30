@@ -1,6 +1,7 @@
 import { api } from '@/core/api-client';
 import { Logger } from '@/core/logger';
  feature/student-profile-ui
+ feature/student-profile-ui
 import {
   CreateUserInput,
   DashboardData,
@@ -36,6 +37,9 @@ export class UserRepositoryImpl implements UserRepository {
   }
 }
 import { DashboardData, UserRepository } from '@/domain/repositories/user-repository';
+
+import { DashboardData, UserRepository, ClassData } from '@/domain/repositories/user-repository';
+ main
 
 const FALLBACK_STATS: Record<string, { label: string; value: string | number }[]> = {
     parent: [
@@ -77,5 +81,26 @@ export class UserRepositoryImpl implements UserRepository {
             };
         }
     }
+ feature/student-profile-ui
 }
  main
+
+async getClasses(): Promise<ClassData[]> {
+    try {
+        const response = await api.get('/classes');
+        return response.data;
+    } catch (error) {
+        Logger.error('Failed to fetch classes', error);
+
+        return [
+            {
+                id: 1,
+                name: '10th',
+                section: 'A',
+                academicPeriodId: 1
+            }
+        ];
+    }
+}
+}
+main

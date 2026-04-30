@@ -17,8 +17,8 @@ export function useComplianceDocuments() {
         try {
             const data = await getComplianceDocumentsUseCase.execute();
             setDocuments(data);
-        } catch (e) {
-            setError('Failed to fetch compliance documents');
+        } catch (e: any) {
+            setError(e.message || 'Failed to fetch compliance documents');
             console.error(e);
         }
     }, []);
