@@ -116,21 +116,17 @@ return (
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-<QuickActionGrid
-    actions={quickActions}
-    onActionPress={(action) => {
-        console.log("CLICKED:", action);
-        if (action.title === 'Students') {
-            router.push('/student-directory');
-        }
-        if (action.title === 'Manage Classes') {
-            router.push('/manage-classes');
-        }
-        if (action.title === 'Timetable') {
-            router.push('/timetable-classes' as any);
-        }
-    }}
-/>
+                    <QuickActionGrid
+                        actions={quickActions}
+                        onActionPress={(action) => {
+                            if (action.title === 'Manage Classes') {
+                                router.push('/classes' as any);
+                            }
+                            if (action.title === 'Timetable') {
+                                router.push('/timetable-classes' as any);
+                            }
+                        }}
+                    />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>

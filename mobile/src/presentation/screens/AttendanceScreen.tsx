@@ -52,22 +52,30 @@ const handleStatusChange = (id: string, status: Status) => {
   );
   setStudents(updated);
 };
-const handleSubmit = () => {
-  Alert.alert(
-    "Confirm Submission",
-    "Are you sure you want to submit attendance?",
-    [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Submit",
-        onPress: () => {
-         Alert.alert(
-           "Attendance submitted successfully!",
-          );        
+const handleSubmit = async () => {
+  try {
+    for (const student of students) {
+      await fetch("http://127.0.0.1:8000/api/v1/attendance/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      },
-    ]
-  );
+        body: JSON.stringify({
+          student_id: Number(student.id),
+          class_name: "Grade 6-A",
+          subject: "Math",
+          date: new Date().toISOString(),
+          status: student.status.toLowerCase(), // IMPORTANT
+          teacher_id: 1,
+        }),
+      });
+    }
+
+    Alert.alert("Success", "Attendance submitted successfully!");
+  } catch (error) {
+    console.log(error);
+    Alert.alert("Error", "Failed to submit attendance");
+  }
 };
 const [showConfirm, setShowConfirm] = useState(false);
 const today = new Date().toLocaleDateString("en-GB");
@@ -142,8 +150,7 @@ const CLASS_INFO = "Class 7B - Mathematics";
         ? { backgroundColor: ColorPalettes.emerald[500] }
         : styles.inactiveBtn,
     ]}
-    onPress={() => handleStatusChange(item.id, "Present")}
-  >
+      onPress={handleSubmit}  >
     <Ionicons
       name="checkmark"
       size={20}
