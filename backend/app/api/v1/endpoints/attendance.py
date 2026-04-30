@@ -11,7 +11,7 @@ Endpoints:
       Returns daily attendance for a specific child + month summary.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 import calendar as cal_lib
 
@@ -21,6 +21,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
 from app.api.schemas import (
+    AttendanceCreate,
+    AttendanceUpdate,
     AttendanceCalendarResponse,
     CalendarDay,
     ChildSummaryResponse,
@@ -29,6 +31,8 @@ from app.api.schemas import (
     LeaveRequestResponse,
     MonthSummary,
 )
+from app.core.config import settings
+from app.core.logger import Logger
 from app.domain.entities.user import User
 from app.infrastructure.database.database import get_db
 from app.infrastructure.database.models import (
@@ -37,9 +41,10 @@ from app.infrastructure.database.models import (
     UserModel,
     parent_student,
 )
-from app.core.logger import Logger
+from app.infrastructure.repositories.attendance_repository import AttendanceRepository
 
 router = APIRouter(tags=["Attendance"])
+repo = AttendanceRepository()
 
 
 def _lr_to_schema(lr) -> LeaveHistoryItem:
@@ -442,3 +447,60 @@ async def apply_for_leave(
     except Exception as e:
         Logger.error(f"apply_for_leave error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to submit leave request. Please try again.")
+
+
+@router.post("/")
+async def create_attendance(
+    payload: AttendanceCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        if payload.date.date() > date.today():
+            raise HTTPException(
+                status_code=400,
+                detail="Attendance cannot be marked for future dates",
+            )
+
+        return await repo.create_attendance(
+            db,
+            payload.student_id,
+            payload.class_name,
+            payload.subject,
+            payload.date,
+            payload.status,
+            payload.teacher_id,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.put("/{attendance_id}")
+async def update_attendance(
+    attendance_id: int,
+    payload: AttendanceUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        if payload.teacher_id <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid teacher_id",
+            )
+
+        return await repo.update_attendance(
+            db,
+            attendance_id,
+            payload.status,
+            payload.teacher_id,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/")
+async def get_attendance(
+    student_id: int | None = None,
+    date: date | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    return await repo.get_filtered_attendance(db, student_id, date)
