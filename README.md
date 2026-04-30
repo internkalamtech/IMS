@@ -6,7 +6,7 @@ A modern Institute Management System built with a monorepo architecture, featuri
 
 ```
 IMS/
-├── mobile/          # React Native frontend (Expo)
+├── mobile/          # React Native frontend 
 ├── backend/         # Python FastAPI backend
 ├── docs/            # Shared documentation and requirements
 ├── package.json     # Root package.json for monorepo scripts
