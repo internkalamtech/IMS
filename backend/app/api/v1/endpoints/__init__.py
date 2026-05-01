@@ -11,7 +11,7 @@ from . import (
     auth,
     health,
     enrollment,
-    student_academic,
+    #student_academic,
     trips,
 )
 
