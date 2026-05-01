@@ -14,7 +14,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AcademicRepository, AcademicSummaryResponse } from '@/data/repositories/academic-repository-impl';
+import { AcademicRepository, AcademicSummaryResponse, PendingHomeworkItem } from '@/data/repositories/academic-repository-impl';
 
 const { width } = Dimensions.get('window');
 interface HomeworkItem {
@@ -28,7 +28,13 @@ interface HomeworkItem {
     subjectColor: string;
 }
 
-// Remove mock HOMEWORK_DATA. Homework list logic will be added when backend is ready.
+const SUBJECT_COLORS: Record<string, string> = {
+    mathematics: '#6366f1',
+    science: '#10b981',
+    english: '#f59e0b',
+    hindi: '#ec4899',
+    default: '#0ea5e9',
+};
 
 const STUDY_MATERIALS: { id: string; subject: string; title: string; type: string; size: string; subjectColor: string }[] = [
     { id: '1', subject: 'Mathematics', title: 'Chapter 4 – Algebra Notes', type: 'PDF', size: '2.4 MB', subjectColor: '#6366f1' },
@@ -53,10 +59,14 @@ export default function AcademicsScreen() {
         initialTab === 'homework' ? 0 : 0
     );
     const indicatorAnim = useRef(new Animated.Value(activeTab)).current;
-
     // Academic summary state
     const [summary, setSummary] = useState<AcademicSummaryResponse | null>(null);
+    const [pendingHomework, setPendingHomework] = useState<HomeworkItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadWarning, setLoadWarning] = useState<string | null>(null);
+
+    const resolvedChildId =
+        typeof childId === 'string' && childId.trim() ? childId.trim() : '1';
 
     useEffect(() => {
         if (initialTab === 'homework') {
@@ -72,6 +82,42 @@ export default function AcademicsScreen() {
             .finally(() => setLoading(false));
     }, [childId]);
 
+    useEffect(() => {
+        const loadAcademicData = async () => {
+            setLoading(true);
+            setLoadWarning(null);
+
+            const [summaryResult, pendingResult] = await Promise.allSettled([
+                AcademicRepository.getAcademicSummary(resolvedChildId),
+                AcademicRepository.getPendingHomework(resolvedChildId),
+            ]);
+
+            let hadAnyFailure = false;
+
+            if (summaryResult.status === 'fulfilled') {
+                setSummary(summaryResult.value);
+            } else {
+                hadAnyFailure = true;
+            }
+
+            if (pendingResult.status === 'fulfilled') {
+                setPendingHomework(mapToHomeworkItems(pendingResult.value));
+            } else {
+                hadAnyFailure = true;
+            }
+
+            if (hadAnyFailure) {
+                setLoadWarning(
+                    'Some data could not be refreshed. Showing last available values.'
+                );
+            }
+
+            setLoading(false);
+        };
+
+        loadAcademicData();
+    }, [resolvedChildId]);
+
     const handleTabChange = (index: number) => {
         setActiveTab(index);
         Animated.spring(indicatorAnim, {
@@ -83,7 +129,7 @@ export default function AcademicsScreen() {
     };
 
     // Use summary?.pending_homework_count for badge and summary pill
-    const pendingCount = summary?.pending_homework_count ?? 0;
+    const pendingCount = summary?.pending_homework_count ?? pendingHomework.length;
 
     return (
         <ThemedView style={styles.container}>
@@ -166,7 +212,26 @@ export default function AcademicsScreen() {
                             {/* You can add more pills for Overdue/Submitted when backend supports it */}
                         </View>
 
-                        {/* Render homework list here when backend provides it */}
+                        {loadWarning && !loading ? (
+                            <ThemedText style={styles.warningText} lightColor="#b45309" darkColor="#f59e0b">
+                                {loadWarning}
+                            </ThemedText>
+                        ) : null}
+
+                        {pendingHomework.length === 0 && !loading ? (
+                            <View style={[styles.emptyState, { borderColor: theme.colors.border, backgroundColor: theme.colors.card }]}>
+                                <ThemedText style={styles.emptyStateTitle} type="defaultSemiBold">
+                                    No pending homework
+                                </ThemedText>
+                                <ThemedText style={styles.emptyStateText} lightColor="#666" darkColor="#999">
+                                    You are all caught up for now.
+                                </ThemedText>
+                            </View>
+                        ) : (
+                            pendingHomework.map((item) => (
+                                <HomeworkCard key={item.id} item={item} theme={theme} />
+                            ))
+                        )}
                     </View>
                 ) : (
                     // Study Materials Tab
@@ -202,6 +267,25 @@ export default function AcademicsScreen() {
             </ScrollView>
         </ThemedView>
     );
+}
+
+function mapToHomeworkItems(items: PendingHomeworkItem[]): HomeworkItem[] {
+    return items.map((item) => {
+        const normalizedSubject = item.subject?.trim() || 'General';
+        const subjectKey = normalizedSubject.toLowerCase();
+        const subjectColor = SUBJECT_COLORS[subjectKey] || SUBJECT_COLORS.default;
+
+        return {
+            id: String(item.id),
+            subject: normalizedSubject,
+            title: item.title || 'Untitled Homework',
+            description: item.description || 'No description available',
+            teacher: 'Assigned by teacher',
+            dueDate: item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A',
+            status: item.status,
+            subjectColor,
+        };
+    });
 }
 
 function SummaryPill({ label, count, color, theme }: { label: string; count: number; color: string; theme: any }) {
@@ -300,6 +384,10 @@ const styles = StyleSheet.create({
         gap: 10,
         marginBottom: 20,
     },
+    warningText: {
+        fontSize: 12,
+        marginBottom: 12,
+    },
     summaryPill: {
         flex: 1,
         alignItems: 'center',
@@ -310,6 +398,16 @@ const styles = StyleSheet.create({
     },
     summaryPillCount: { fontSize: 22, fontWeight: '800' },
     summaryPillLabel: { fontSize: 11, fontWeight: '600' },
+    emptyState: {
+        borderWidth: 1,
+        borderRadius: 16,
+        paddingVertical: 24,
+        paddingHorizontal: 16,
+        alignItems: 'center',
+        marginTop: 6,
+    },
+    emptyStateTitle: { fontSize: 16 },
+    emptyStateText: { fontSize: 13, marginTop: 4 },
     hwCard: {
         borderRadius: 18,
         padding: 16,
