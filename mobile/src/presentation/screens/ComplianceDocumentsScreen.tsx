@@ -154,7 +154,7 @@ export default function ComplianceDocumentsScreen() {
                             <ThemedText style={styles.headerTitle} lightColor="#fff" darkColor="#fff" type="title">Compliance Documents</ThemedText>
                             <ThemedText style={styles.headerSubtitle} lightColor="#fff" darkColor="#fff">{totalCount} documents tracked</ThemedText>
                         </View>
-                        <TouchableOpacity style={styles.uploadButton} onPress={() => router.push('/add-edit-compliance-document' as any)}>
+                        <TouchableOpacity style={styles.uploadButton} onPress={() => router.push({ pathname: '/add-edit-compliance-document' as any })}>
                             <Ionicons name="push-outline" size={16} color={theme.colors.primary} />
                             <ThemedText style={styles.uploadButtonText} lightColor={theme.colors.primary} darkColor={theme.colors.primary}>Upload</ThemedText>
                         </TouchableOpacity>
