@@ -101,7 +101,7 @@ return (
                         actions={quickActions}
                         onActionPress={(action) => {
                             if (action.title === 'Manage Classes') {
-                                router.push('/classes' as any);
+                                router.push('/(tabs)/classes' as any);
                             }
                             if (action.title === 'Timetable') {
                                 router.push('/timetable-classes' as any);

@@ -215,7 +215,7 @@ export default function ClassesScreen() {
         />
         <Picker
             selectedValue={sortOption}
-            onValueChange={(itemValue) => setSortOption(itemValue)}
+            onValueChange={(itemValue: string) => setSortOption(itemValue)}
         >
             <Picker.Item label="Sort by Class Name" value="name" />
             <Picker.Item label="Sort by Academic Year" value="year" />
@@ -306,7 +306,7 @@ export default function ClassesScreen() {
                     {/* Academic Year Dropdown */}
                     <Picker
                         selectedValue={academicPeriodId}
-                        onValueChange={(itemValue) => setAcademicPeriodId(itemValue)}
+                        onValueChange={(itemValue: string) => setAcademicPeriodId(itemValue)}
                     >
                         {academicYears.map((year) => (
                             <Picker.Item

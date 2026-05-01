@@ -107,7 +107,7 @@ export default function TimetableClassListScreen() {
                                         className: item.name,
                                         section: item.section
                                     },
-                                })
+                                } as any)
                             }
                         >
 
