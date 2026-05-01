@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime
-import uuid
 
 from app.infrastructure.database.database import get_db
 from app.infrastructure.database.models import HomeworkModel
@@ -13,18 +12,18 @@ router = APIRouter(prefix="/homeworks", tags=["Homework"])
 # ✅ GET
 @router.get("/")
 async def get_homeworks(
-    className: str = None,
-    teacherId: str = None,
+    childId: str = None,
+    status: str = None,
     db: AsyncSession = Depends(get_db),
 ):
     try:
         query = select(HomeworkModel)
 
-        if teacherId:
-            query = query.where(HomeworkModel.teacherId == teacherId)
+        if childId:
+            query = query.where(HomeworkModel.child_id == int(childId))
 
-        if className:
-            query = query.where(HomeworkModel.className == className)
+        if status:
+            query = query.where(HomeworkModel.status == status)
 
         result = await db.execute(query)
         return result.scalars().all()
@@ -38,16 +37,16 @@ async def get_homeworks(
 @router.post("/")
 async def create_homework(data: dict, db: AsyncSession = Depends(get_db)):
     try:
+        child_id = data.get("child_id") or data.get("childId")
+        if child_id is None:
+            raise HTTPException(status_code=400, detail="child_id is required")
+
         new_hw = HomeworkModel(
-            id=str(uuid.uuid4()),
+            child_id=int(child_id),
             title=data.get("title"),
             description=data.get("description"),
             subject=data.get("subject"),
-            className=data.get("className"),
-            dueDate=data.get("dueDate"),
-            assignType=data.get("assignType", "ALL"),
-            students=",".join(data.get("students", [])) if isinstance(data.get("students"), list) else "",
-            teacherId=data.get("teacherId", "T1"),
+            status=data.get("status", "pending"),
             created_at=datetime.utcnow(),
         )
 
@@ -65,7 +64,7 @@ async def create_homework(data: dict, db: AsyncSession = Depends(get_db)):
 # ✅ UPDATE
 @router.put("/{homework_id}")
 async def update_homework(
-    homework_id: str,
+    homework_id: int,
     data: dict,
     db: AsyncSession = Depends(get_db),
 ):
@@ -81,12 +80,7 @@ async def update_homework(
         hw.title = data.get("title", hw.title)
         hw.description = data.get("description", hw.description)
         hw.subject = data.get("subject", hw.subject)
-        hw.className = data.get("className", hw.className)
-        hw.dueDate = data.get("dueDate", hw.dueDate)
-        hw.assignType = data.get("assignType", hw.assignType)
-
-        if "students" in data and isinstance(data.get("students"), list):
-            hw.students = ",".join(data.get("students"))
+        hw.status = data.get("status", hw.status)
 
         await db.commit()
         await db.refresh(hw)
@@ -101,7 +95,7 @@ async def update_homework(
 # ✅ DELETE 
 @router.delete("/{homework_id}")
 async def delete_homework(
-    homework_id: str,
+    homework_id: int,
     db: AsyncSession = Depends(get_db),
 ):
     try:

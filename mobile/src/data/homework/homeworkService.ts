@@ -1,16 +1,9 @@
-import axios from "axios";
-
-// ✅ FIXED BASE URL (temporary direct URL)
-const API = "http://127.0.0.1:8000/api/v1/homeworks";
-
-const apiClient = axios.create({
-  baseURL: API,
-});
+import { api } from '@/core/api-client';
 
 // ✅ GET
 export const getHomeworks = async () => {
   try {
-    const res = await apiClient.get("/");
+    const res = await api.get('/homeworks/');
     return res.data;
   } catch (error) {
     console.log("GET error:", error);
@@ -21,7 +14,7 @@ export const getHomeworks = async () => {
 // ✅ CREATE
 export const createHomework = async (data: any) => {
   try {
-    const res = await apiClient.post("/", data);
+    const res = await api.post('/homeworks/', data);
     return res.data;
   } catch (error) {
     console.log("POST error:", error);
@@ -32,7 +25,7 @@ export const createHomework = async (data: any) => {
 // ✅ UPDATE
 export const updateHomework = async (id: string, data: any) => {
   try {
-    const res = await apiClient.put(`/${id}`, data);
+    const res = await api.put(`/homeworks/${id}`, data);
     return res.data;
   } catch (error) {
     console.log("PUT error:", error);
@@ -45,7 +38,7 @@ export const deleteHomework = async (id: string) => {
   try {
     console.log("DELETE API CALL:", id);
 
-    const res = await apiClient.delete(`/${id}`);
+    const res = await api.delete(`/homeworks/${id}`);
 
     console.log("DELETE SUCCESS:", res.data);
 

@@ -1,5 +1,6 @@
 import { DASHBOARD_CONFIG } from '@/core/config/dashboard';
 import { useTheme } from '@/core/theme/ThemeContext';
+import { AcademicRepository } from '@/data/repositories/academic-repository-impl';
 import { QuickActionGrid } from '@/presentation/components/dashboard/QuickActionGrid';
 import { ThemedCard } from '@/presentation/components/ThemedCard';
 import { ThemedText } from '@/presentation/components/ThemedText';
@@ -8,7 +9,7 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,17 +20,61 @@ export default function ParentDashboard() {
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
     const router = useRouter();
+    const [pendingHomeworkCount, setPendingHomeworkCount] = useState(0);
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
+    const resolvedChildId = '1';
+    const childProfile = {
+        id: resolvedChildId,
+        name: 'Aarav Kumar',
+        className: '7-B',
+        rollNumber: '23',
+        rank: 'N/A',
+    };
 
     const getStatValue = (label: string, defaultValue: string = '0%') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
     };
 
-    const pendingHomework = Number(getStatValue('Pending Homework', '5'));
+    const loadPendingHomeworkCount = useCallback(async () => {
+        try {
+            const summary = await AcademicRepository.getAcademicSummary(
+                resolvedChildId
+            );
+            setPendingHomeworkCount(summary.pending_homework_count);
+        } catch {
+            // Preserve the last successful value when refresh fails.
+        }
+    }, [resolvedChildId]);
+
+    useEffect(() => {
+        loadPendingHomeworkCount();
+    }, [loadPendingHomeworkCount]);
+
+    const handleRefresh = async () => {
+        await Promise.allSettled([onRefresh(), loadPendingHomeworkCount()]);
+    };
 
     const handleHomeworkCounterPress = () => {
-        router.push('/academics?initialTab=homework');
+        router.push(`/academics?initialTab=homework&childId=${resolvedChildId}`);
+    };
+
+    const handlePerformancePress = () => {
+        const attendanceValue = String(getStatValue('Attendance', '88%'));
+        const avgMarksValue = String(getStatValue('Avg Marks', '85%'));
+        router.push({
+            pathname: '/student-profile',
+            params: {
+                name: childProfile.name,
+                class: childProfile.className,
+                roll: childProfile.rollNumber,
+                attendance: attendanceValue,
+                marks: avgMarksValue,
+                rank: childProfile.rank,
+                initialTab: 'exams',
+                childId: childProfile.id,
+            },
+        });
     };
 
     const handleQuickActionPress = (action: any) => {
@@ -44,7 +89,7 @@ export default function ParentDashboard() {
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primaryForeground} />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={theme.colors.primaryForeground} />}
             >
                 {/* Blue Banner Header */}
                 <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
@@ -71,8 +116,10 @@ export default function ParentDashboard() {
                                         <ThemedText style={{ color: theme.colors.primary, fontWeight: '700' }}>AK</ThemedText>
                                     </View>
                                     <View>
-                                        <ThemedText style={styles.childName} type="defaultSemiBold">Aarav Kumar</ThemedText>
-                                        <ThemedText style={styles.childClass} lightColor="#666" darkColor="#999">Class 7-B • Roll 23</ThemedText>
+                                        <ThemedText style={styles.childName} type="defaultSemiBold">{childProfile.name}</ThemedText>
+                                        <ThemedText style={styles.childClass} lightColor="#666" darkColor="#999">
+                                            Class {childProfile.className} • Roll {childProfile.rollNumber}
+                                        </ThemedText>
                                     </View>
                                 </View>
 
@@ -80,17 +127,27 @@ export default function ParentDashboard() {
                                     <View style={[styles.childStatBox, { backgroundColor: '#10b98115' }]}>
                                         <View style={[styles.statDot, { backgroundColor: '#10b981' }]} />
                                         <View>
-                                            <ThemedText style={styles.statValue} type="defaultSemiBold">{getStatValue('Attendance', '88%')}</ThemedText>
+                                            <ThemedText style={styles.statValue} type="defaultSemiBold">
+                                                {String(getStatValue('Attendance', '88%'))}
+                                            </ThemedText>
                                             <ThemedText style={styles.statLabel} lightColor="#666" darkColor="#999">Attendance</ThemedText>
                                         </View>
                                     </View>
-                                    <View style={[styles.childStatBox, { backgroundColor: '#3b82f615' }]}>
+                                    <TouchableOpacity
+                                        style={[styles.childStatBox, { backgroundColor: '#3b82f615' }]}
+                                        onPress={handlePerformancePress}
+                                        activeOpacity={0.75}
+                                        accessibilityRole="button"
+                                        accessibilityLabel="View exam results"
+                                    >
                                         <View style={[styles.statDot, { backgroundColor: '#3b82f6' }]} />
                                         <View>
-                                            <ThemedText style={styles.statValue} type="defaultSemiBold">{getStatValue('Avg Marks', '85%')}</ThemedText>
+                                            <ThemedText style={styles.statValue} type="defaultSemiBold">
+                                                {String(getStatValue('Avg Marks', '85%'))}
+                                            </ThemedText>
                                             <ThemedText style={styles.statLabel} lightColor="#666" darkColor="#999">Avg Marks</ThemedText>
                                         </View>
-                                    </View>
+                                    </TouchableOpacity>
                                 </View>
 
                                 {/* Pending Homework Counter Card — Issue #294 */}
@@ -105,7 +162,7 @@ export default function ParentDashboard() {
                                         </View>
                                         <View>
                                             <ThemedText style={[styles.homeworkCounterValue, { color: '#f59e0b' }]} type="defaultSemiBold">
-                                                {pendingHomework} Pending
+                                                {pendingHomeworkCount} Pending
                                             </ThemedText>
                                             <ThemedText style={styles.homeworkCounterLabel} lightColor="#666" darkColor="#999">
                                                 Homework assignments
