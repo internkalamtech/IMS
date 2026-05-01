@@ -88,26 +88,37 @@ export default function StudentDashboard() {
                     </View>
 
                      <QuickActionGrid actions={quickActions} />
-                    {/* Notice Board */}
+                    {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
-                        <ThemedText style={styles.sectionTitle} type="subtitle">Notice Board</ThemedText>
+                        <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
+                        <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
+                            <ThemedText style={styles.badgeText} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>4 new</ThemedText>
+                        </View>
                     </View>
                     <ThemedCard style={styles.updatesCard} padding={0}>
-                        {[1, 2].map((item, index) => (
-                            <View key={item} style={[
+                        {[
+                            { icon: 'book', color: '#3b82f6', title: 'Mathematics Homework Assigned', subtitle: 'Chapter 5 - Algebra', time: '2 hours ago' },
+                            { icon: 'school', color: '#f59e0b', title: 'Science Test Result Published', subtitle: 'Score: 85/100', time: '5 hours ago' },
+                            { icon: 'megaphone', color: '#10b981', title: 'Sports Day Announcement', subtitle: 'January 25, 2026', time: '1 day ago' },
+                            { icon: 'mail', color: '#ef4444', title: 'Fee Payment Reminder', subtitle: 'Due: January 30, 2026', time: '2 days ago' },
+                        ].map((item, index) => (
+                            <View key={index} style={[
                                 styles.updateItem,
-                                index !== 1 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
+                                index !== 3 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
                             ]}>
-                                <View style={[styles.updateIcon, { backgroundColor: theme.colors.accent }]}>
-                                    <Ionicons name="notifications" size={20} color={theme.colors.primary} />
+                                <View style={[styles.updateIcon, { backgroundColor: `${item.color}15` }]}>
+                                    <Ionicons name={item.icon as any} size={20} color={item.color} />
                                 </View>
                                 <View style={styles.updateContent}>
-                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">Science Fair Registration</ThemedText>
-                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">Deadline: 25th Oct</ThemedText>
+                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">{item.title}</ThemedText>
+                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">{item.subtitle}</ThemedText>
                                 </View>
-                                <TouchableOpacity>
-                                    <ThemedText style={styles.viewLink} type="link">View →</ThemedText>
-                                </TouchableOpacity>
+                                <View>
+                                    <ThemedText style={[styles.updateTime, { fontSize: 11 }]} lightColor="#999" darkColor="#666">{item.time}</ThemedText>
+                                    <TouchableOpacity style={{ marginTop: 4 }}>
+                                        <ThemedText style={styles.viewLink} type="link">View →</ThemedText>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         ))}
                     </ThemedCard>
@@ -192,6 +203,18 @@ const styles = StyleSheet.create({
     sectionTitle: {
         marginBottom: 4,
     },
+    badge: {
+        backgroundColor: '#2563eb',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        marginLeft: 12,
+    },
+    badgeText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '600',
+    },
     quickActionsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -240,6 +263,9 @@ const styles = StyleSheet.create({
     },
     updateSubtitle: {
         marginBottom: 4,
+    },
+    updateTime: {
+        fontSize: 11,
     },
     viewLink: {
         fontWeight: '600',

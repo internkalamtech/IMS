@@ -11,7 +11,6 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import { Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -103,10 +102,10 @@ return (
                         actions={quickActions}
                         onActionPress={(action) => {
                             if (action.title === 'Manage Classes') {
-                                router.push('/(tabs)/classes');
+                                router.push('/classes' as any);
                             }
                             if (action.title === 'Timetable') {
-                                router.push('/timetable-classes');
+                                router.push('/timetable-classes' as any);
                             }
                         }}
                     />
