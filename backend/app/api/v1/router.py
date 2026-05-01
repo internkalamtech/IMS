@@ -25,6 +25,7 @@ from app.api.v1.endpoints.staff import router as staff_router
 
 # Create v1 router
 router = APIRouter(prefix="/v1")
+router.include_router(attendance.router)
 
 # Include endpoint routers
 router.include_router(auth.router)
@@ -38,7 +39,7 @@ router.include_router(payments.router)
 router.include_router(students.router)
 router.include_router(timetable.router)
 router.include_router(enrollment.router)
-router.include_router(student_academic.router)
+#router.include_router(student_academic.router)
 router.include_router(trips.router)
 router.include_router(documents.router)
 router.include_router(staff_router)

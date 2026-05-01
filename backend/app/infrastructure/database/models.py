@@ -12,6 +12,7 @@ Best practices followed:
 
 from datetime import datetime
 from typing import List, Optional
+from sqlalchemy import UniqueConstraint
 
 from sqlalchemy import (
     Boolean,
@@ -263,7 +264,7 @@ class_subject_link = Table(
     "class_subject_link",
     Base.metadata,
     Column(
-        "class_id",
+        "class_name",
         Integer,
         ForeignKey("class_sections.id", ondelete="CASCADE"),
         primary_key=True,
@@ -311,7 +312,7 @@ class StudentModel(Base):
     roll_number: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
     )
-    class_id: Mapped[int | None] = mapped_column(
+    class_name: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("class_sections.id", ondelete="SET NULL"),
         nullable=True,
