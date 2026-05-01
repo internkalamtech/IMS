@@ -1,16 +1,45 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "@/core/theme/ThemeContext";
-import { ScrollView } from "react-native";
 export default function StudentProfile() {
   const { theme } = useTheme();
   const router = useRouter();
 
-  const { name, roll, class: studentClass, attendance, marks, rank } =
+  const { name, roll, class: studentClass, attendance, marks, rank, initialTab } =
     useLocalSearchParams();
+  const tabLabels = ["Overview", "Exams", "Attendance", "Conduct", "Fees"];
+  const normalizedInitialTab =
+    typeof initialTab === "string" ? initialTab.toLowerCase() : undefined;
+  const [activeTab, setActiveTab] = useState(0);
+  const [examSectionY, setExamSectionY] = useState<number | null>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
+
+  useEffect(() => {
+    if (!normalizedInitialTab) {
+      setActiveTab(0);
+      return;
+    }
+
+    const resolvedIndex = tabLabels.findIndex(
+      (tab) => tab.toLowerCase() === normalizedInitialTab
+    );
+    setActiveTab(resolvedIndex >= 0 ? resolvedIndex : 0);
+  }, [normalizedInitialTab]);
+
+  useEffect(() => {
+    if (normalizedInitialTab !== "exams" || examSectionY === null) {
+      return;
+    }
+
+    scrollRef.current?.scrollTo({
+      y: Math.max(0, examSectionY - 12),
+      animated: true,
+    });
+  }, [normalizedInitialTab, examSectionY]);
 
   return (
-  <ScrollView style={{ flex: 1, backgroundColor: "#f5f7fb" }}>
+  <ScrollView ref={scrollRef} style={{ flex: 1, backgroundColor: "#f5f7fb" }}>
     
     {/* BLUE HEADER */}
     <View style={styles.header}>
@@ -47,25 +76,21 @@ export default function StudentProfile() {
         </View>
       </View>
       <View style={styles.tabsContainer}>
-  {["Overview", "Exams", "Attendance", "Conduct", "Fees"].map((tab, index) => (
-    <TouchableOpacity
-      key={index}
-      style={[
-        styles.tab,
-        index === 0 && styles.activeTab // default active = Overview
-      ]}
-    >
-      <Text
-        style={[
-          styles.tabText,
-          index === 0 && styles.activeTabText
-        ]}
-      >
-        {tab}
-      </Text>
-    </TouchableOpacity>
-  ))}
-</View>
+        {tabLabels.map((tab, index) => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.tab, index === activeTab && styles.activeTab]}
+            onPress={() => setActiveTab(index)}
+            activeOpacity={0.8}
+          >
+            <Text
+              style={[styles.tabText, index === activeTab && styles.activeTabText]}
+            >
+              {tab}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
 <View style={styles.section}>
   <Text style={styles.sectionTitle}>Parent/Guardian Contact</Text>
@@ -144,7 +169,10 @@ export default function StudentProfile() {
 </View>
 
 
-<View style={styles.section}>
+<View
+  style={styles.section}
+  onLayout={(event) => setExamSectionY(event.nativeEvent.layout.y)}
+>
   <Text style={styles.sectionTitle}>Recent Exam Results</Text>
 
   {/* Exam 1 */}

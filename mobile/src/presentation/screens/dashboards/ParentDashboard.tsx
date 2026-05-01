@@ -24,6 +24,13 @@ export default function ParentDashboard() {
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
     const resolvedChildId = '1';
+    const childProfile = {
+        id: resolvedChildId,
+        name: 'Aarav Kumar',
+        className: '7-B',
+        rollNumber: '23',
+        rank: 'N/A',
+    };
 
     const getStatValue = (label: string, defaultValue: string = '0%') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
@@ -49,7 +56,25 @@ export default function ParentDashboard() {
     };
 
     const handleHomeworkCounterPress = () => {
-        router.push('/academics?initialTab=homework&childId=1');
+        router.push(`/academics?initialTab=homework&childId=${resolvedChildId}`);
+    };
+
+    const handlePerformancePress = () => {
+        const attendanceValue = String(getStatValue('Attendance', '88%'));
+        const avgMarksValue = String(getStatValue('Avg Marks', '85%'));
+        router.push({
+            pathname: '/student-profile',
+            params: {
+                name: childProfile.name,
+                class: childProfile.className,
+                roll: childProfile.rollNumber,
+                attendance: attendanceValue,
+                marks: avgMarksValue,
+                rank: childProfile.rank,
+                initialTab: 'exams',
+                childId: childProfile.id,
+            },
+        });
     };
 
     const handleQuickActionPress = (action: any) => {
@@ -91,8 +116,10 @@ export default function ParentDashboard() {
                                         <ThemedText style={{ color: theme.colors.primary, fontWeight: '700' }}>AK</ThemedText>
                                     </View>
                                     <View>
-                                        <ThemedText style={styles.childName} type="defaultSemiBold">Aarav Kumar</ThemedText>
-                                        <ThemedText style={styles.childClass} lightColor="#666" darkColor="#999">Class 7-B • Roll 23</ThemedText>
+                                        <ThemedText style={styles.childName} type="defaultSemiBold">{childProfile.name}</ThemedText>
+                                        <ThemedText style={styles.childClass} lightColor="#666" darkColor="#999">
+                                            Class {childProfile.className} • Roll {childProfile.rollNumber}
+                                        </ThemedText>
                                     </View>
                                 </View>
 
@@ -100,17 +127,27 @@ export default function ParentDashboard() {
                                     <View style={[styles.childStatBox, { backgroundColor: '#10b98115' }]}>
                                         <View style={[styles.statDot, { backgroundColor: '#10b981' }]} />
                                         <View>
-                                            <ThemedText style={styles.statValue} type="defaultSemiBold">{getStatValue('Attendance', '88%')}</ThemedText>
+                                            <ThemedText style={styles.statValue} type="defaultSemiBold">
+                                                {String(getStatValue('Attendance', '88%'))}
+                                            </ThemedText>
                                             <ThemedText style={styles.statLabel} lightColor="#666" darkColor="#999">Attendance</ThemedText>
                                         </View>
                                     </View>
-                                    <View style={[styles.childStatBox, { backgroundColor: '#3b82f615' }]}>
+                                    <TouchableOpacity
+                                        style={[styles.childStatBox, { backgroundColor: '#3b82f615' }]}
+                                        onPress={handlePerformancePress}
+                                        activeOpacity={0.75}
+                                        accessibilityRole="button"
+                                        accessibilityLabel="View exam results"
+                                    >
                                         <View style={[styles.statDot, { backgroundColor: '#3b82f6' }]} />
                                         <View>
-                                            <ThemedText style={styles.statValue} type="defaultSemiBold">{getStatValue('Avg Marks', '85%')}</ThemedText>
+                                            <ThemedText style={styles.statValue} type="defaultSemiBold">
+                                                {String(getStatValue('Avg Marks', '85%'))}
+                                            </ThemedText>
                                             <ThemedText style={styles.statLabel} lightColor="#666" darkColor="#999">Avg Marks</ThemedText>
                                         </View>
-                                    </View>
+                                    </TouchableOpacity>
                                 </View>
 
                                 {/* Pending Homework Counter Card — Issue #294 */}
