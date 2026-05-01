@@ -156,6 +156,38 @@ class HomeworkModel(Base):
             f"title='{self.title}', status='{self.status}')>"
         )
     
+
+class AttendanceModel(Base):
+    """
+    Attendance database model.
+
+    Stores daily attendance records for students.
+    """
+
+    __tablename__ = "attendance"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    class_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    subject: Mapped[str] = mapped_column(String(100), nullable=False)
+    date: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    teacher_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("teachers.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Optional relationships
+    student: Mapped["StudentModel"] = relationship("StudentModel")
+    teacher: Mapped[Optional["TeacherModel"]] = relationship("TeacherModel")
+    
 class SubjectModel(Base):
     """
     Subject database model.

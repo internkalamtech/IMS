@@ -239,6 +239,22 @@ class AcademicSummaryResponse(BaseModel):
     pending_homework_count: int
 
 
+class StudentTimetableResponse(BaseModel):
+    """Response model returned to a student for their timetable."""
+
+    timetable: List[TimetableDayResponse]
+    class_id: int
+    class_name: str
+
+
+class StudentHomeworkMaterialsResponse(BaseModel):
+    """Response model for student homework and learning materials."""
+
+    homework: List[dict]
+    materials: List[dict]
+    class_id: int
+
+
 # Transport-related schemas
 class RouteResponse(BaseModel):
     """Response schema for route data."""
