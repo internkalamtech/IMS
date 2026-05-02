@@ -634,46 +634,18 @@ async def get_student_fee_structures(
             detail="Access restricted to admin or parent accounts.",
         )
 
-    try:
-        Logger.info(
-            f"Fetching fee structures for student={student_id} "
-            f"by user={current_user.id}"
-        )
+    Logger.info(
+        f"Fetching fee structures for student={student_id} "
+        f"by user={current_user.id}"
+    )
 
+    try:
         repository = DatabasePaymentRepository(db)
         use_case = GetStudentFeeStructureUseCase(repository)
         fee_structures = await use_case.execute(student_id)
 
         # Fetch the student once to populate the response correctly
         student = await repository.get_student_by_id(student_id)
-        if student is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Student with id {student_id} not found.",
-            )
-        student_response = PaymentStudentResponse(
-            id=student.id,
-            name=student.name,
-            roll_number=student.roll_number,
-            class_name=student.class_name,
-            next_due_date=student.next_due_date,
-        )
-
-        return [
-            FeeStructureResponse(
-                id=fs.id,
-                student_id=fs.student_id,
-                total_fee=fs.total_fee,
-                amount_paid=fs.amount_paid,
-                balance=fs.balance,
-                fee_type=fs.fee_type,
-                academic_year=fs.academic_year,
-                student=student_response,
-            )
-            for fs in fee_structures
-        ]
-    except HTTPException:
-        raise
     except NotFoundError as exc:
         Logger.warning(f"Student not found: {exc}")
         raise HTTPException(
@@ -685,6 +657,34 @@ async def get_student_fee_structures(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve fee structures. Please try again later.",
         )
+
+    if student is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Student with id {student_id} not found.",
+        )
+
+    student_response = PaymentStudentResponse(
+        id=student.id,
+        name=student.name,
+        roll_number=student.roll_number,
+        class_name=student.class_name,
+        next_due_date=student.next_due_date,
+    )
+
+    return [
+        FeeStructureResponse(
+            id=fs.id,
+            student_id=fs.student_id,
+            total_fee=fs.total_fee,
+            amount_paid=fs.amount_paid,
+            balance=fs.balance,
+            fee_type=fs.fee_type,
+            academic_year=fs.academic_year,
+            student=student_response,
+        )
+        for fs in fee_structures
+    ]
 
 
 @router.get(
@@ -834,45 +834,15 @@ async def get_my_fee_structures(
     # cast it to int to use as the student record lookup key.
     student_id = int(current_user.id)
 
-    try:
-        Logger.info(
-            f"Fetching fee structures for student={student_id}"
-        )
+    Logger.info(f"Fetching fee structures for student={student_id}")
 
+    try:
         repository = DatabasePaymentRepository(db)
         use_case = GetStudentFeeStructureUseCase(repository)
         fee_structures = await use_case.execute(student_id)
 
         # Fetch the student once to populate the response correctly
         student = await repository.get_student_by_id(student_id)
-        if student is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Student record not found for user {student_id}.",
-            )
-        student_response = PaymentStudentResponse(
-            id=student.id,
-            name=student.name,
-            roll_number=student.roll_number,
-            class_name=student.class_name,
-            next_due_date=student.next_due_date,
-        )
-
-        return [
-            FeeStructureResponse(
-                id=fs.id,
-                student_id=fs.student_id,
-                total_fee=fs.total_fee,
-                amount_paid=fs.amount_paid,
-                balance=fs.balance,
-                fee_type=fs.fee_type,
-                academic_year=fs.academic_year,
-                student=student_response,
-            )
-            for fs in fee_structures
-        ]
-    except HTTPException:
-        raise
     except NotFoundError as exc:
         Logger.warning(f"Student not found: {exc}")
         raise HTTPException(
@@ -884,6 +854,34 @@ async def get_my_fee_structures(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve your fee structures. Please try again later.",
         )
+
+    if student is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Student record not found for user {student_id}.",
+        )
+
+    student_response = PaymentStudentResponse(
+        id=student.id,
+        name=student.name,
+        roll_number=student.roll_number,
+        class_name=student.class_name,
+        next_due_date=student.next_due_date,
+    )
+
+    return [
+        FeeStructureResponse(
+            id=fs.id,
+            student_id=fs.student_id,
+            total_fee=fs.total_fee,
+            amount_paid=fs.amount_paid,
+            balance=fs.balance,
+            fee_type=fs.fee_type,
+            academic_year=fs.academic_year,
+            student=student_response,
+        )
+        for fs in fee_structures
+    ]
 
 
 @router.get(

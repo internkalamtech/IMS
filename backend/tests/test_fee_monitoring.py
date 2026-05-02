@@ -174,7 +174,7 @@ async def test_fee_monitoring_endpoint_parent_not_found(monkeypatch):
     app.dependency_overrides[get_current_user] = lambda: admin_user
 
     # Patch GetParentFeeMonitoringUseCase.execute to raise NotFoundError
-    async def _mock_execute(self, parent_id: int):  # noqa: ANN001
+    async def _mock_execute(self: GetParentFeeMonitoringUseCase, parent_id: int) -> None:
         raise NotFoundError(f"Parent with id {parent_id} not found.")
 
     monkeypatch.setattr(
@@ -204,7 +204,9 @@ async def test_fee_monitoring_endpoint_admin_own_parent_allowed(monkeypatch):
     student = _make_student(student_id=10)
     fee_structure = _make_fee_structure(fs_id=100, student_id=10)
 
-    async def _mock_execute(self, parent_id: int):  # noqa: ANN001
+    from typing import Tuple
+
+    async def _mock_execute(self: GetParentFeeMonitoringUseCase, parent_id: int) -> Tuple:
         return parent, [(student, [(fee_structure, [])])]
 
     monkeypatch.setattr(
@@ -238,7 +240,9 @@ async def test_fee_monitoring_endpoint_parent_own_data_allowed(monkeypatch):
     student = _make_student(student_id=10)
     fee_structure = _make_fee_structure(fs_id=100, student_id=10)
 
-    async def _mock_execute(self, parent_id: int):  # noqa: ANN001
+    from typing import Tuple
+
+    async def _mock_execute(self: GetParentFeeMonitoringUseCase, parent_id: int) -> Tuple:
         return parent, [(student, [(fee_structure, [])])]
 
     monkeypatch.setattr(
