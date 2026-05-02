@@ -187,6 +187,7 @@ async def create_student_with_parent(
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
+        403: {"model": ErrorResponse, "description": "Forbidden"},
         404: {"model": ErrorResponse, "description": "Parent not found"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
@@ -220,9 +221,19 @@ async def get_parent_fee_monitoring(
         ParentFeeLedgerResponse with parent and children fee data
 
     Raises:
+        HTTPException 403: If the user is not an admin or the parent themselves
         HTTPException 404: If parent is not found
         HTTPException 500: If an unexpected error occurs
     """
+    # Only admins or the parent themselves may access this data.
+    # current_user.id is the string form of users.id; cast to int for comparison.
+    if current_user.role != "admin":
+        if current_user.role != "parent" or int(current_user.id) != parent_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access restricted to admin or the parent account owner.",
+            )
+
     try:
         Logger.info(
             f"Fetching fee monitoring for parent={parent_id} "

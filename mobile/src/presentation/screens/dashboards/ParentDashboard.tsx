@@ -9,7 +9,7 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -20,7 +20,7 @@ export default function ParentDashboard() {
     const { data: dashboardData, loading, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
     const router = useRouter();
-    const [selectedChildIndex, setSelectedChildIndex] = useState(0);
+    const selectedChildIndex = 0;
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
 

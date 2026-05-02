@@ -27,6 +27,7 @@ from app.api.schemas import (
     PaymentStatus,
     StudentResponse,
     FeeStructureResponse,
+    PaymentStudentResponse,
 )
 from app.core.errors import DatabaseError, NotFoundError, ValidationError
 from app.core.logger import Logger
@@ -592,6 +593,7 @@ async def export_payments_csv(
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
+        403: {"model": ErrorResponse, "description": "Forbidden"},
         404: {"model": ErrorResponse, "description": "Student not found"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
@@ -622,9 +624,16 @@ async def get_student_fee_structures(
         List of FeeStructureResponse objects
 
     Raises:
+        HTTPException 403: If the user is not an admin or parent
         HTTPException 404: If student is not found
         HTTPException 500: If an unexpected error occurs
     """
+    if current_user.role not in ("admin", "parent"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to admin or parent accounts.",
+        )
+
     try:
         Logger.info(
             f"Fetching fee structures for student={student_id} "
@@ -635,6 +644,21 @@ async def get_student_fee_structures(
         use_case = GetStudentFeeStructureUseCase(repository)
         fee_structures = await use_case.execute(student_id)
 
+        # Fetch the student once to populate the response correctly
+        student = await repository.get_student_by_id(student_id)
+        if student is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Student with id {student_id} not found.",
+            )
+        student_response = PaymentStudentResponse(
+            id=student.id,
+            name=student.name,
+            roll_number=student.roll_number,
+            class_name=student.class_name,
+            next_due_date=student.next_due_date,
+        )
+
         return [
             FeeStructureResponse(
                 id=fs.id,
@@ -644,16 +668,12 @@ async def get_student_fee_structures(
                 balance=fs.balance,
                 fee_type=fs.fee_type,
                 academic_year=fs.academic_year,
-                student=StudentResponse(
-                    id=student_id,
-                    name="",  # Will be populated by the repository
-                    roll_number="",
-                    class_name="",
-                    next_due_date=None,
-                ),
+                student=student_response,
             )
             for fs in fee_structures
         ]
+    except HTTPException:
+        raise
     except NotFoundError as exc:
         Logger.warning(f"Student not found: {exc}")
         raise HTTPException(
@@ -673,6 +693,7 @@ async def get_student_fee_structures(
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
+        403: {"model": ErrorResponse, "description": "Forbidden"},
         404: {"model": ErrorResponse, "description": "Student not found"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
@@ -712,9 +733,16 @@ async def get_student_transactions(
         List of PaymentResponse objects
 
     Raises:
+        HTTPException 403: If the user is not an admin or parent
         HTTPException 404: If student is not found
         HTTPException 500: If an unexpected error occurs
     """
+    if current_user.role not in ("admin", "parent"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to admin or parent accounts.",
+        )
+
     try:
         Logger.info(
             f"Fetching transaction history for student={student_id} "
@@ -723,10 +751,7 @@ async def get_student_transactions(
 
         repository = DatabasePaymentRepository(db)
         use_case = GetStudentTransactionHistoryUseCase(repository)
-        transactions = await use_case.execute(student_id)
-
-        # Apply pagination
-        paginated_transactions = transactions[skip : skip + limit]
+        transactions = await use_case.execute(student_id, skip=skip, limit=limit)
 
         return [
             PaymentResponse(
@@ -741,7 +766,7 @@ async def get_student_transactions(
                 remarks=t.remarks,
                 payment_date=t.payment_date,
             )
-            for t in paginated_transactions
+            for t in transactions
         ]
     except NotFoundError as exc:
         Logger.warning(f"Student not found: {exc}")
@@ -767,6 +792,7 @@ async def get_student_transactions(
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
+        403: {"model": ErrorResponse, "description": "Forbidden"},
         404: {"model": ErrorResponse, "description": "Student not found"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
@@ -794,20 +820,43 @@ async def get_my_fee_structures(
         List of FeeStructureResponse objects for the student
 
     Raises:
-        HTTPException 404: If student is not found
+        HTTPException 403: If the user is not a student
+        HTTPException 404: If student record is not found
         HTTPException 500: If an unexpected error occurs
     """
+    if current_user.role != "student":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to student accounts.",
+        )
+
+    # current_user.id is the string representation of the users.id integer PK;
+    # cast it to int to use as the student record lookup key.
+    student_id = int(current_user.id)
+
     try:
-        # For students, the user ID is their student ID
-        # In a real implementation, you might have a user_type field to determine
-        # if this is a student
         Logger.info(
-            f"Fetching fee structures for student={current_user.id}"
+            f"Fetching fee structures for student={student_id}"
         )
 
         repository = DatabasePaymentRepository(db)
         use_case = GetStudentFeeStructureUseCase(repository)
-        fee_structures = await use_case.execute(current_user.id)
+        fee_structures = await use_case.execute(student_id)
+
+        # Fetch the student once to populate the response correctly
+        student = await repository.get_student_by_id(student_id)
+        if student is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Student record not found for user {student_id}.",
+            )
+        student_response = PaymentStudentResponse(
+            id=student.id,
+            name=student.name,
+            roll_number=student.roll_number,
+            class_name=student.class_name,
+            next_due_date=student.next_due_date,
+        )
 
         return [
             FeeStructureResponse(
@@ -818,16 +867,12 @@ async def get_my_fee_structures(
                 balance=fs.balance,
                 fee_type=fs.fee_type,
                 academic_year=fs.academic_year,
-                student=StudentResponse(
-                    id=current_user.id,
-                    name="",
-                    roll_number="",
-                    class_name="",
-                    next_due_date=None,
-                ),
+                student=student_response,
             )
             for fs in fee_structures
         ]
+    except HTTPException:
+        raise
     except NotFoundError as exc:
         Logger.warning(f"Student not found: {exc}")
         raise HTTPException(
@@ -847,6 +892,7 @@ async def get_my_fee_structures(
     status_code=status.HTTP_200_OK,
     responses={
         401: {"model": ErrorResponse, "description": "Unauthorized"},
+        403: {"model": ErrorResponse, "description": "Forbidden"},
         404: {"model": ErrorResponse, "description": "Student not found"},
         500: {"model": ErrorResponse, "description": "Internal server error"},
     },
@@ -884,20 +930,28 @@ async def get_my_payment_history(
         List of PaymentResponse objects for the student
 
     Raises:
-        HTTPException 404: If student is not found
+        HTTPException 403: If the user is not a student
+        HTTPException 404: If student record is not found
         HTTPException 500: If an unexpected error occurs
     """
+    if current_user.role != "student":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to student accounts.",
+        )
+
+    # current_user.id is the string representation of the users.id integer PK;
+    # cast it to int to use as the student record lookup key.
+    student_id = int(current_user.id)
+
     try:
         Logger.info(
-            f"Fetching payment history for student={current_user.id}"
+            f"Fetching payment history for student={student_id}"
         )
 
         repository = DatabasePaymentRepository(db)
         use_case = GetStudentTransactionHistoryUseCase(repository)
-        transactions = await use_case.execute(current_user.id)
-
-        # Apply pagination
-        paginated_transactions = transactions[skip : skip + limit]
+        transactions = await use_case.execute(student_id, skip=skip, limit=limit)
 
         return [
             PaymentResponse(
@@ -912,7 +966,7 @@ async def get_my_payment_history(
                 remarks=t.remarks,
                 payment_date=t.payment_date,
             )
-            for t in paginated_transactions
+            for t in transactions
         ]
     except NotFoundError as exc:
         Logger.warning(f"Student not found: {exc}")

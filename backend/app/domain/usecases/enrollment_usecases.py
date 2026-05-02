@@ -225,7 +225,7 @@ class GetParentFeeMonitoringUseCase:
         self,
         parent_repo: ParentRepository,
         payment_repo: PaymentRepository,
-    ):
+    ) -> None:
         """
         Initialize the use case.
 

@@ -11,6 +11,7 @@ from typing import List, Optional
 
 from app.core.errors import NotFoundError, ValidationError
 from app.domain.entities.payment import (
+    FeeStructure,
     Payment,
     PaymentStatus,
     PaymentSummary,
@@ -364,7 +365,7 @@ class GetStudentFeeStructureUseCase:
         """
         self.repository = repository
 
-    async def execute(self, student_id: int) -> List:
+    async def execute(self, student_id: int) -> List[FeeStructure]:
         """
         Retrieve all fee structures for a student.
 
@@ -398,12 +399,16 @@ class GetStudentTransactionHistoryUseCase:
         """
         self.repository = repository
 
-    async def execute(self, student_id: int) -> List[Payment]:
+    async def execute(
+        self, student_id: int, skip: int = 0, limit: int = 100
+    ) -> List[Payment]:
         """
-        Retrieve all payment transactions for a student.
+        Retrieve payment transactions for a student with pagination.
 
         Args:
             student_id: Unique identifier of the student
+            skip: Number of records to skip (pagination offset)
+            limit: Maximum number of records to return
 
         Returns:
             List of Payment entities for the student
@@ -416,6 +421,8 @@ class GetStudentTransactionHistoryUseCase:
         if student is None:
             raise NotFoundError(f"Student with id {student_id} not found.")
 
-        # Get all payments for the student
-        return await self.repository.list_payments(student_id=student_id)
+        # Get payments for the student with explicit pagination
+        return await self.repository.list_payments(
+            student_id=student_id, skip=skip, limit=limit
+        )
     

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet, StatusBar, Dimensions } from 'react-native';
+import React from 'react';
+import { View, ScrollView, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/presentation/components/ThemedView';
 import { ThemedText } from '@/presentation/components/ThemedText';
@@ -7,9 +7,6 @@ import { ThemedCard } from '@/presentation/components/ThemedCard';
 import { FeeSummaryCard } from '@/presentation/components/dashboard/FeeSummaryCard';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native';
-
-const { width } = Dimensions.get('window');
 
 interface StudentFeeData {
     studentName: string;

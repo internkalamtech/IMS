@@ -1,12 +1,10 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedCard } from '../ThemedCard';
 import { ThemedText } from '../ThemedText';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-
-const { width } = Dimensions.get('window');
 
 interface FeeSummaryCardProps {
     totalFees: number;

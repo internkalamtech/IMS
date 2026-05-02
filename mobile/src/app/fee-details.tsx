@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet, SectionList, StatusBar } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import React from 'react';
+import { View, ScrollView, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ThemedView } from '@/presentation/components/ThemedView';
 import { ThemedText } from '@/presentation/components/ThemedText';
 import { ThemedCard } from '@/presentation/components/ThemedCard';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native';
 
 interface FeeComponent {
     id: string;
@@ -34,7 +33,6 @@ interface FeeData {
 export default function FeeDetailsScreen() {
     const router = useRouter();
     const { theme } = useTheme();
-    const params = useLocalSearchParams();
 
     // Sample data - In a real app, this would come from an API
     const feeData: FeeData = {
