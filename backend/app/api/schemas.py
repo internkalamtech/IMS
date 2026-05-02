@@ -166,6 +166,44 @@ class DashboardResponse(BaseModel):
     stats: list[StatItem]
 
 
+class RecentUpdate(BaseModel):
+    """Schema for a recent update/activity item."""
+
+    id: str | None = None
+    icon: str
+    title: str
+    subtitle: str
+    timestamp: str
+    type: Literal["homework", "exam", "announcement", "fee", "meeting"] | None = None
+
+
+class ChildInfo(BaseModel):
+    """Schema for child information (for parent dashboard)."""
+
+    id: str
+    name: str
+    class_name: str
+    roll_number: str
+    avatar_initials: str
+
+
+class ParentDashboardResponse(BaseModel):
+    """Response schema for parent dashboard endpoint."""
+
+    role: str
+    child: ChildInfo | None = None
+    stats: list[StatItem]
+    recent_updates: list[RecentUpdate] = []
+
+
+class StudentDashboardResponse(BaseModel):
+    """Response schema for student dashboard endpoint."""
+
+    role: str
+    stats: list[StatItem]
+    recent_updates: list[RecentUpdate] = []
+
+
 class AcademicSummaryResponse(BaseModel):
     """Response schema for the academic summary endpoint."""
 
@@ -702,13 +740,30 @@ class StudentBoardingResponse(BaseModel):
 
     model_config = {"populate_by_name": True}
 
+# =========================
+# 📅 ATTENDANCE SCHEMAS
+# =========================
+
+class AttendanceCreate(BaseModel):
+    student_id: int
+    class_name: str
+    subject: str
+    date: datetime
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
+
+
+class AttendanceUpdate(BaseModel):
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
+
 
 # ============ STUDENT ACADEMIC DATA SCHEMAS ============
 
 
 class TimetableResponse(BaseModel):
     """Response schema for timetable entry."""
-    
+
     id: Optional[int] = None
     day: str = Field(..., description="Day of the week (Monday-Sunday)")
     time_slot: str = Field(..., description="Time slot (e.g., '09:00-10:00')")
@@ -739,7 +794,7 @@ class TimetableResponse(BaseModel):
 
 class MaterialResponse(BaseModel):
     """Response schema for learning materials."""
-    
+
     id: Optional[int] = None
     title: str = Field(..., description="Material title")
     description: Optional[str] = Field(None, description="Material description")
@@ -770,11 +825,11 @@ class MaterialResponse(BaseModel):
 
 class StudentTimetableResponse(BaseModel):
     """Response schema for student timetable request."""
-    
+
     timetable: List[TimetableResponse] = Field(..., description="List of timetable entries")
     class_id: int = Field(..., description="Student's class ID")
     class_name: str = Field(..., description="Student's class name")
-    
+
     model_config = {
         "json_schema_extra": {
             "examples": [
@@ -801,11 +856,13 @@ class StudentTimetableResponse(BaseModel):
 
 class StudentHomeworkMaterialsResponse(BaseModel):
     """Response schema for student homework and materials."""
-    
+
     homework: List[dict] = Field(..., description="List of homework assigned to student's class")
-    materials: List[MaterialResponse] = Field(..., description="List of materials for student's subjects")
+    materials: List[MaterialResponse] = Field(
+        ..., description="List of materials for student's subjects"
+    )
     class_id: int = Field(..., description="Student's class ID")
-    
+
     model_config = {
         "json_schema_extra": {
             "examples": [
@@ -838,3 +895,9 @@ class StudentHomeworkMaterialsResponse(BaseModel):
             ]
         }
     }
+
+
+class StudentCreate(BaseModel):
+    name: str
+    roll_number: str
+    class_name: str
