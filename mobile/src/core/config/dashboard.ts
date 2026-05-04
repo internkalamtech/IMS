@@ -33,18 +33,19 @@ export const DASHBOARD_CONFIG = {
     student: {
         quickActions: [
             { id: 1, title: 'Timetable', icon: 'calendar', color: ColorPalettes.blue[500] },
-            { id: 2, title: 'Results', icon: 'school', color: ColorPalettes.amber[500] },
-            { id: 3, title: 'Homework', icon: 'book', color: ColorPalettes.emerald[500] },
-            { id: 4, title: 'Library', icon: 'library', color: ColorPalettes.purple[500] },
-            { id: 5, title: 'Attendance', icon: 'checkmark-circle', color: ColorPalettes.cyan[500] },
-            { id: 6, title: 'Profile', icon: 'person', color: ColorPalettes.indigo[500] },
+            { id: 2, title: 'Attendance', icon: 'checkmark-circle', color: ColorPalettes.emerald[500] },
+            { id: 3, title: 'Academics', icon: 'book', color: ColorPalettes.purple[500] },
+            { id: 4, title: 'Fees', icon: 'cash', color: ColorPalettes.emerald[500] },
+            { id: 5, title: 'Transport', icon: 'bus', color: ColorPalettes.amber[500] },
+            { id: 6, title: 'Exams', icon: 'document-text', color: ColorPalettes.red[500] },
+            { id: 7, title: 'Conduct', icon: 'alert-circle', color: ColorPalettes.amber[500] },
         ] as QuickAction[],
     },
     parent: {
         quickActions: [
             { id: 1, title: 'Timetable', icon: 'calendar', color: ColorPalettes.blue[500] },
             { id: 2, title: 'Attendance', icon: 'checkmark-circle', color: ColorPalettes.emerald[500] },
-            { id: 3, title: 'Academics', icon: 'book', color: ColorPalettes.purple[500] },
+            { id: 3, title: 'Academics', icon: 'book', color: ColorPalettes.purple[500], route: '/academics' },
             { id: 4, title: 'Fees', icon: 'cash', color: ColorPalettes.emerald[500] }, // Keeping original color for now, even if amber seems better for cash
             { id: 5, title: 'Transport', icon: 'bus', color: ColorPalettes.amber[500] },
             { id: 6, title: 'Exams', icon: 'document-text', color: ColorPalettes.red[500] },
@@ -62,7 +63,7 @@ export const DASHBOARD_CONFIG = {
     transport: {
         quickActions: [
             { id: 1, title: 'Route\nPlanning', icon: 'map', color: ColorPalettes.emerald[500] },
-            { id: 2, title: 'Compliance\nDocs', icon: 'document', color: ColorPalettes.purple[500] },
+            { id: 2, title: 'Compliance\nDocs', icon: 'document', color: ColorPalettes.purple[500], route: '/compliance-documents' },
             { id: 3, title: 'Assign\nBus', icon: 'bus', color: ColorPalettes.blue[500] },
             { id: 4, title: 'Student\nAssignments', icon: 'people', color: ColorPalettes.indigo[500] },
             { id: 5, title: 'Driver\nManagement', icon: 'person', color: ColorPalettes.cyan[500] },

@@ -10,6 +10,10 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
+
 import { RefreshControl,
         ScrollView,
         StatusBar,
@@ -93,7 +97,17 @@ return (
                         <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
                     </View>
 
-                    <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
+                    <QuickActionGrid
+                        actions={quickActions}
+                        onActionPress={(action) => {
+                            if (action.title === 'Manage Classes') {
+                                router.push('/classes' as any);
+                            }
+                            if (action.title === 'Timetable') {
+                                router.push('/timetable-classes' as any);
+                            }
+                        }}
+                    />
 
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
