@@ -614,10 +614,18 @@ class PaymentCreate(BaseModel):
       ``"UPI"`` or ``"Card"``; it remains optional for ``"Cash"``.
     """
 
-    student_id: int = Field(..., description="ID of the student making the payment")
-    fee_structure_id: int = Field(..., description="ID of the fee structure being paid against")
-    amount: float = Field(..., gt=0, description="Payment amount (must be > 0)")
-    payment_mode: PaymentMode = Field(..., description="Mode of payment: Cash, UPI, or Card")
+    student_id: int = Field(
+        ..., description="ID of the student making the payment"
+    )
+    fee_structure_id: int = Field(
+        ..., description="ID of the fee structure being paid against"
+    )
+    amount: float = Field(
+        ..., gt=0, description="Payment amount (must be > 0)"
+    )
+    payment_mode: PaymentMode = Field(
+        ..., description="Mode of payment: Cash, UPI, or Card"
+    )
     reference_number: Optional[str] = Field(
         None,
         description=(
@@ -625,7 +633,9 @@ class PaymentCreate(BaseModel):
             "Required for UPI and Card payments, optional for Cash."
         ),
     )
-    remarks: Optional[str] = Field(None, max_length=500, description="Optional remarks or notes")
+    remarks: Optional[str] = Field(
+        None, max_length=500, description="Optional remarks or notes"
+    )
 
     model_config = {
         "json_schema_extra": {

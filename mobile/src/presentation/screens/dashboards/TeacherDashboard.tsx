@@ -1,4 +1,4 @@
-import { DASHBOARD_CONFIG } from '@/core/config/dashboard';
+import { DASHBOARD_CONFIG, QuickAction } from '@/core/config/dashboard';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { QuickActionGrid } from '@/presentation/components/dashboard/QuickActionGrid';
 import { ThemedCard } from '@/presentation/components/ThemedCard';
@@ -24,7 +24,11 @@ export default function TeacherDashboard() {
   const { data: dashboardData, refreshing, onRefresh } = useDashboard();
   const { theme } = useTheme();
   const router = useRouter();
-
+ const handleActionPress = (action: QuickAction) => {
+  if (action.route) {
+    router.push(action.route as any);
+  }
+};
   const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
 const handleQuickActionPress = (action: any) => {
   console.log('Clicked action:', action.title, action.route);
@@ -91,10 +95,7 @@ const handleQuickActionPress = (action: any) => {
           
           {/* QUICK ACTIONS */}
           <ThemedText style={styles.sectionTitle}>Teacher Tools</ThemedText>
-          <QuickActionGrid
-            actions={quickActions}
-             onActionPress={handleQuickActionPress}
-          />
+          <QuickActionGrid actions={quickActions} onActionPress={handleActionPress}/>
 
           {/* UPCOMING CLASSES */}
           <ThemedText style={styles.sectionTitle}>Upcoming Classes</ThemedText>

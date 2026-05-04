@@ -1,9 +1,9 @@
 import { View, Text, TextInput, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
 import { useState, useMemo } from "react";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/core/theme/ThemeContext";
 import { getStudentMetricsUsecase } from '@/domain/usecases/get-student-metrics-usecase';
-import { LinearGradient } from "expo-linear-gradient";  
 import { Ionicons } from "@expo/vector-icons";
 import { MOCK_STUDENTS } from "@/data/local/students";
 
@@ -26,7 +26,6 @@ export default function StudentDirectory() {
 
   const [search, setSearch] = useState("");
   const [showClassDropdown, setShowClassDropdown] = useState(false);
-  const [selectedClass, setSelectedClass] = useState("7B");
   const filtered = useMemo(() => {
   return MOCK_STUDENTS.filter(
     (s) =>
@@ -46,11 +45,14 @@ const classStudents = useMemo(() => {
 }, [selectedClass]);
 
 const totalStudents = classStudents.length;
+const getNumericValue = (value: string | number) => {
+  return Number(String(value).replace("%", ""));
+};
 const avgMarks =
   classStudents.length > 0
     ? (
         classStudents.reduce(
-          (sum, student) => sum + Number(student.marks.replace("%", "")),
+          (sum, student) => sum + getNumericValue(student.marks),
           0
         ) / classStudents.length
       ).toFixed(1)
@@ -60,7 +62,7 @@ const avgMarks =
   classStudents.length > 0
     ? (
         classStudents.reduce(
-          (sum, student) => sum + Number(student.attendance.replace("%", "")),
+          (sum, student) => sum + getNumericValue(student.attendance),
           0
         ) / classStudents.length
       ).toFixed(1)
@@ -220,6 +222,13 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginRight: 12,
   },
+
+  emptyText: {
+  textAlign: "center",
+  marginTop: 32,
+  fontSize: 16,
+  color: "#6b7280",
+},
 
   name: {
     fontSize: 15,
