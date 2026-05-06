@@ -1024,4 +1024,78 @@ class IncidentResponse(BaseModel):
     updated_at: Optional[datetime] = None
 
     class Config:
-        from_attributes = True
+        from_attributes = True
+
+class RecentUpdate(BaseModel):
+    """Schema for a recent update/activity item."""
+
+    id: str | None = None
+    icon: str
+    title: str
+    subtitle: str
+    timestamp: str
+    type: Literal["homework", "exam", "announcement", "fee", "meeting"] | None = None
+
+
+class ChildInfo(BaseModel):
+    """Schema for child information (for parent dashboard)."""
+
+    id: str
+    name: str
+    class_name: str
+    roll_number: str
+    avatar_initials: str
+
+
+class ParentDashboardResponse(BaseModel):
+    """Response schema for parent dashboard endpoint."""
+
+    role: str
+    child: ChildInfo | None = None
+    stats: list[StatItem]
+    recent_updates: list[RecentUpdate] = []
+
+
+class StudentDashboardResponse(BaseModel):
+    """Response schema for student dashboard endpoint."""
+
+    role: str
+    stats: list[StatItem]
+    recent_updates: list[RecentUpdate] = []
+
+
+# ============ ATTENDANCE SCHEMAS ============
+
+
+class AttendanceCreate(BaseModel):
+    student_id: int
+    class_name: str
+    subject: str
+    date: datetime
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
+
+
+class AttendanceResponse(BaseModel):
+    id: int
+    student_id: int
+    class_name: str
+    subject: str
+    date: datetime
+    status: str
+    teacher_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class AttendanceUpdate(BaseModel):
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
+
+
+class StudentCreate(BaseModel):
+    name: str
+    roll_number: str
+    class_name: str
