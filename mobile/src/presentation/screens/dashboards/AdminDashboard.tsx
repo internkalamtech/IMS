@@ -11,7 +11,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 
 import {
-  Dimensions,
   RefreshControl,
   ScrollView,
   StatusBar,
@@ -22,15 +21,10 @@ import {
   Button,
   View,
   Text,
+  Dimensions,
 } 
 from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-<<<<<<< HEAD
-
-=======
-import { Dimensions } from 'react-native';
->>>>>>> 03a71c3 (Feature/attendance api (#379))
-
 const { width } = Dimensions.get('window');
 
 export default function AdminDashboard() {
@@ -284,7 +278,6 @@ return (
                 </ThemedText>
               </View>
 
-<<<<<<< HEAD
 <TouchableOpacity>
   <ThemedText style={styles.viewLink} type="link">
     View →
@@ -312,19 +305,6 @@ return (
             }}
           >
             <Text style={{ fontSize: 18, marginBottom: 10 }}>Add User</Text>
-=======
-                    <QuickActionGrid
-                        actions={quickActions}
-                        onActionPress={(action) => {
-                            if (action.title === 'Manage Classes') {
-                                router.push('/classes' as any);
-                            }
-                            if (action.title === 'Timetable') {
-                                router.push('/timetable-classes' as any);
-                            }
-                        }}
-                    />
->>>>>>> 03a71c3 (Feature/attendance api (#379))
 
             <TextInput
               placeholder="Enter Name"
