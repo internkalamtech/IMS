@@ -2,7 +2,6 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "@/core/theme/ThemeContext";
 import { ScrollView } from "react-native";
 import { useState } from "react";
-import { useLocalSearchParams } from "../../../.expo/types/router";
 type StudentProfileProps = {
   student?: {
     name: string;
