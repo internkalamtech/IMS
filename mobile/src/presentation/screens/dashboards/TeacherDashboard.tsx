@@ -22,9 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
 
   banner: {
     padding: 20,
@@ -34,64 +32,52 @@ const styles = StyleSheet.create({
   headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
   },
 
   userName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
 
   subtitle: {
-    marginTop: 6,
     fontSize: 14,
   },
 
-  sectionHeader: {
-    marginTop: 24,
-    marginBottom: 12,
+  bannerStats: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  statCard: {
+    backgroundColor: '#ffffff30',
+    padding: 10,
+    borderRadius: 8,
+  },
+
+  mainContent: {
+    padding: 16,
   },
 
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-  },
-
-  updatesCard: {
-    marginTop: 8,
+    marginVertical: 10,
   },
 
   updateItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 14,
+    padding: 10,
   },
 
   classColorBar: {
-    width: 6,
-    height: 42,
-    borderRadius: 10,
-    marginRight: 12,
+    width: 5,
+    height: 40,
+    marginRight: 10,
   },
 
   updateContent: {
     flex: 1,
-  },
-
-  updateTitle: {
-    fontSize: 15,
-  },
-
-  updateSubtitle: {
-    fontSize: 13,
-    marginTop: 4,
-  },
-
-  timeTag: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
   },
 });

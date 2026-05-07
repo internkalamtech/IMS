@@ -25,6 +25,10 @@ import {
 } 
 from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+
+const { width } = Dimensions.get('window');
+
 export default function AdminDashboard() {
     const { logout, user } = useAuth();
     const router = useRouter();
@@ -218,10 +222,20 @@ return (
           <ThemedText style={styles.sectionTitle} type="subtitle">
             Quick Actions
           </ThemedText>
-        </View>
+      </View>
 
-        <QuickActionGrid actions={quickActions} onActionPress={handleActionPress} />
+<QuickActionGrid
+  actions={quickActions}
+  onActionPress={(action) => {
+    if (action.title === 'Manage Classes') {
+      router.push('/(tabs)/classes');
+    }
 
+    if (action.title === 'Timetable') {
+      router.push('/timetable-classes');
+    }
+  }}
+/>
         <View style={styles.sectionHeader}>
           <ThemedText style={styles.sectionTitle} type="subtitle">
             Recent Updates
@@ -266,16 +280,15 @@ return (
                 </ThemedText>
               </View>
 
-              <TouchableOpacity>
-                <ThemedText style={styles.viewLink} type="link">
-                  View →
-                </ThemedText>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ThemedCard>
-      </View>
-
+<TouchableOpacity>
+  <ThemedText style={styles.viewLink} type="link">
+    View →
+  </ThemedText>
+</TouchableOpacity>
+</View>
+))}
+</ThemedCard>
+</View>
       <Modal visible={modalVisible} transparent animationType="slide">
         <View
           style={{
