@@ -25,8 +25,23 @@ import {
 } 
 from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+<<<<<<< HEAD
+=======
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
+import { Dimensions } from 'react-native';
+
+>>>>>>> c2e7341fb24fb877e9774a94d74c4bd6f8c0f4b5
 const { width } = Dimensions.get('window');
 
+import { RefreshControl,
+        ScrollView,
+        StatusBar,
+        TouchableOpacity,
+        View,
+        StyleSheet
+       } from "react-native";
 export default function AdminDashboard() {
     const { logout, user } = useAuth();
     const router = useRouter();
