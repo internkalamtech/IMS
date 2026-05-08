@@ -6,14 +6,18 @@ import { RecentUpdates } from "@/presentation/components/dashboard/RecentUpdates
 import { DASHBOARD_CONFIG } from "@/core/config/dashboard";
 import { useRouter } from 'expo-router';
 //import { API_BASE_URL } from "@/core/config/api";
-
 const quickActions =
     DASHBOARD_CONFIG?.teacher?.quickActions || [];
 const Teacher2Dashboard = () => {
-  const [updates, setUpdates] = useState<any[]>([]);
-  const [loaded, setLoaded] = useState(false);
-  const router = useRouter();
+    const [updates, setUpdates] = useState<any[]>([]);
+    const [loaded, setLoaded] = useState(false); // ✅ prevent premature render
+const router = useRouter();
 
+const handleQuickActionPress = (action: any) => {
+  if (action.route) {
+    router.push(action.route as any);
+  }
+};
     useEffect(() => {
         const fetchUpdates = async () => {
             try {

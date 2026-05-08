@@ -2,6 +2,7 @@ import { View, Text, TextInput, StyleSheet, FlatList, TouchableOpacity, Image } 
 import { useState, useMemo } from "react";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/core/theme/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
 
 type Student = {
   id: string;
@@ -42,14 +43,46 @@ export default function StudentDirectory() {
   const router = useRouter();
 
   const [search, setSearch] = useState("");
-
+  const [showClassDropdown, setShowClassDropdown] = useState(false);
+  const [selectedClass, setSelectedClass] = useState("7B");
   const filtered = useMemo(() => {
-    return MOCK_STUDENTS.filter(
-      (s) =>
-        s.name.toLowerCase().includes(search.toLowerCase()) ||
-        s.roll.includes(search)
-    );
-  }, [search]);
+  return MOCK_STUDENTS.filter(
+    (s) =>
+      s.class === selectedClass &&
+      (s.name.toLowerCase().includes(search.toLowerCase()) ||
+        s.roll.includes(search))
+  );
+}, [search, selectedClass]);
+const classOptions = [
+  { className: "7A", section: "Section A" },
+  { className: "7B", section: "Section A" },
+  { className: "8A", section: "Section A" },
+  { className: "8B", section: "Section A" },
+];
+const classStudents = useMemo(() => {
+  return MOCK_STUDENTS.filter((student) => student.class === selectedClass);
+}, [selectedClass]);
+
+const totalStudents = classStudents.length;
+const avgMarks =
+  classStudents.length > 0
+    ? (
+        classStudents.reduce(
+          (sum, student) => sum + Number(student.marks.replace("%", "")),
+          0
+        ) / classStudents.length
+      ).toFixed(1)
+    : "0.0";
+
+    const avgAttendance =
+  classStudents.length > 0
+    ? (
+        classStudents.reduce(
+          (sum, student) => sum + Number(student.attendance.replace("%", "")),
+          0
+        ) / classStudents.length
+      ).toFixed(1)
+    : "0.0";
 
   const renderItem = ({ item }: { item: Student }) => (
     <TouchableOpacity
@@ -99,18 +132,84 @@ export default function StudentDirectory() {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       
       {/* HEADER */}
-      <Text style={[styles.header, { color: theme.colors.foreground }]}>
-        Students
-      </Text>
+      <View style={styles.blueHeader}>
+  <View style={styles.headerRow}>
+    <TouchableOpacity onPress={() => router.back()}>
+      <Text style={styles.backArrow}>←</Text>
+    </TouchableOpacity>
 
-      {/* SEARCH */}
-      <TextInput
-        placeholder="Search by name or roll..."
-        value={search}
-        onChangeText={setSearch}
-        style={[styles.search, { backgroundColor: theme.colors.card }]}
-      />
+    <View style={{ flex: 1 }}>
+  <Text style={styles.headerTitle}>Students</Text>
 
+  <TouchableOpacity
+    style={styles.classButton}
+    onPress={() => setShowClassDropdown(!showClassDropdown)}
+    activeOpacity={0.8}
+  >
+    <Text style={styles.classText}>
+      Class {selectedClass} - Section A
+    </Text>
+
+    <Ionicons
+      name={showClassDropdown ? "chevron-up" : "chevron-down"}
+      size={18}
+      color="#dbeafe"
+    />
+  </TouchableOpacity>
+</View>
+
+    <Text style={styles.headerIcon}>👥</Text>
+  </View>
+  {showClassDropdown && (
+  <View style={styles.classDropdown}>
+    {classOptions.map((option) => (
+      <TouchableOpacity
+        key={option.className}
+        style={[
+          styles.classOption,
+          selectedClass === option.className && styles.selectedClassOption,
+        ]}
+        onPress={() => {
+          setSelectedClass(option.className);
+          setShowClassDropdown(false);
+        }}
+      >
+        <Text style={styles.classOptionTitle}>
+          Class {option.className}
+        </Text>
+        <Text style={styles.classOptionSubtitle}>
+          {option.section}
+        </Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+)}
+        {/* SEARCH */}
+
+  <TextInput
+    placeholder="Search by name or roll number..."
+    placeholderTextColor="#bfdbfe"
+    value={search}
+    onChangeText={setSearch}
+    style={styles.headerSearch}
+  />
+</View>
+<View style={styles.summaryRow}>
+  <View style={styles.summaryCard}>
+    <Text style={styles.summaryLabel}>Total</Text>
+    <Text style={styles.totalValue}>{totalStudents}</Text>
+  </View>
+
+  <View style={styles.summaryCard}>
+    <Text style={styles.summaryLabel}>Avg Marks</Text>
+    <Text style={styles.marksValue}>{avgMarks}</Text>
+  </View>
+
+  <View style={styles.summaryCard}>
+    <Text style={styles.summaryLabel}>Avg Att.</Text>
+    <Text style={styles.attendanceValue}>{avgAttendance}%</Text>
+  </View>
+</View>
       {/* LIST */}
       <FlatList
         data={filtered}
@@ -124,18 +223,6 @@ export default function StudentDirectory() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
-
-  header: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 12,
-  },
-
-  search: {
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
-  },
 
   card: {
     flexDirection: "row",
@@ -168,5 +255,128 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
+  },
+    summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 22,
+  },
+
+  summaryCard: {
+    width: "31%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingVertical: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+
+  summaryLabel: {
+    fontSize: 14,
+    color: "#475569",
+    marginBottom: 16,
+  },
+
+  totalValue: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#111827",
+  },
+
+  marksValue: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#2563eb",
+  },
+
+  attendanceValue: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#16a34a",
+  },
+    blueHeader: {
+    backgroundColor: "#2563eb",
+    paddingTop: 42,
+    paddingHorizontal: 22,
+    paddingBottom: 24,
+    marginHorizontal: -16,
+    marginTop: -16,
+    marginBottom: 24,
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 22,
+  },
+
+  backArrow: {
+    color: "#fff",
+    fontSize: 26,
+    marginRight: 18,
+  },
+
+  headerTitle: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "700",
+  },
+
+  classText: {
+    color: "#dbeafe",
+    fontSize: 15,
+    marginTop: 4,
+  },
+
+  headerIcon: {
+    color: "#fff",
+    fontSize: 24,
+  },
+
+  headerSearch: {
+    backgroundColor: "#3b82f6",
+    borderRadius: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    color: "#fff",
+    fontSize: 15,
+  },
+  classButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 6,
+  marginTop: 4,
+},
+  classDropdown: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 20,
+    maxHeight: 260,
+  },
+
+  classOption: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: "#fff",
+  },
+
+  selectedClassOption: {
+    backgroundColor: "#eef4ff",
+  },
+
+  classOptionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 6,
+  },
+
+  classOptionSubtitle: {
+    fontSize: 15,
+    color: "#6b7280",
   },
 });
