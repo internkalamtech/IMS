@@ -1,5 +1,7 @@
 import { ColorPalettes, FontSize, FontWeight, Radius, Spacing } from './tokens';
+import { ColorValue } from 'react-native';
 export interface ThemeColors {
+    text: ColorValue | undefined | string;
     background: string;
     foreground: string;
     card: string;
@@ -52,6 +54,7 @@ export const LightTheme: Theme = {
         border: 'rgba(0, 0, 0, 0.1)', // Exact
         input: ColorPalettes.transparent,
         ring: ColorPalettes.zinc[400],
+        text: undefined
     },
     spacing: Spacing,
     radius: Radius,
@@ -81,6 +84,7 @@ export const DarkTheme: Theme = {
         border: ColorPalettes.zinc[800],
         input: ColorPalettes.zinc[800],
         ring: ColorPalettes.zinc[600],
+        text: '#fff',
     },
     spacing: Spacing,
     radius: Radius,

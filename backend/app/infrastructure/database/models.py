@@ -105,9 +105,11 @@ class RoleModel(Base):
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(
+        String(50), unique=True, nullable=False, index=True,
+    )
 
-    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-
+    # Relationships
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     users: Mapped[List["UserModel"]] = relationship(
@@ -115,7 +117,6 @@ class RoleModel(Base):
         secondary=user_roles,
         back_populates="roles",
     )
-
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
 
@@ -258,6 +259,10 @@ class StudentModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    roll_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    class_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    next_due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     roll_number: Mapped[str] = mapped_column(
         String(50), unique=True, nullable=False, index=True
     )
@@ -301,11 +306,7 @@ class StudentModel(Base):
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<Student(id={self.id}, "
-            f"name='{self.name}', "
-            f"roll='{self.roll_number}')>"
-        )
+        return f"<Student(id={self.id}, " f"name='{self.name}', " f"roll='{self.roll_number}')>"
 
 
 class FeeStructureModel(Base):
@@ -339,9 +340,7 @@ class FeeStructureModel(Base):
     )
 
     # Relationships
-    student: Mapped["StudentModel"] = relationship(
-        "StudentModel", back_populates="fee_structures"
-    )
+    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="fee_structures")
     payments: Mapped[List["PaymentModel"]] = relationship(
         "PaymentModel",
         back_populates="fee_structure",
@@ -379,17 +378,18 @@ class PaymentModel(Base):
         ForeignKey("fee_structures.id", ondelete="CASCADE"),
         nullable=False,
     )
-    receipt_number: Mapped[str] = mapped_column(
-        String(50), unique=True, nullable=False, index=True
-    )
+    receipt_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     amount: Mapped[float] = mapped_column(Float, nullable=False)
-    payment_mode: Mapped[str] = mapped_column(String(20), nullable=False)
+    payment_mode: Mapped[str] = mapped_column(String(20), nullable=False)  # Cash, UPI, Card
     reference_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    status: Mapped[str] = mapped_column(String(20), nullable=False, default="Paid")
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="Paid"
+    )  # Paid, Partial, Pending, Failed, Overdue
     remarks: Mapped[str | None] = mapped_column(String(500), nullable=True)
     payment_date: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
     )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
     student: Mapped["StudentModel"] = relationship(
@@ -437,6 +437,10 @@ class TripModel(Base):
     )
 
     # Relationships
+    student: Mapped["StudentModel"] = relationship("StudentModel", back_populates="payments")
+    fee_structure: Mapped["FeeStructureModel"] = relationship(
+        "FeeStructureModel", back_populates="payments"
+    )
     driver: Mapped["UserModel"] = relationship("UserModel")
     stops: Mapped[List["TripStopModel"]] = relationship(
         "TripStopModel", back_populates="trip", cascade="all, delete-orphan"

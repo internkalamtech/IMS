@@ -7,21 +7,26 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Dimensions } from 'react-native';
-
-const { width } = Dimensions.get('window');
-
+import { useRouter } from 'expo-router';
 import { RefreshControl,
         ScrollView,
         StatusBar,
         TouchableOpacity,
         View,
-        StyleSheet
+        Modal,
+        TextInput,
+        Button,
+        StyleSheet,
+        Dimensions,
        } from "react-native";
+const { width } = Dimensions.get('window');
+
 export default function AdminDashboard() {
+    const [modalVisible, setModalVisible] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
     const { logout, user } = useAuth();
     const router = useRouter();
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
@@ -31,11 +36,10 @@ export default function AdminDashboard() {
 
     const handleActionPress = (action: any) => {
       if (action.title === "Manage Classes") {
-                router.push('../manage-classes');
-      } else if (action.title === "Manage Users") {
-                router.push('../add-user');
-      }
-    };
+        router.push("/manage-classes"); // ✅ NOT inside tabs
+      setModalVisible(true);
+  }
+};
 
     const getStatValue = (label: string, defaultValue: string = '0') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
@@ -45,6 +49,21 @@ export default function AdminDashboard() {
         { title: 'Total Students', value: getStatValue('Total Students'), icon: 'people', color: '#fff' },
         { title: 'Total Teachers', value: getStatValue('Total Teachers'), icon: 'school', color: '#fff' },
     ];
+
+const handleSubmit = async () => {
+    console.log("Submitting user:", name, email)
+    try {
+        await createUser(name, email);
+
+        setName("");
+        setEmail("");
+        setModalVisible(false);
+
+        onRefresh(); // refresh dashboard stats
+    } catch (error) {
+        console.error("Failed to create user", error);
+    }
+};
 return (
     <ThemedView style={styles.container}>
             <StatusBar barStyle={ theme.dark ? "light-content" : "dark-content" } backgroundColor={theme.colors.background} />
@@ -53,7 +72,7 @@ return (
                 contentContainerStyle={styles.scrollContent}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
             >
-            {/* Blue Banner Header */}
+            {/* Blue Banner Header */} 
             <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
                 <SafeAreaView edges={['top']}>
                     <View style={styles.headerContent}>
@@ -138,6 +157,30 @@ return (
                     </ThemedCard>
                 </View>
             </ScrollView>
+            <Modal visible={modalVisible} animationType="slide" transparent>
+    <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+
+            <TextInput
+                placeholder="Name"
+                value={name}
+                onChangeText={setName}
+                style={styles.input}
+            />
+
+            <TextInput
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+            />
+
+            <Button title="Submit" onPress={handleSubmit} />
+
+
+        </View>
+    </View>
+</Modal>
         </ThemedView>
     );
 }
@@ -171,6 +214,9 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     logoutIcon: {
+        padding: 8,
+    },
+    addIcon: {
         padding: 8,
     },
     bannerStats: {
@@ -281,4 +327,28 @@ const styles = StyleSheet.create({
     viewLink: {
         fontWeight: '600',
     },
+    modalOverlay: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "rgba(0,0,0,0.4)",
+},
+
+modalContent: {
+  backgroundColor: "white",
+  padding: 20,
+  borderRadius: 10,
+  width: "80%",
+},
+
+input: {
+  borderWidth: 1,
+  borderColor: "#ccc",
+  padding: 10,
+  marginBottom: 10,
+  borderRadius: 6,
+},
 });
+async function createUser(name: string, email: string) {
+    console.log("Sending to server:", name, email);
+}

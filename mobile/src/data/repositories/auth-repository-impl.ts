@@ -23,6 +23,8 @@ export class AuthRepositoryImpl implements AuthRepository {
                 email: user.email,
                 role: user.role,
                 avatarUrl: user.avatarUrl,
+                marks: 0,
+                attendance: 0,
             };
 
             await StorageService.setItem(TOKEN_STORAGE_KEY, access_token);
@@ -48,6 +50,8 @@ export class AuthRepositoryImpl implements AuthRepository {
                     email: email,
                     role: role,
                     avatarUrl: undefined,
+                    marks: 0,
+                    attendance: 0,
                 };
 
                 await StorageService.setItem(TOKEN_STORAGE_KEY, `mock-token-${role}`);

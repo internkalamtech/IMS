@@ -18,10 +18,10 @@ from app.domain.entities.payment import (
 )
 from app.domain.repositories.payment_repository import PaymentRepository
 
-
 # ------------------------------------------------------------------ #
 # Helpers
 # ------------------------------------------------------------------ #
+
 
 def _generate_receipt_number() -> str:
     """
@@ -41,6 +41,7 @@ def _generate_receipt_number() -> str:
 # ------------------------------------------------------------------ #
 # Use cases
 # ------------------------------------------------------------------ #
+
 
 class RecordPaymentUseCase:
     """
@@ -109,13 +110,9 @@ class RecordPaymentUseCase:
             raise NotFoundError(f"Student with id {student_id} not found.")
 
         # 3. Verify fee structure exists and belongs to the given student
-        fee_structure = await self.repository.get_fee_structure_by_id(
-            fee_structure_id
-        )
+        fee_structure = await self.repository.get_fee_structure_by_id(fee_structure_id)
         if fee_structure is None:
-            raise NotFoundError(
-                f"Fee structure with id {fee_structure_id} not found."
-            )
+            raise NotFoundError(f"Fee structure with id {fee_structure_id} not found.")
         if fee_structure.student_id != student_id:
             message = (
                 f"Fee structure {fee_structure_id} does not belong to student"

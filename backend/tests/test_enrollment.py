@@ -4,7 +4,7 @@ Unit tests for student enrollment with parent link.
 Tests for API endpoints, use cases, and repositories.
 """
 
-import pytest
+import pytest # type: ignore
 from datetime import datetime
 from unittest.mock import Mock, AsyncMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,9 +20,8 @@ from app.infrastructure.repositories.database_enrollment_repository import (
 )
 
 
-# ============================================================================
 # Fixtures
-# ============================================================================
+# 
 
 
 @pytest.fixture

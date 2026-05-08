@@ -11,7 +11,7 @@ export interface QuickAction {
 export const DASHBOARD_CONFIG = {
     admin: {
         quickActions: [
-            { id: 1, title: 'Manage Users', icon: 'people', color: ColorPalettes.blue[500], route: '/add-user' },
+            { id: 1, title: 'Manage Users', icon: 'people', color: ColorPalettes.blue[500] },
             { id: 2, title: 'Manage Classes', icon: 'school', color: ColorPalettes.emerald[500], route: '/manage-classes' },
             { id: 3, title: 'Timetable', icon: 'calendar', color: ColorPalettes.indigo[500] },
             { id: 4, title: 'Fee Management', icon: 'cash', color: ColorPalettes.amber[500] },
@@ -33,6 +33,11 @@ export const DASHBOARD_CONFIG = {
     student: {
         quickActions: [
             { id: 1, title: 'Timetable', icon: 'calendar', color: ColorPalettes.blue[500] },
+            { id: 2, title: 'Results', icon: 'school', color: ColorPalettes.amber[500] },
+            { id: 3, title: 'Homework', icon: 'book', color: ColorPalettes.emerald[500] },
+            { id: 4, title: 'Library', icon: 'library', color: ColorPalettes.purple[500] },
+            { id: 6, title: 'Profile', icon: 'person', color: ColorPalettes.indigo[500] },
+            { id: 7, title: 'Students', icon: 'people', color: ColorPalettes.green[500], route: '/student-directory' },
             { id: 2, title: 'Attendance', icon: 'checkmark-circle', color: ColorPalettes.emerald[500] },
             { id: 3, title: 'Academics', icon: 'book', color: ColorPalettes.purple[500] },
             { id: 4, title: 'Fees', icon: 'cash', color: ColorPalettes.emerald[500] },

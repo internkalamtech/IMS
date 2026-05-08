@@ -80,7 +80,9 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
 async def create_payment(
     request: PaymentCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(
+        get_current_user
+        ),
 ) -> PaymentResponse:
     """
     Record a new student payment.
@@ -131,13 +133,9 @@ async def create_payment(
             payment_date=payment.payment_date,
         )
     except NotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=exc.message
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message)
     except ValidationError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=exc.message
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=exc.message)
     except DatabaseError as exc:
         Logger.error(f"Database error while creating payment: {exc}")
         raise HTTPException(
@@ -274,9 +272,7 @@ async def get_payment(
             payment_date=payment.payment_date,
         )
     except NotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=exc.message
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message)
     except DatabaseError as exc:
         Logger.error(
             f"Database error while fetching payment "
@@ -357,8 +353,7 @@ async def get_payment_summary(
     },
     summary="List students",
     description=(
-        "List students with optional filters for name, roll number, "
-        "class, and payment status."
+        "List students with optional filters for name, roll number, " "class, and payment status."
     ),
 )
 async def list_students(
@@ -457,13 +452,9 @@ async def get_student(
             next_due_date=student.next_due_date,
         )
     except NotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=exc.message
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message)
     except DatabaseError as exc:
-        Logger.error(
-            f"Database error while fetching student {student_id}: {exc}"
-        )
+        Logger.error(f"Database error while fetching student {student_id}: {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while retrieving the student.",
@@ -565,9 +556,7 @@ async def export_payments_csv(
         return StreamingResponse(
             _csv_generator(),
             media_type="text/csv",
-            headers={
-                "Content-Disposition": "attachment; filename=payments.csv"
-            },
+            headers={"Content-Disposition": "attachment; filename=payments.csv"},
         )
     except DatabaseError as exc:
         Logger.error(f"Database error during CSV export: {exc}")

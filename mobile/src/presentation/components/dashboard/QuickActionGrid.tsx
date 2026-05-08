@@ -16,7 +16,7 @@ export function QuickActionGrid({ actions, onActionPress }: QuickActionGridProps
                 <TouchableOpacity
                     key={action.id}
                     style={styles.item}
-                    onPress={() => onActionPress?.(action)}              >
+                    onPress={() => onActionPress?.(action)}>
                     <View style={[styles.iconContainer, { backgroundColor: action.color + '15' }]}>
                         <Ionicons name={action.icon as any} size={28} color={action.color} />
                     </View>

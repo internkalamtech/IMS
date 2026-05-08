@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal, Optional
 
-
 # Supported payment modes
 PaymentMode = Literal["Cash", "UPI", "Card"]
 

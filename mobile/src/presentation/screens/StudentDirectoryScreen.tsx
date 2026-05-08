@@ -1,8 +1,11 @@
 import { View, Text, TextInput, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
 import { useState, useMemo } from "react";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/core/theme/ThemeContext";
+import { getStudentMetricsUsecase } from '@/domain/usecases/get-student-metrics-usecase';
 import { Ionicons } from "@expo/vector-icons";
+import { MOCK_STUDENTS } from "@/data/local/students";
 
 type Student = {
   id: string;
@@ -10,41 +13,19 @@ type Student = {
   roll: string;
   class: string;
   avatar: string;
-  attendance: string;
-  marks: string;
+  attendance: number;
+  marks: number;
   rank: string;
 };
 
-const MOCK_STUDENTS: Student[] = [
-  {
-    id: "1",
-    name: "Emma Wilson",
-    roll: "001",
-    class: "7B",
-    avatar: "https://i.pravatar.cc/150?img=1",
-    attendance: "93.3%",
-    marks: "87.2%",
-    rank: "#5",
-  },
-  {
-    id: "2",
-    name: "Liam Johnson",
-    roll: "002",
-    class: "7B",
-    avatar: "https://i.pravatar.cc/150?img=2",
-    attendance: "89.5%",
-    marks: "82.4%",
-    rank: "#12",
-  },
-];
-
 export default function StudentDirectory() {
+  const [selectedClass, setSelectedClass] = useState("7B");
+  const [showDropdown, setShowDropdown] = useState(false);
   const { theme } = useTheme();
   const router = useRouter();
 
   const [search, setSearch] = useState("");
   const [showClassDropdown, setShowClassDropdown] = useState(false);
-  const [selectedClass, setSelectedClass] = useState("7B");
   const filtered = useMemo(() => {
   return MOCK_STUDENTS.filter(
     (s) =>
@@ -64,11 +45,14 @@ const classStudents = useMemo(() => {
 }, [selectedClass]);
 
 const totalStudents = classStudents.length;
+const getNumericValue = (value: string | number) => {
+  return Number(String(value).replace("%", ""));
+};
 const avgMarks =
   classStudents.length > 0
     ? (
         classStudents.reduce(
-          (sum, student) => sum + Number(student.marks.replace("%", "")),
+          (sum, student) => sum + getNumericValue(student.marks),
           0
         ) / classStudents.length
       ).toFixed(1)
@@ -78,7 +62,7 @@ const avgMarks =
   classStudents.length > 0
     ? (
         classStudents.reduce(
-          (sum, student) => sum + Number(student.attendance.replace("%", "")),
+          (sum, student) => sum + getNumericValue(student.attendance),
           0
         ) / classStudents.length
       ).toFixed(1)
@@ -88,16 +72,9 @@ const avgMarks =
     <TouchableOpacity
       style={[styles.card, { backgroundColor: theme.colors.card }]}
      onPress={() =>
-  router.push({
+      router.push({
     pathname: "/student-profile",
-    params: {
-      name: item.name,
-      roll: item.roll,
-      class: item.class,
-      attendance: item.attendance,
-      marks: item.marks,
-      rank: item.rank,
-    },
+    params: { id: item.id },
   })
 }
     >
@@ -114,6 +91,7 @@ const avgMarks =
 
         {/* Stats Row (matches prototype) */}
         <View style={styles.statsRow}>
+          <Text>🎓 {item.marks}%</Text>
           <Text>🎓 {item.marks}</Text>
           <Text>🏆 {item.rank}</Text>
         </View>
@@ -122,14 +100,14 @@ const avgMarks =
       {/* Attendance badge */}
       <View style={styles.badge}>
         <Text style={{ color: "#16a34a", fontWeight: "600" }}>
-          {item.attendance}
+          {item.attendance}%
         </Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={{ flex:1 }}>  
       
       {/* HEADER */}
       <View style={styles.blueHeader}>
@@ -215,7 +193,13 @@ const avgMarks =
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 20 }}
+          style={{ zIndex: 1 }} 
+           ListEmptyComponent={
+    <Text style={styles.emptyText}>No students found</Text>
+  }
+        contentContainerStyle={{ paddingBottom: 20, padding: 16,
+        paddingTop: 20, flexGrow: 1 }}
+        
       />
     </View>
   );
@@ -238,6 +222,13 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginRight: 12,
   },
+
+  emptyText: {
+  textAlign: "center",
+  marginTop: 32,
+  fontSize: 16,
+  color: "#6b7280",
+},
 
   name: {
     fontSize: 15,
