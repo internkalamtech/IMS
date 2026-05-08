@@ -1,31 +1,66 @@
+import { api } from '@/core/api-client';
+import { Logger } from '@/core/logger';
 import { Incident, IncidentRepository, IncidentSeverity, IncidentType } from '@/domain/repositories/incident-repository';
 
-// In-memory store for demo stability since this is a frontend-only task
-let incidentsStore: Incident[] = [];
-
 export class IncidentRepositoryImpl implements IncidentRepository {
-    async submitIncident(type: IncidentType, severity: IncidentSeverity, description: string): Promise<Incident> {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 800));
+    /**
+     * Submit a new incident report to the backend.
+     * Maps to: POST /api/v1/incidents
+     */
+    async submitIncident(
+        type: IncidentType,
+        severity: IncidentSeverity,
+        description: string,
+        latitude?: number | null,
+        longitude?: number | null,
+    ): Promise<Incident> {
+        try {
+            const response = await api.post('/incidents', {
+                type,
+                severity,
+                description,
+                latitude: latitude ?? null,
+                longitude: longitude ?? null,
+            });
 
-        const newIncident: Incident = {
-            id: Math.random().toString(36).substring(2, 11) + Date.now().toString(36),
-            type,
-            severity,
-            description,
-            createdAt: new Date().toISOString(),
-        };
+            const data = response.data;
+            Logger.info(`Incident submitted successfully: ID=${data.id}`);
 
-        // Add to beginning of array
-        incidentsStore = [newIncident, ...incidentsStore];
-        
-        return newIncident;
+            return this._mapToIncident(data);
+        } catch (error: any) {
+            Logger.error('Failed to submit incident', error);
+            throw error;
+        }
     }
 
+    /**
+     * Retrieve all incidents reported by the authenticated driver.
+     * Maps to: GET /api/v1/incidents/my
+     */
     async getIncidents(): Promise<Incident[]> {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        return [...incidentsStore];
+        try {
+            const response = await api.get('/incidents/my');
+            Logger.info(`Fetched ${response.data.length} incidents`);
+            return response.data.map(this._mapToIncident);
+        } catch (error: any) {
+            Logger.error('Failed to fetch incidents', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Map a backend response object to the Incident domain type.
+     */
+    private _mapToIncident(data: any): Incident {
+        return {
+            id: String(data.id),
+            driverId: data.driver_id,
+            type: data.type as IncidentType,
+            severity: data.severity as IncidentSeverity,
+            description: data.description,
+            latitude: data.latitude ?? null,
+            longitude: data.longitude ?? null,
+            createdAt: data.created_at,
+        };
     }
 }

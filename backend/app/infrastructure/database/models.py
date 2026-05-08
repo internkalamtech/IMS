@@ -673,6 +673,64 @@ class DocumentModel(Base):
     def __repr__(self) -> str:
         return f"<Document(id={self.id}, title='{self.title}')>"
 
+
+# =========================
+# 🚨 INCIDENT MODEL
+# =========================
+class IncidentModel(Base):
+    """
+    Incident database model.
+
+    Represents a driver-reported incident log with geographic coordinates.
+    Implements Issue #281: Incident and Alert Processing Engine.
+    """
+
+    __tablename__ = "incidents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    driver_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    type: Mapped[str] = mapped_column(
+        String(50), nullable=False, index=True
+    )  # 'Breakdown', 'Accident', 'Delay'
+    severity: Mapped[str] = mapped_column(
+        String(20), nullable=False
+    )  # 'Low', 'Medium', 'High'
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="open"
+    )  # 'open', 'resolved'
+
+    # Geographic coordinates at the time of the incident
+    latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False, index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    driver: Mapped["UserModel"] = relationship("UserModel")
+
+    def __repr__(self) -> str:
+        return (
+            f"<Incident(id={self.id}, "
+            f"driver_id={self.driver_id}, "
+            f"type='{self.type}', "
+            f"severity='{self.severity}')>"
+        )
+
+
 # =========================
 # 📅 ATTENDANCE MODEL
 # =========================
