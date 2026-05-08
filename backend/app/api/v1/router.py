@@ -8,6 +8,7 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     auth,
+    classes,
     class_subjects_router,
     dashboard,
     enrollment,
@@ -15,6 +16,7 @@ from app.api.v1.endpoints import (
     payments,
     students,
     subjects,
+    timetables,
     trips, 
     documents, 
 )

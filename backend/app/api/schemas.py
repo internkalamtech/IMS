@@ -804,10 +804,6 @@ class LearningResourceCreate(BaseModel):
     class_id: int
     external_link: str | None = None
     is_published: bool = True
-    class_name: str
-    marks: Optional[float] = None
-    attendance: Optional[float] = None
-    next_due_date: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
