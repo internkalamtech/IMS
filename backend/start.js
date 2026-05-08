@@ -10,25 +10,35 @@ const pythonPath = isWindows
   ? path.join(venvPath, "Scripts", "python.exe")
   : path.join(venvPath, "bin", "python");
 
-// If venv doesn't exist, create it
-if (!fs.existsSync(venvPath)) {
-  console.log("Creating virtual environment...");
-  const createVenv = spawnSync("python", ["-m", "venv", "venv"], {
+function ensureBackendEnvironment() {
+  const uvicornCheck = spawnSync(pythonPath, ["-c", "import uvicorn"], {
+    cwd: __dirname,
+    stdio: "ignore",
+  });
+
+  if (uvicornCheck.status === 0) {
+    return;
+  }
+
+  console.log("Preparing backend environment...");
+  const setup = spawnSync("node", ["setup.js"], {
     cwd: __dirname,
     stdio: "inherit",
     shell: true,
   });
-  if (createVenv.error) {
-    console.error("Failed to create venv:", createVenv.error);
-    process.exit(1);
+
+  if (setup.error || setup.status !== 0) {
+    console.error("Failed to prepare backend environment.");
+    process.exit(setup.status ?? 1);
   }
 }
 
+ensureBackendEnvironment();
+
 // Run the backend
 console.log("Starting backend...\n");
-const python = spawn(`"${pythonPath}"`, ["run.py"], {
+const python = spawn(pythonPath, ["run.py"], {
   stdio: "inherit",
-  shell: true,
 });
 
 python.on("exit", (code) => {

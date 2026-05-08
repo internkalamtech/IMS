@@ -1,5 +1,6 @@
 import { DASHBOARD_CONFIG } from '@/core/config/dashboard';
 import { useTheme } from '@/core/theme/ThemeContext';
+import { AcademicRepository } from '@/data/repositories/academic-repository-impl';
 import { QuickActionGrid } from '@/presentation/components/dashboard/QuickActionGrid';
 import { ThemedCard } from '@/presentation/components/ThemedCard';
 import { ThemedText } from '@/presentation/components/ThemedText';
@@ -8,7 +9,7 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,17 +20,36 @@ export default function ParentDashboard() {
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
     const { theme } = useTheme();
     const router = useRouter();
+    const [pendingHomeworkCount, setPendingHomeworkCount] = useState(0);
 
     const quickActions = DASHBOARD_CONFIG.parent.quickActions;
+    const resolvedChildId = '1';
 
     const getStatValue = (label: string, defaultValue: string = '0%') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
     };
 
-    const pendingHomework = Number(getStatValue('Pending Homework', '5'));
+    const loadPendingHomeworkCount = useCallback(async () => {
+        try {
+            const summary = await AcademicRepository.getAcademicSummary(
+                resolvedChildId
+            );
+            setPendingHomeworkCount(summary.pending_homework_count);
+        } catch {
+            // Preserve the last successful value when refresh fails.
+        }
+    }, [resolvedChildId]);
+
+    useEffect(() => {
+        loadPendingHomeworkCount();
+    }, [loadPendingHomeworkCount]);
+
+    const handleRefresh = async () => {
+        await Promise.allSettled([onRefresh(), loadPendingHomeworkCount()]);
+    };
 
     const handleHomeworkCounterPress = () => {
-        router.push('/academics?initialTab=homework');
+        router.push('/academics?initialTab=homework&childId=1');
     };
 
     const handleQuickActionPress = (action: any) => {
@@ -44,7 +64,7 @@ export default function ParentDashboard() {
             <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primaryForeground} />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={theme.colors.primaryForeground} />}
             >
                 {/* Blue Banner Header */}
                 <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
@@ -105,7 +125,7 @@ export default function ParentDashboard() {
                                         </View>
                                         <View>
                                             <ThemedText style={[styles.homeworkCounterValue, { color: '#f59e0b' }]} type="defaultSemiBold">
-                                                {pendingHomework} Pending
+                                                {pendingHomeworkCount} Pending
                                             </ThemedText>
                                             <ThemedText style={styles.homeworkCounterLabel} lightColor="#666" darkColor="#999">
                                                 Homework assignments
