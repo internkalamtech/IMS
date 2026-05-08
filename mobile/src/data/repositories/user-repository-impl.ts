@@ -1,6 +1,6 @@
 import { api } from '@/core/api-client';
 import { Logger } from '@/core/logger';
-import { DashboardData, UserRepository } from '@/domain/repositories/user-repository';
+import { ClassData, DashboardData, UserRepository } from '@/domain/repositories/user-repository';
 export class UserRepositoryImpl implements UserRepository {
     async getDashboardData(role: string): Promise<DashboardData> {
         try {
@@ -16,5 +16,13 @@ export class UserRepositoryImpl implements UserRepository {
                 ]
             };
         }
+    }
+    async getClasses(): Promise<ClassData[]> {
+        return [
+            { id: 1, name: "7A", section: "Section A", academicPeriodId: 1 },
+            { id: 2, name: "7B", section: "Section A", academicPeriodId: 1 },
+            { id: 3, name: "8A", section: "Section A", academicPeriodId: 1 },
+            { id: 4, name: "8B", section: "Section A", academicPeriodId: 1 },
+        ];
     }
 }
