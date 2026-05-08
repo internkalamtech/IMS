@@ -19,8 +19,63 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+const { width } = Dimensions.get('window');
 
+export function TeacherDashboard() {
+  const { logout, user } = useAuth();
+  const { data: dashboardData, refreshing, onRefresh } = useDashboard();
+  const { theme } = useTheme();
+  const router = useRouter();
 
+  const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
+
+  const handleQuickActionPress = (action: any) => {
+    if (action.title?.toLowerCase().trim() === 'attendance') {
+      router.push('/attendance' as any);
+    }
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
+          <SafeAreaView edges={['top']}>
+            <View style={styles.headerContent}>
+              <View>
+                <ThemedText style={styles.userName}>
+                  {user?.name || 'Teacher'}
+                </ThemedText>
+                <ThemedText style={styles.subtitle}>
+                  Teacher Dashboard
+                </ThemedText>
+              </View>
+
+              <TouchableOpacity onPress={logout}>
+                <Ionicons name="log-out-outline" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+        </View>
+
+        <View style={styles.mainContent}>
+          <ThemedText style={styles.sectionTitle}>Quick Actions</ThemedText>
+
+          <QuickActionGrid
+            actions={quickActions}
+            onActionPress={handleQuickActionPress}
+          />
+        </View>
+      </ScrollView>
+    </ThemedView>
+  );
+}
+export default TeacherDashboard;
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
