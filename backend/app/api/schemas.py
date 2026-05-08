@@ -14,21 +14,10 @@ class LoginRequest(BaseModel):
     """Request schema for login endpoint."""
 
     email: EmailStr
-    password: str = Field(
-        ...,
-        min_length=6,
-        description="User password (minimum 6 characters)",
-    )
+    password: str = Field(..., min_length=6, description="User password (minimum 6 characters)")
 
     model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "email": "admin@myuser.com",
-                    "password": "admin123",
-                }
-            ]
-        }
+        "json_schema_extra": {"examples": [{"email": "admin@myuser.com", "password": "admin123"}]}
     }
 
 
@@ -36,14 +25,7 @@ class RoleResponse(BaseModel):
     """Response schema for role data."""
 
     id: str
-    name: Literal[
-        "admin",
-        "teacher",
-        "student",
-        "parent",
-        "transport",
-        "driver",
-    ]
+    name: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     description: str | None = None
 
 
@@ -53,12 +35,7 @@ class UserResponse(BaseModel):
     id: str
     name: str
     email: str
-    role: Literal["admin",
-                  "teacher",
-                  "student",
-                  "parent",
-                  "transport",
-                  "driver"]
+    role: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -114,13 +91,7 @@ class ErrorResponse(BaseModel):
 
     detail: str
 
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {"detail": "Error message"}
-            ]
-        }
-    }
+    model_config = {"json_schema_extra": {"examples": [{"detail": "Error message"}]}}
 
 
 class DemoCredential(BaseModel):
@@ -151,6 +122,44 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
+
+
+class RecentUpdate(BaseModel):
+    """Schema for a recent update/activity item."""
+
+    id: str | None = None
+    icon: str
+    title: str
+    subtitle: str
+    timestamp: str
+    type: Literal["homework", "exam", "announcement", "fee", "meeting"] | None = None
+
+
+class ChildInfo(BaseModel):
+    """Schema for child information (for parent dashboard)."""
+
+    id: str
+    name: str
+    class_name: str
+    roll_number: str
+    avatar_initials: str
+
+
+class ParentDashboardResponse(BaseModel):
+    """Response schema for parent dashboard endpoint."""
+
+    role: str
+    child: ChildInfo | None = None
+    stats: list[StatItem]
+    recent_updates: list[RecentUpdate] = []
+
+
+class StudentDashboardResponse(BaseModel):
+    """Response schema for student dashboard endpoint."""
+
+    role: str
+    stats: list[StatItem]
+    recent_updates: list[RecentUpdate] = []
 
 
 class AcademicSummaryResponse(BaseModel):
@@ -846,3 +855,25 @@ class StudentBoardingResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# =========================
+# 📅 ATTENDANCE SCHEMAS
+# =========================
+
+class AttendanceCreate(BaseModel):
+    student_id: int
+    class_name: str
+    subject: str
+    date: datetime
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
+
+
+class AttendanceUpdate(BaseModel):
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
+
+class StudentCreate(BaseModel):
+    name: str
+    roll_number: str
+    class_name: str
