@@ -3,7 +3,7 @@ import LoginScreen from '../LoginScreen';
 import AdminDashboard from './AdminDashboard';
 import ParentDashboard from './ParentDashboard';
 import StudentDashboard from './StudentDashboard';
-import Teacher2Dashboard from './Teacher2Dashboard';
+import TeacherDashboard from './TeacherDashboard';
 import DriverDashboard from './DriverDashboard';
 import TransportDashboard from './TransportDashboard';
 
@@ -18,7 +18,7 @@ export default function DashboardSwitcher() {
         case 'admin':
             return <AdminDashboard />;
         case 'teacher':
-            return <Teacher2Dashboard />; 
+            return <TeacherDashboard />; 
         case 'parent':
             return <ParentDashboard />;
         case 'student':
