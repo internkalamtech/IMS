@@ -732,6 +732,34 @@ class StaffModel(Base):
             f"name='{self.name}', "
             f"role='{self.role}')>"
         )
+
+
+class LearningResourceModel(Base):
+    """
+    Learning resource model.
+
+    Stores uploaded or linked learning resources (PDFs, PPTs, links, videos).
+    """
+
+    __tablename__ = "learning_resources"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resource_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    category: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    subject_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    class_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    file_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    external_link: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    content_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<LearningResource(id={self.id}, title='{self.title}')>"
 class DocumentModel(Base):
     """
     Compliance Document database model.
