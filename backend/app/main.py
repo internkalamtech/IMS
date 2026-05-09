@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.v1.endpoints import users
 from app.domain.entities import user
-from app.api.v1 import router as api_v1_router
+from app.api.v1.router import router as api_v1_router
 from app.core.config import settings
 from app.core.errors import IMSException
 from app.core.logger import Logger
@@ -139,4 +139,4 @@ async def add_user(user: User, db: AsyncSession = Depends(get_db)):
         "message": "User stored in database",
         "data": user
     }
-app.include_router(api_v1_router, prefix="/api/v1")
+app.include_router(api_v1_router, prefix="/api")

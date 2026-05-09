@@ -26,7 +26,7 @@ from app.infrastructure.database.database import get_db
 from app.infrastructure.database.models import LearningResourceModel
 from app.api.schemas import LearningResourceResponse
 
-router = APIRouter(prefix="/learning-resources", tags=["Learning Resources"])
+router = APIRouter(prefix="/resources", tags=["Learning Resources"])
 UPLOAD_DIRECTORY = "uploads/resources"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
