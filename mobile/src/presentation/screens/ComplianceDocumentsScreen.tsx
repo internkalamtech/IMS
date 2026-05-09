@@ -14,7 +14,7 @@ type FilterTab = 'All' | 'Expiring' | 'Expired';
 
 export default function ComplianceDocumentsScreen() {
     const router = useRouter();
-    const { theme, isDark } = useTheme();
+    const { theme } = useTheme();
     const { documents, loading, refreshing, onRefresh, error } = useComplianceDocuments();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<FilterTab>('All');
@@ -23,7 +23,7 @@ export default function ComplianceDocumentsScreen() {
     useFocusEffect(
         useCallback(() => {
             onRefresh();
-        }, [])
+        }, [onRefresh])
     );
 
     // Calculate metrics
@@ -72,7 +72,6 @@ export default function ComplianceDocumentsScreen() {
     const renderDocumentCard = ({ item }: { item: any }) => {
         const isExpired = item.status === 'Expired';
         const isExpiring = item.status === 'Expiring' || item.status === 'Expiring-Soon';
-        const isValid = item.status === 'Valid';
 
         let badgeColor = '#dcfce7';
         let badgeTextColor = '#166534';
@@ -157,7 +156,7 @@ export default function ComplianceDocumentsScreen() {
                         </View>
                         <TouchableOpacity style={styles.uploadButton} onPress={() => router.push({ pathname: '/add-edit-compliance-document' as any })}>
                             <Ionicons name="push-outline" size={16} color={theme.colors.primary} />
-                            <ThemedText style={[styles.uploadButtonText, { color: theme.colors.primary }]}>Upload</ThemedText>
+                            <ThemedText style={styles.uploadButtonText} lightColor={theme.colors.primary} darkColor={theme.colors.primary}>Upload</ThemedText>
                         </TouchableOpacity>
                     </View>
 

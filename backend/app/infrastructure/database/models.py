@@ -169,6 +169,38 @@ class HomeworkModel(Base):
             f"title='{self.title}', status='{self.status}')>"
         )
     
+
+class AttendanceModel(Base):
+    """
+    Attendance database model.
+
+    Stores daily attendance records for students.
+    """
+
+    __tablename__ = "attendance"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    student_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("students.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    class_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    subject: Mapped[str] = mapped_column(String(100), nullable=False)
+    date: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    teacher_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("teachers.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Optional relationships
+    student: Mapped["StudentModel"] = relationship("StudentModel")
+    teacher: Mapped[Optional["TeacherModel"]] = relationship("TeacherModel")
+    
 class SubjectModel(Base):
     """
     Subject database model.
@@ -205,6 +237,70 @@ class ClassSectionModel(Base):
         secondary="class_subject_link",
         back_populates="classes",
     )
+
+
+class TeacherModel(Base):
+    """Teacher profile linked to an application user."""
+
+    __tablename__ = "teachers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    user: Mapped["UserModel"] = relationship("UserModel")
+
+
+class RoomModel(Base):
+    """Classroom/room reference used by timetable periods."""
+
+    __tablename__ = "rooms"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+
+
+class TimetablePeriodModel(Base):
+    """Database model for a single timetable period entry."""
+
+    __tablename__ = "timetable_periods"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    class_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("class_sections.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    subject_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    teacher_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("teachers.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    room_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("rooms.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    day_of_week: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    start_time: Mapped[str] = mapped_column(String(5), nullable=False)
+    end_time: Mapped[str] = mapped_column(String(5), nullable=False)
+    period_number: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    class_section: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
+    subject: Mapped["SubjectModel"] = relationship("SubjectModel")
+    teacher: Mapped["TeacherModel"] = relationship("TeacherModel")
+    room: Mapped["RoomModel"] = relationship("RoomModel")
 
 
 # Association table for many-to-many relationship between
@@ -636,6 +732,34 @@ class StaffModel(Base):
             f"name='{self.name}', "
             f"role='{self.role}')>"
         )
+
+
+class LearningResourceModel(Base):
+    """
+    Learning resource model.
+
+    Stores uploaded or linked learning resources (PDFs, PPTs, links, videos).
+    """
+
+    __tablename__ = "learning_resources"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resource_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    category: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    subject_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    class_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    file_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    external_link: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    content_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"<LearningResource(id={self.id}, title='{self.title}')>"
 class DocumentModel(Base):
     """
     Compliance Document database model.
@@ -685,138 +809,3 @@ class DocumentModel(Base):
 
     def __repr__(self) -> str:
         return f"<Document(id={self.id}, title='{self.title}')>"
-
-
-class LearningResourceModel(Base):
-    """
-    Learning Resource database model.
-
-    Represents educational materials (PDFs, PPTs, Links, Videos, etc.)
-    organized by subject and class. Available to students studying those subjects.
-    """
-
-    __tablename__ = "learning_resources"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
-    # Basic info
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    resource_type: Mapped[str] = mapped_column(
-        String(50),
-        nullable=False,
-        index=True,
-    )  # 'pdf', 'ppt', 'video', 'link', 'document'
-    category: Mapped[str] = mapped_column(
-        String(100),
-        nullable=False,
-        index=True,
-    )  # 'textbook', 'reference', 'solved_problems', 'notes', 'practice'
-
-    # Subject and class mapping
-    subject_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("subjects.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-    class_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("class_sections.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-
-    # File or link storage
-    file_path: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
-    external_link: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
-    file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)  # in bytes
-    content_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-
-    # Metadata
-    uploaded_by_id: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="SET NULL"),
-        nullable=True,
-    )
-    is_published: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        nullable=False,
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
-    )
-
-    # Relationships
-    subject: Mapped["SubjectModel"] = relationship("SubjectModel")
-    class_section: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
-    uploaded_by: Mapped["UserModel"] = relationship(
-        "UserModel", foreign_keys=[uploaded_by_id]
-    )
-
-    def __repr__(self) -> str:
-        return (
-            f"<LearningResource(id={self.id}, "
-            f"title='{self.title}', "
-            f"type='{self.resource_type}')>"
-        )
-
-# =========================
-# 📅 ATTENDANCE MODEL
-# =========================
-class AttendanceModel(Base):
-    """
-    Attendance database model.
-
-    Stores student attendance status for a specific date,
-    class, and subject with audit tracking.
-    """
-
-    __tablename__ = "attendance"
-    __table_args__ = (
-        UniqueConstraint(
-            "student_id",
-            "subject",
-            "date",
-            name="unique_attendance_per_student_subject_date"
-        ),
-    )
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
-    student_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("students.id", ondelete="CASCADE"),
-        nullable=False,
-    )
-
-    class_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    subject: Mapped[str] = mapped_column(String(100), nullable=False)
-
-    date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-
-    status: Mapped[str] = mapped_column(
-        String(20), nullable=False
-    )  # present / absent / leave
-
-    teacher_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="SET NULL"),
-        nullable=True,
-    )
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
-    )

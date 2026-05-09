@@ -138,6 +138,114 @@ ROLES = [
     },
 ]
 
+# Subjects configuration
+SUBJECTS = [
+    {"name": "Mathematics"},
+    {"name": "English"},
+    {"name": "Science"},
+    {"name": "Social Studies"},
+    {"name": "Hindi"},
+    {"name": "Computer Science"},
+    {"name": "Physical Education"},
+    {"name": "Art"},
+]
+
+# Class sections configuration
+CLASS_SECTIONS = [
+    {"name": "Class 1-A"},
+    {"name": "Class 1-B"},
+    {"name": "Class 2-A"},
+    {"name": "Class 2-B"},
+    {"name": "Class 3-A"},
+    {"name": "Class 3-B"},
+    {"name": "Class 4-A"},
+    {"name": "Class 4-B"},
+    {"name": "Class 5-A"},
+    {"name": "Class 5-B"},
+    {"name": "Class 6-A"},
+    {"name": "Class 6-B"},
+    {"name": "Class 7-A"},
+    {"name": "Class 7-B"},
+    {"name": "Class 8-A"},
+    {"name": "Class 8-B"},
+    {"name": "Class 9-A"},
+    {"name": "Class 9-B"},
+    {"name": "Class 10-A"},
+    {"name": "Class 10-B"},
+]
+
+# Rooms configuration
+ROOMS = [
+    {"name": "Room 101", "room_type": "classroom", "capacity": 30},
+    {"name": "Room 102", "room_type": "classroom", "capacity": 30},
+    {"name": "Room 103", "room_type": "classroom", "capacity": 30},
+    {"name": "Room 104", "room_type": "classroom", "capacity": 30},
+    {"name": "Lab 201", "room_type": "lab", "capacity": 25},
+    {"name": "Lab 202", "room_type": "lab", "capacity": 25},
+    {"name": "Gym", "room_type": "gym", "capacity": 50},
+    {"name": "Art Room", "room_type": "classroom", "capacity": 20},
+]
+
+# Demo teachers configuration
+DEMO_TEACHERS = [
+    {
+        "email": "math_teacher@school.com",
+        "password": "teacher123",
+        "name": "Mr. Sharma",
+        "employee_id": "T001",
+        "specialization": "Mathematics",
+    },
+    {
+        "email": "english_teacher@school.com",
+        "password": "teacher123",
+        "name": "Ms. Patel",
+        "employee_id": "T002",
+        "specialization": "English",
+    },
+    {
+        "email": "science_teacher@school.com",
+        "password": "teacher123",
+        "name": "Mr. Kumar",
+        "employee_id": "T003",
+        "specialization": "Science",
+    },
+    {
+        "email": "social_studies_teacher@school.com",
+        "password": "teacher123",
+        "name": "Ms. Singh",
+        "employee_id": "T004",
+        "specialization": "Social Studies",
+    },
+    {
+        "email": "hindi_teacher@school.com",
+        "password": "teacher123",
+        "name": "Mr. Gupta",
+        "employee_id": "T005",
+        "specialization": "Hindi",
+    },
+    {
+        "email": "computer_teacher@school.com",
+        "password": "teacher123",
+        "name": "Ms. Reddy",
+        "employee_id": "T006",
+        "specialization": "Computer Science",
+    },
+    {
+        "email": "pe_teacher@school.com",
+        "password": "teacher123",
+        "name": "Mr. Joshi",
+        "employee_id": "T007",
+        "specialization": "Physical Education",
+    },
+    {
+        "email": "art_teacher@school.com",
+        "password": "teacher123",
+        "name": "Ms. Mehta",
+        "employee_id": "T008",
+        "specialization": "Art",
+    },
+]
+
 
 async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     """
@@ -273,7 +381,8 @@ async def seed_database() -> None:
     1. Initializes database (creates tables)
     2. Creates roles
     3. Creates demo users
-    4. Creates demo homework assignments
+    4. Creates subjects, classes, rooms, teachers
+    5. Creates sample timetable
     """
     try:
         Logger.info("Starting database seeding...")

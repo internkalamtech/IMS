@@ -91,7 +91,115 @@ class ErrorResponse(BaseModel):
 
     detail: str
 
+
+class TimetablePeriodResponse(BaseModel):
+    """Response schema for timetable period data."""
+
+    id: int
+    class_id: int
+    subject_id: int
+    subject_name: str
+    teacher_id: int
+    teacher_name: str
+    room_id: int
+    room_name: str
+    day_of_week: int = Field(description="Day of week (0=Monday, 6=Sunday)")
+    start_time: str = Field(description="Start time in HH:MM format")
+    end_time: str = Field(description="End time in HH:MM format")
+    period_number: int
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "class_id": 1,
+                    "subject_id": 1,
+                    "subject_name": "Mathematics",
+                    "teacher_id": 1,
+                    "teacher_name": "Mr. Sharma",
+                    "room_id": 1,
+                    "room_name": "Room 101",
+                    "day_of_week": 0,
+                    "start_time": "09:00",
+                    "end_time": "10:00",
+                    "period_number": 1,
+                }
+            ]
+        }
+    }
+
+
+class TimetableDayResponse(BaseModel):
+    """Response schema for daily timetable data."""
+
+    day_of_week: int = Field(description="Day of week (0=Monday, 6=Sunday)")
+    day_name: str
+    periods: List[TimetablePeriodResponse]
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "day_of_week": 0,
+                    "day_name": "Monday",
+                    "periods": [
+                        {
+                            "id": 1,
+                            "class_id": 1,
+                            "subject_id": 1,
+                            "subject_name": "Mathematics",
+                            "teacher_id": 1,
+                            "teacher_name": "Mr. Sharma",
+                            "room_id": 1,
+                            "room_name": "Room 101",
+                            "day_of_week": 0,
+                            "start_time": "09:00",
+                            "end_time": "10:00",
+                            "period_number": 1,
+                        }
+                    ],
+                }
+            ]
+        }
+    }
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {"detail": "Error message"}
+            ]
+        }
+    }
     model_config = {"json_schema_extra": {"examples": [{"detail": "Error message"}]}}
+
+
+class ParentChildTimetableRecordResponse(BaseModel):
+    """Response schema for a parent-visible child timetable record."""
+
+    period_id: int
+    day_of_week: int = Field(description="Day of week (0=Monday, 6=Sunday)")
+    start_time: str = Field(description="Start time in HH:MM format")
+    end_time: str = Field(description="End time in HH:MM format")
+    subject_name: str
+    teacher_name: str
+    room_location: str
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "period_id": 1,
+                    "day_of_week": 0,
+                    "start_time": "09:00",
+                    "end_time": "10:00",
+                    "subject_name": "Mathematics",
+                    "teacher_name": "Mr. Sharma",
+                    "room_location": "Room 101",
+                }
+            ]
+        }
+    }
 
 
 class DemoCredential(BaseModel):
@@ -167,6 +275,22 @@ class AcademicSummaryResponse(BaseModel):
 
     child_id: str
     pending_homework_count: int
+
+
+class StudentTimetableResponse(BaseModel):
+    """Response model returned to a student for their timetable."""
+
+    timetable: List[TimetableDayResponse]
+    class_id: int
+    class_name: str
+
+
+class StudentHomeworkMaterialsResponse(BaseModel):
+    """Response model for student homework and learning materials."""
+
+    homework: List[dict]
+    materials: List[dict]
+    class_id: int
 
 
 # Transport-related schemas

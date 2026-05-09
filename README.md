@@ -10,8 +10,32 @@ IMS/
 ├── backend/         # Python FastAPI backend
 ├── docs/            # Shared documentation and requirements
 ├── package.json     # Root package.json for monorepo scripts
+├── run.bat          # Windows script to run the project
+├── run.sh           # Mac/Linux script to run the project
 └── README.md        # This file
 ```
+
+## ✨ Latest Features
+
+### Multi-Child Timetable Visibility (#330)
+
+**Overview:** Parents can now switch between their children's profiles and view their specific class schedules in both daily and weekly formats.
+
+**Features:**
+- **Child Selection:** Horizontal scrollable list of children with avatars and class info
+- **View Modes:** Toggle between detailed daily view and weekly overview
+- **Daily View:** Shows timeline of class slots with time, subject, teacher, and room
+- **Weekly View:** Grid layout showing all school days (Monday-Saturday)
+- **Navigation:** Previous/Next buttons to navigate between dates
+- **Visual Cues:** Color-coded periods with special styling for breaks
+
+**Backend API Endpoints:**
+- `GET /api/v1/timetable/class/{class_id}` - Get full timetable for a class
+- `GET /api/v1/timetable/class/{class_id}/day/{day_of_week}` - Get daily timetable
+
+**Mobile Navigation:** Parent Dashboard → Timetable quick action → Timetable screen
+
+**Sample Data:** Class 7-B timetable included with Monday-Friday schedule.
 
 ## 🚀 Quick Start for Interns
 
@@ -190,13 +214,23 @@ After seeding the database, you can login with these credentials:
 
 ### Running the Application
 
-#### Option 1: Run Both Together (Recommended)
+#### Option 1: Cross-Platform Scripts (Recommended)
+```bash
+# Windows
+run.bat
+
+# Mac/Linux
+./run.sh
+```
+These scripts automatically detect your OS and start both mobile and backend services.
+
+#### Option 2: Run Both Together
 ```bash
 npm run dev
 ```
 This starts both the mobile app and backend server concurrently.
 
-#### Option 2: Run Separately
+#### Option 3: Run Separately
 
 **Mobile Frontend:**
 ```bash

@@ -1,407 +1,613 @@
+import { useTheme } from '@/core/theme/ThemeContext';
+import { ThemedCard } from '@/presentation/components/ThemedCard';
+import { ThemedText } from '@/presentation/components/ThemedText';
+import { ThemedView } from '@/presentation/components/ThemedView';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    TextInput,
-    StyleSheet,
+    Dimensions,
     ScrollView,
-    Alert,
+    StatusBar,
+    StyleSheet,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+
+const { width } = Dimensions.get('window');
+
+type Child = {
+    id: number;
+    name: string;
+    class: string;
+    avatar: string;
+};
+
+type Period = {
+    id: number;
+    subject: string;
+    teacher: string;
+    room: string;
+    startTime: string;
+    endTime: string;
+    period: number;
+    isBreak?: boolean;
+};
+
+// Mock data for demonstration
+const MOCK_CHILDREN = [
+    { id: 1, name: 'Aarav Kumar', class: 'Class 7-B', avatar: 'AK' },
+    { id: 2, name: 'Priya Kumar', class: 'Class 5-A', avatar: 'PK' },
+];
+
+const MOCK_TIMETABLE = {
+    0: [ // Monday
+        { id: 1, subject: 'Mathematics', teacher: 'Mr. Sharma', room: 'Room 101', startTime: '09:00', endTime: '10:00', period: 1 },
+        { id: 2, subject: 'English', teacher: 'Ms. Patel', room: 'Room 102', startTime: '10:00', endTime: '11:00', period: 2 },
+        { id: 3, subject: 'Science', teacher: 'Mr. Kumar', room: 'Lab 201', startTime: '11:00', endTime: '12:00', period: 3 },
+        { id: 4, subject: 'BREAK', teacher: '', room: '', startTime: '12:00', endTime: '12:30', period: 4, isBreak: true },
+        { id: 5, subject: 'Social Studies', teacher: 'Ms. Singh', room: 'Room 103', startTime: '12:30', endTime: '13:30', period: 5 },
+        { id: 6, subject: 'Hindi', teacher: 'Mr. Gupta', room: 'Room 104', startTime: '13:30', endTime: '14:30', period: 6 },
+        { id: 7, subject: 'Computer Science', teacher: 'Ms. Reddy', room: 'Lab 202', startTime: '14:30', endTime: '15:30', period: 7 },
+    ],
+    1: [ // Tuesday
+        { id: 8, subject: 'English', teacher: 'Ms. Patel', room: 'Room 102', startTime: '09:00', endTime: '10:00', period: 1 },
+        { id: 9, subject: 'Mathematics', teacher: 'Mr. Sharma', room: 'Room 101', startTime: '10:00', endTime: '11:00', period: 2 },
+        { id: 10, subject: 'Hindi', teacher: 'Mr. Gupta', room: 'Room 104', startTime: '11:00', endTime: '12:00', period: 3 },
+        { id: 11, subject: 'BREAK', teacher: '', room: '', startTime: '12:00', endTime: '12:30', period: 4, isBreak: true },
+        { id: 12, subject: 'Science', teacher: 'Mr. Kumar', room: 'Lab 201', startTime: '12:30', endTime: '13:30', period: 5 },
+        { id: 13, subject: 'Social Studies', teacher: 'Ms. Singh', room: 'Room 103', startTime: '13:30', endTime: '14:30', period: 6 },
+        { id: 14, subject: 'Physical Education', teacher: 'Mr. Joshi', room: 'Gym', startTime: '14:30', endTime: '15:30', period: 7 },
+    ],
+    // Add more days as needed
+};
+
+const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default function TimetableScreen() {
-
-    // getting params from previous screen
-    const { classId, className, section } = useLocalSearchParams();
-
-    // state for timetable data
-    const [timetable, setTimetable] = useState<any[]>([]);
-
-    // form visibility
-    const [showForm, setShowForm] = useState(false);
-
-    // edit mode
-    const [editMode, setEditMode] = useState(false);
-    const [editId, setEditId] = useState<number | null>(null);
-
-    // selected day
-    const [selectedDay, setSelectedDay] = useState('Monday');
-
-    // form fields
-    const [subject, setSubject] = useState('');
-    const [teacherId, setTeacherId] = useState('');
-    const [roomId, setRoomId] = useState('');
-    const [roomType, setRoomType] = useState('classroom');
-    const [startTime, setStartTime] = useState('');
-    const [endTime, setEndTime] = useState('');
-    const [periodNumber, setPeriodNumber] = useState('');
-
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-    // fetch timetable based on class id
-    const fetchTimetable = async () => {
-        try {
-            const res = await fetch(
-                `http://10.237.144.29:8000/api/v1/timetables/?class_id=${classId}`
-            );
-            const data = await res.json();
-
-            setTimetable(Array.isArray(data) ? data : []);
-
-        } catch (err) {
-            console.log(err);
-        }
-    };
+    const { theme } = useTheme();
+    const router = useRouter();
+    const params = useLocalSearchParams<{ childName?: string; mode?: string }>();
+    const [selectedChild, setSelectedChild] = useState<Child>(MOCK_CHILDREN[0]);
+    const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
+    const [selectedDay, setSelectedDay] = useState(0); // 0 = Monday
 
     useEffect(() => {
-        fetchTimetable();
-    }, [classId]);
+        const childName = Array.isArray(params.childName) ? params.childName[0] : params.childName;
+        if (!childName) {
+            return;
+        }
 
-    // convert time to minutes for overlap check
-    const toMinutes = (time: string) => {
-        const [h, m] = time.split(':').map(Number);
-        return h * 60 + m;
+        const matchedChild = MOCK_CHILDREN.find((child) => child.name === childName);
+        if (matchedChild) {
+            setSelectedChild(matchedChild);
+            return;
+        }
+
+        setSelectedChild((current) => ({
+            ...current,
+            name: childName,
+            avatar: childName
+                .split(' ')
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((part: string) => part[0]?.toUpperCase() || '')
+                .join(''),
+            class: Array.isArray(params.mode) ? params.mode[0] : params.mode === 'parent' ? 'Parent Selected Child' : current.class,
+        }));
+    }, [params.childName, params.mode]);
+
+    const maxDayIndex = DAY_NAMES.length - 1;
+    const currentTimetable: Period[] = MOCK_TIMETABLE[selectedDay as keyof typeof MOCK_TIMETABLE] || [];
+
+    const navigateToPreviousDay = () => {
+        setSelectedDay((current) => Math.max(0, current - 1));
     };
 
-    // check time overlap
-    const isOverlap = (aStart: string, aEnd: string, bStart: string, bEnd: string) => {
-        return toMinutes(aStart) < toMinutes(bEnd) &&
-               toMinutes(bStart) < toMinutes(aEnd);
+    const navigateToNextDay = () => {
+        setSelectedDay((current) => Math.min(maxDayIndex, current + 1));
     };
 
-    // validation logic
-
-    const validate = () => {
-        // Required field validation
-        if (!subject || !teacherId || !roomId || !startTime || !endTime || !periodNumber) {
-            Alert.alert("Error", "All fields are required");
-            return false;
-        }
-        if (!periodNumber) {
-            Alert.alert('Error', 'Enter period number');
-            return false;
-        }
-
-        // prevent duplicate period in same class and day
-        const duplicate = timetable.find(
-            (t: any) =>
-                t.day === selectedDay &&
-                t.periodNumber === Number(periodNumber) &&
-                t.id !== editId
-        );
-
-        if (duplicate) {
-            Alert.alert('Error', 'Period already exists for this day');
-            return false;
-        }
-
-        // teacher and room conflict with time overlap
-        for (let t of timetable) {
-
-            if (t.id === editId) continue;
-
-            if (t.day === selectedDay &&
-                isOverlap(startTime, endTime, t.startTime, t.endTime)) {
-
-                if (t.teacher === teacherId) {
-                    Alert.alert(
-                        "Error",
-                        `Teacher busy in class ${t.classId} (${t.startTime}-${t.endTime})`
-                    );
-                    return false;
-                }
-
-                if (t.room === roomId) {
-                    Alert.alert(
-                        "Error",
-                        `Room already used (${t.startTime}-${t.endTime})`
-                    );
-                    return false;
-                }
-            }
-        }
-
-        // lab validation
-        const isLabSubject = subject.toLowerCase().includes('lab');
-
-        if (isLabSubject && roomType !== 'lab') {
-            Alert.alert('Warning', 'Lab subject should be assigned to lab room');
-            return false;
-        }
-
-        return true;
+    const handleBackToDashboard = () => {
+        router.push('/(tabs)');
     };
 
-    // save timetable
-    const handleSave = async () => {
+    const renderChildSelector = () => (
+        <View style={styles.childSelector}>
+            <ThemedText style={styles.selectorTitle} type="defaultSemiBold">
+                Select Child
+            </ThemedText>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.childScroll}>
+                {MOCK_CHILDREN.map((child) => (
+                    <TouchableOpacity
+                        key={child.id}
+                        style={[
+                            styles.childCard,
+                            selectedChild.id === child.id && { borderColor: theme.colors.primary, borderWidth: 2 }
+                        ]}
+                        onPress={() => setSelectedChild(child)}
+                    >
+                        <View style={[styles.childAvatar, { backgroundColor: theme.colors.primary + '20' }]}>
+                            <ThemedText style={{ color: theme.colors.primary, fontWeight: '700' }}>
+                                {child.avatar}
+                            </ThemedText>
+                        </View>
+                        <ThemedText style={styles.childName} type="defaultSemiBold">
+                            {child.name}
+                        </ThemedText>
+                        <ThemedText style={styles.childClass} lightColor="#666" darkColor="#999">
+                            {child.class}
+                        </ThemedText>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    );
 
-        if (!validate()) return;
-
-        const payload = {
-            classId: Number(classId),
-            subject,
-            teacher: teacherId,
-            room: roomId,
-            day: selectedDay,
-            startTime,
-            endTime,
-            periodNumber: Number(periodNumber),
-            roomType
-        };
-
-        try {
-            let res;
-
-            if (editMode && editId) {
-                res = await fetch(
-                    `http://10.237.144.29:8000/api/v1/timetables/${editId}`,
-                    {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    }
-                );
-            } else {
-                res = await fetch(
-                    `http://10.237.144.29:8000/api/v1/timetables/`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    }
-                );
-            }
-
-            const data = await res.json();
-
-            // 🔥 THIS IS THE FIX
-            if (!res.ok) {
-                Alert.alert("Error", data.detail || "Something went wrong");
-                return;
-            }
-
-            Alert.alert(editMode ? "Updated" : "Added");
-
-            setShowForm(false);
-            setEditMode(false);
-            setEditId(null);
-
-            fetchTimetable();
-
-        } catch (err) {
-            console.log(err);
-        }
-    };
-
-    // delete single period
-    const handleDelete = async (id: number) => {
-        await fetch(`http://10.237.144.29:8000/api/v1/timetables/${id}`, {
-            method: 'DELETE',
-        });
-        fetchTimetable();
-    };
-
-    // delete entire day
-    const handleDeleteDay = async (day: string) => {
-        const dayItems = timetable.filter((t: any) => t.day === day);
-
-        for (let item of dayItems) {
-            await fetch(`http://10.237.144.29:8000/api/v1/timetables/${item.id}`, {
-                method: 'DELETE',
-            });
-        }
-
-        fetchTimetable();
-    };
-
-    return (
-        <SafeAreaView style={{ flex: 1 }}>
-            <ScrollView style={styles.container}>
-
-               <Text style={styles.title}>
-                    Timetable : {className} {section ? `- ${section}` : ''}
-                </Text>
-
-                <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={() => {
-                        setShowForm(!showForm);
-                        setEditMode(false);
-                    }}
+    const renderViewToggle = () => (
+        <View style={styles.viewToggle}>
+            <TouchableOpacity
+                style={[
+                    styles.toggleButton,
+                    viewMode === 'daily' && { backgroundColor: theme.colors.primary }
+                ]}
+                onPress={() => setViewMode('daily')}
+            >
+                <ThemedText
+                    style={[
+                        styles.toggleText,
+                        viewMode === 'daily' && { color: theme.colors.primaryForeground }
+                    ]}
+                    type="defaultSemiBold"
                 >
-                    <Text style={{ color: '#fff' }}>Add</Text>
-                </TouchableOpacity>
+                    Daily
+                </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={[
+                    styles.toggleButton,
+                    viewMode === 'weekly' && { backgroundColor: theme.colors.primary }
+                ]}
+                onPress={() => setViewMode('weekly')}
+            >
+                <ThemedText
+                    style={[
+                        styles.toggleText,
+                        viewMode === 'weekly' && { color: theme.colors.primaryForeground }
+                    ]}
+                    type="defaultSemiBold"
+                >
+                    Weekly
+                </ThemedText>
+            </TouchableOpacity>
+        </View>
+    );
 
-                {showForm && (
-                    <View style={styles.form}>
+    const renderDayNavigation = () => (
+        <View style={styles.dayNavigation}>
+            <TouchableOpacity
+                style={[styles.navButton, { backgroundColor: theme.colors.primary + '20' }]}
+                onPress={navigateToPreviousDay}
+                disabled={selectedDay === 0}
+            >
+                <View style={styles.navContent}>
+                    <Ionicons
+                        name="chevron-back"
+                        size={20}
+                        color={selectedDay === 0 ? '#ccc' : theme.colors.primary}
+                    />
+                    <ThemedText style={[styles.navLabel, selectedDay === 0 && styles.navLabelDisabled]}>
+                        Previous
+                    </ThemedText>
+                </View>
+            </TouchableOpacity>
 
-                        <ScrollView horizontal>
-                            {days.map((day) => (
-                                <TouchableOpacity
-                                    key={day}
-                                    style={[
-                                        styles.dayBtn,
-                                        selectedDay === day && styles.activeDay
-                                    ]}
-                                    onPress={() => setSelectedDay(day)}
-                                >
-                                    <Text>{day}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
+            <View style={styles.dayInfo}>
+                <ThemedText style={styles.dayName} type="subtitle">
+                    {DAY_NAMES[selectedDay]}
+                </ThemedText>
+                <ThemedText style={styles.childInfo} lightColor="#666" darkColor="#999">
+                    {selectedChild.name} • {selectedChild.class}
+                </ThemedText>
+            </View>
 
-                        <TextInput placeholder="Subject" style={styles.input} onChangeText={setSubject} />
-                        <TextInput placeholder="Teacher ID" style={styles.input} onChangeText={setTeacherId} />
-                        <TextInput placeholder="Room ID" style={styles.input} onChangeText={setRoomId} />
-                        <TextInput placeholder="Room Type classroom or lab" style={styles.input} onChangeText={setRoomType} />
-                        <TextInput placeholder="Period Number" style={styles.input} value={periodNumber} onChangeText={setPeriodNumber} />
-                        <TextInput placeholder="Start Time 09:00" style={styles.input} onChangeText={setStartTime} />
-                        <TextInput placeholder="End Time 10:00" style={styles.input} onChangeText={setEndTime} />
+            <TouchableOpacity
+                style={[styles.navButton, { backgroundColor: theme.colors.primary + '20' }]}
+                onPress={navigateToNextDay}
+                disabled={selectedDay === maxDayIndex}
+            >
+                <View style={styles.navContent}>
+                    <ThemedText style={[styles.navLabel, selectedDay === maxDayIndex && styles.navLabelDisabled]}>
+                        Next
+                    </ThemedText>
+                    <Ionicons
+                        name="chevron-forward"
+                        size={20}
+                        color={selectedDay === maxDayIndex ? '#ccc' : theme.colors.primary}
+                    />
+                </View>
+            </TouchableOpacity>
+        </View>
+    );
 
-                        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                            <Text style={{ color: '#fff' }}>Save</Text>
-                        </TouchableOpacity>
+    const renderPeriodCard = (period: Period, index: number) => (
+        <View key={period.id} style={styles.timelineRow}>
+            <View style={styles.timelineTrack}>
+                <View
+                    style={[
+                        styles.timelineDot,
+                        { backgroundColor: period.isBreak ? '#f59e0b' : theme.colors.primary }
+                    ]}
+                />
+                {index < currentTimetable.length - 1 && <View style={[styles.timelineLine, { backgroundColor: theme.colors.border }]} />}
+            </View>
+
+            <ThemedCard
+                style={[
+                    styles.periodCard,
+                    {
+                        borderLeftColor: period.isBreak ? '#f59e0b' : theme.colors.primary,
+                        backgroundColor: period.isBreak ? '#f59e0b10' : theme.colors.card,
+                    }
+                ]}
+                padding={16}
+            >
+            <View style={styles.periodHeader}>
+                <View style={styles.periodTime}>
+                    <ThemedText style={styles.timeText} type="defaultSemiBold">
+                        Time: {period.startTime} - {period.endTime}
+                    </ThemedText>
+                    <ThemedText style={styles.periodNumber} lightColor="#666" darkColor="#999">
+                        Period {period.period}
+                    </ThemedText>
+                </View>
+                {period.isBreak && (
+                    <View style={[styles.breakIndicator, { backgroundColor: '#10b981' }]}>
+                        <Ionicons name="cafe" size={16} color="white" />
                     </View>
                 )}
+            </View>
 
-                {timetable.length === 0 && (
-                    <Text>No timetable created</Text>
-                )}
+            <View style={styles.periodContent}>
+                <ThemedText
+                    style={[
+                        styles.subjectName,
+                        period.isBreak && { color: '#10b981', fontStyle: 'italic' }
+                    ]}
+                    type="defaultSemiBold"
+                >
+                    Subject: {period.subject}
+                </ThemedText>
 
-                {days.map((day) => {
+                <View style={styles.detailRow}>
+                    <Ionicons name="person" size={16} color={theme.colors.primary} />
+                    <ThemedText style={styles.detailText} lightColor="#666" darkColor="#999">
+                        Teacher: {period.teacher || 'N/A'}
+                    </ThemedText>
+                </View>
+                <View style={styles.detailRow}>
+                    <Ionicons name="location" size={16} color={theme.colors.primary} />
+                    <ThemedText style={styles.detailText} lightColor="#666" darkColor="#999">
+                        Room/Lab: {period.room || 'N/A'}
+                    </ThemedText>
+                </View>
+            </View>
+            </ThemedCard>
+        </View>
+    );
 
-                    const dayData = timetable
-                        .filter((t: any) => t.day === day)
-                        .sort((a, b) => a.periodNumber - b.periodNumber);
+    const renderWeeklyView = () => (
+        <View style={styles.weeklyView}>
+            {DAY_NAMES.map((dayName, index) => {
+                const dayPeriods = MOCK_TIMETABLE[index as keyof typeof MOCK_TIMETABLE] || [];
+                const academicPeriods = dayPeriods.filter(p => !p.isBreak);
 
-                    return (
-                        <View key={day} style={styles.dayCard}>
+                return (
+                    <TouchableOpacity
+                        key={index}
+                        style={[
+                            styles.weekDayCard,
+                            { backgroundColor: selectedDay === index ? theme.colors.primary + '10' : theme.colors.card }
+                        ]}
+                        onPress={() => {
+                            setSelectedDay(index);
+                            setViewMode('daily');
+                        }}
+                    >
+                        <ThemedText style={styles.weekDayName} type="defaultSemiBold">
+                            {dayName}
+                        </ThemedText>
+                        <ThemedText style={styles.weekDayCount} lightColor="#666" darkColor="#999">
+                            {academicPeriods.length} periods
+                        </ThemedText>
+                    </TouchableOpacity>
+                );
+            })}
+        </View>
+    );
 
-                            <View style={styles.dayHeaderRow}>
-                                <Text style={styles.dayTitle}>{day}</Text>
+    return (
+        <ThemedView style={styles.container}>
+            <StatusBar barStyle="light-content" />
 
-                                <View style={{ flexDirection: 'row' }}>
-                                    <TouchableOpacity onPress={() => {
-                                        setSelectedDay(day);
-                                        setShowForm(true);
-                                        setEditMode(false);
-                                    }}>
-                                        <Text style={{ color: 'blue', marginRight: 10 }}>Edit</Text>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity onPress={() => handleDeleteDay(day)}>
-                                        <Text style={{ color: 'red' }}>Delete</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-
-                            {dayData.map((item: any) => (
-                                <View key={item.id} style={styles.periodCard}>
-
-                                    <Text style={styles.periodText}>
-                                        P{item.periodNumber}
-                                    </Text>
-
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={styles.subject}>{item.subject}</Text>
-                                        <Text style={styles.subText}>Teacher {item.teacher}</Text>
-                                        <Text style={styles.subText}>Room {item.room}</Text>
-                                    </View>
-
-                                    <TouchableOpacity
-                                        onPress={() => {
-
-                                            // enable edit mode
-                                            setEditMode(true);
-                                            setEditId(item.id);
-
-                                            // fill form with selected period data
-                                            setSubject(item.subject);
-                                            setTeacherId(item.teacher);
-                                            setRoomId(item.room);
-                                            setStartTime(item.startTime);
-                                            setEndTime(item.endTime);
-                                            setPeriodNumber(item.periodNumber.toString());
-                                            setSelectedDay(item.day);
-
-                                            // show form
-                                            setShowForm(true);
-                                        }}
-                                    >
-                                        <Text style={{ color: 'purple', marginRight: 10 }}>
-                                            Edit
-                                        </Text>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                                        <Text style={{ color: 'red' }}>Delete</Text>
-                                    </TouchableOpacity>
-
-                                </View>
-                            ))}
+            {/* Header */}
+            <View style={[styles.header, { backgroundColor: theme.colors.primary }]}>
+                <SafeAreaView edges={['top']}>
+                    <View style={styles.headerContent}>
+                        <TouchableOpacity style={styles.backButton} onPress={handleBackToDashboard}>
+                            <Ionicons name="arrow-back" size={24} color={theme.colors.primaryForeground} />
+                        </TouchableOpacity>
+                        <View style={styles.headerTitleWrap}>
+                            <ThemedText
+                                style={styles.headerTitle}
+                                type="title"
+                                lightColor={theme.colors.primaryForeground}
+                                darkColor={theme.colors.primaryForeground}
+                            >
+                                Child Timetable
+                            </ThemedText>
+                            <ThemedText
+                                style={styles.headerSubtitle}
+                                lightColor={theme.colors.primaryForeground}
+                                darkColor={theme.colors.primaryForeground}
+                            >
+                                {selectedChild.name}
+                            </ThemedText>
                         </View>
-                    );
-                })}
+                        <View style={{ width: 40 }} />
+                    </View>
+                </SafeAreaView>
+            </View>
 
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+                {/* Child Selector */}
+                {renderChildSelector()}
+
+                {/* View Toggle */}
+                {renderViewToggle()}
+
+                {/* Day Navigation */}
+                {renderDayNavigation()}
+
+                {/* Content */}
+                <View style={styles.content}>
+                    {viewMode === 'daily' ? (
+                        <View style={styles.dailyView}>
+                            {currentTimetable.map((period, index) => renderPeriodCard(period, index))}
+                        </View>
+                    ) : (
+                        renderWeeklyView()
+                    )}
+                </View>
             </ScrollView>
-        </SafeAreaView>
+        </ThemedView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { padding: 16 },
-    title: { fontSize: 20, fontWeight: 'bold' },
-
-    addButton: {
-        backgroundColor: '#007bff',
-        padding: 10,
-        marginVertical: 10,
-        borderRadius: 5,
-        alignItems: 'center'
+    container: {
+        flex: 1,
     },
-
-    form: { backgroundColor: '#f5f5f5', padding: 10, borderRadius: 8 },
-
-    input: { borderWidth: 1, padding: 8, marginVertical: 5 },
-
-    saveButton: {
-        backgroundColor: 'green',
-        padding: 10,
+    header: {
+        paddingBottom: 20,
+    },
+    headerContent: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 10
+        justifyContent: 'space-between',
+        paddingHorizontal: 24,
+        paddingTop: 20,
     },
-
-    dayBtn: { padding: 8, backgroundColor: '#eee', marginRight: 5 },
-    activeDay: { backgroundColor: '#4CAF50' },
-
-    dayCard: {
-        backgroundColor: '#fff',
-        marginTop: 10,
-        padding: 10,
-        borderRadius: 8
+    headerTitleWrap: {
+        flex: 1,
+        alignItems: 'center',
     },
-
-    dayHeaderRow: {
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerTitle: {
+        fontSize: 22,
+        fontWeight: '700',
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        marginTop: 2,
+        opacity: 0.9,
+    },
+    scrollView: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingBottom: 20,
+    },
+    childSelector: {
+        paddingHorizontal: 24,
+        paddingTop: 20,
+        paddingBottom: 16,
+    },
+    selectorTitle: {
+        fontSize: 16,
+        marginBottom: 12,
+    },
+    childScroll: {
+        marginHorizontal: -24,
+        paddingHorizontal: 24,
+    },
+    childCard: {
+        width: 120,
+        alignItems: 'center',
+        padding: 12,
+        marginRight: 12,
+        borderRadius: 12,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+    },
+    childAvatar: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
+    childName: {
+        fontSize: 14,
+        textAlign: 'center',
+        marginBottom: 2,
+    },
+    childClass: {
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    viewToggle: {
         flexDirection: 'row',
-        justifyContent: 'space-between'
+        marginHorizontal: 24,
+        marginBottom: 20,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        borderRadius: 8,
+        padding: 4,
     },
-
-    dayTitle: { fontWeight: 'bold' },
-
+    toggleButton: {
+        flex: 1,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 6,
+        alignItems: 'center',
+    },
+    toggleText: {
+        fontSize: 14,
+    },
+    dayNavigation: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginHorizontal: 24,
+        marginBottom: 20,
+        padding: 16,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        borderRadius: 12,
+    },
+    navButton: {
+        minWidth: 92,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    navContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2,
+    },
+    navLabel: {
+        fontSize: 12,
+        color: '#333',
+    },
+    navLabelDisabled: {
+        color: '#ccc',
+    },
+    dayInfo: {
+        alignItems: 'center',
+        flex: 1,
+    },
+    dayName: {
+        fontSize: 18,
+        marginBottom: 4,
+    },
+    childInfo: {
+        fontSize: 14,
+    },
+    content: {
+        paddingHorizontal: 24,
+    },
+    dailyView: {
+        gap: 12,
+    },
+    timelineRow: {
+        flexDirection: 'row',
+        alignItems: 'stretch',
+    },
+    timelineTrack: {
+        width: 24,
+        alignItems: 'center',
+        paddingTop: 16,
+    },
+    timelineDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+    },
+    timelineLine: {
+        width: 2,
+        flex: 1,
+        marginTop: 4,
+        marginBottom: -8,
+    },
     periodCard: {
-        flexDirection: 'row',
-        marginTop: 8,
-        backgroundColor: '#f9f9f9',
-        padding: 8
+        flex: 1,
+        marginBottom: 8,
+        borderLeftWidth: 4,
     },
-
-    periodText: { marginRight: 10, fontWeight: 'bold' },
-
-    subject: { fontWeight: 'bold' },
-
-    subText: { fontSize: 12 },
-
-    deleteBtn: { color: 'red' }
+    periodHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 12,
+    },
+    periodTime: {
+        flex: 1,
+    },
+    timeText: {
+        fontSize: 16,
+        marginBottom: 4,
+    },
+    periodNumber: {
+        fontSize: 12,
+    },
+    breakIndicator: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    periodContent: {
+        gap: 8,
+    },
+    subjectName: {
+        fontSize: 18,
+        marginBottom: 8,
+    },
+    detailRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    detailText: {
+        fontSize: 14,
+    },
+    weeklyView: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+    },
+    weekDayCard: {
+        flex: 1,
+        minWidth: (width - 48 - 24) / 2,
+        padding: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    weekDayName: {
+        fontSize: 16,
+        marginBottom: 4,
+    },
+    weekDayCount: {
+        fontSize: 12,
+    },
 });
