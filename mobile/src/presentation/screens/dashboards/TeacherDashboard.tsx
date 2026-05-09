@@ -7,6 +7,8 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard'; 
 import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { useRouter } from 'expo-router';
 import {
   RefreshControl,
   ScrollView,
@@ -33,9 +35,16 @@ export default function TeacherDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
+const handleQuickActionPress = (action: any) => {
+  console.log('Clicked action:', action.title, action.route);
 
+  if (action.route) {
+    router.push(action.route as any);
+  }
+};
   const upcomingClasses = [
     { id: 1, subject: 'Mathematics', class: 'Class 10-A', time: '09:00 AM', color: '#3b82f6' },
     { id: 2, subject: 'Science', class: 'Class 9-B', time: '10:30 AM', color: '#10b981' },
@@ -138,31 +147,23 @@ if (error) {
               </ThemedText>
             </View>
 
-            <ThemedCard
-              style={styles.updatesCard}
-              padding={0}
-            >
-              {
-              upcomingClasses.map((item, index) => (
-                <View
-                  key={item.id}
-                  style={[
-                    styles.updateItem,
-                    index !== upcomingClasses.length - 1 && {
-                      borderBottomWidth: 1,
-                      borderBottomColor:
-                        theme.colors.border,
-                    },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.classColorBar,
-                      {
-                        backgroundColor: item.color,
-                      },
-                    ]}
-                  />
+        {/* MAIN CONTENT */}
+        <View style={styles.mainContent}>
+          
+          {/* QUICK ACTIONS */}
+          <ThemedText style={styles.sectionTitle}>Teacher Tools</ThemedText>
+          <QuickActionGrid
+            actions={quickActions}
+             onActionPress={handleQuickActionPress}
+          />
+
+          {/* UPCOMING CLASSES */}
+          <ThemedText style={styles.sectionTitle}>Upcoming Classes</ThemedText>
+
+          <ThemedCard>
+            {upcomingClasses.map((item) => (
+              <View key={item.id} style={styles.updateItem}>
+                <View style={[styles.classColorBar, { backgroundColor: item.color }]} />
 
                 <View style={styles.updateContent}>
                   <ThemedText>{item.subject}</ThemedText>
