@@ -138,42 +138,36 @@ if (error) {
               </ThemedText>
             </View>
 
-            <ThemedCard
-              style={styles.updatesCard}
-              padding={0}
-            >
-              {
-              upcomingClasses.map((item, index) => (
-                <View
-                  key={item.id}
-                  style={[
-                    styles.updateItem,
-                    index !== upcomingClasses.length - 1 && {
-                      borderBottomWidth: 1,
-                      borderBottomColor:
-                        theme.colors.border,
-                    },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.classColorBar,
-                      {
-                        backgroundColor: item.color,
-                      },
-                    ]}
-                  />
+            <ThemedCard style={styles.updatesCard} padding={0}>
+  {upcomingClasses.map((item, index) => (
+    <View
+      key={item.id}
+      style={[
+        styles.updateItem,
+        index !== upcomingClasses.length - 1 && {
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.border,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.classColorBar,
+          {
+            backgroundColor: item.color,
+          },
+        ]}
+      />
 
-                <View style={styles.updateContent}>
-                  <ThemedText>{item.subject}</ThemedText>
-                  <ThemedText>{item.class}</ThemedText>
-                </View>
+      <View style={styles.updateContent}>
+        <ThemedText>{item.subject}</ThemedText>
+        <ThemedText>{item.class}</ThemedText>
+      </View>
 
-                <ThemedText>{item.time}</ThemedText>
-              </View>
-            ))}
-          </ThemedCard>
-
+      <ThemedText>{item.time}</ThemedText>
+    </View>
+  ))}
+</ThemedCard>
         
         
         </SafeAreaView>
