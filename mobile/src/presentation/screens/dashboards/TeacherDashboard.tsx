@@ -21,7 +21,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 const { width } = Dimensions.get('window');
 
-export function TeacherDashboard() {
+export default function TeacherDashboard() {
   const { logout, user } = useAuth();
   const { data: dashboardData, refreshing, onRefresh } = useDashboard();
   const { theme } = useTheme();
@@ -29,10 +29,21 @@ export function TeacherDashboard() {
 
   const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
 
-  const handleQuickActionPress = (action: any) => {
-    if (action.title?.toLowerCase().trim() === 'attendance') {
-      router.push('/attendance' as any);
-    }
+ const handleQuickActionPress = (action: any) => {
+  console.log('Clicked action:', action.title, action.route);
+
+  if (action.route) {
+    router.push(action.route as any);
+  }
+};
+  const upcomingClasses = [
+    { id: 1, subject: 'Mathematics', class: 'Class 10-A', time: '09:00 AM', color: '#3b82f6' },
+    { id: 2, subject: 'Science', class: 'Class 9-B', time: '10:30 AM', color: '#10b981' },
+    { id: 3, subject: 'Physics', class: 'Class 11-A', time: '12:00 PM', color: '#a855f7' },
+  ];
+
+  const getStatValue = (label: string, defaultValue: string = '0') => {
+    return dashboardData?.stats?.find((s: any) => s.label === label)?.value || defaultValue;
   };
 
   return (
@@ -49,10 +60,10 @@ export function TeacherDashboard() {
             <View style={styles.headerContent}>
               <View>
                 <ThemedText style={styles.userName}>
-                  {user?.name || 'Teacher'}
+                   Hello, {user?.name || 'Teacher'}
                 </ThemedText>
                 <ThemedText style={styles.subtitle}>
-                  Teacher Dashboard
+                   Dashboard Overview
                 </ThemedText>
               </View>
 
@@ -62,6 +73,18 @@ export function TeacherDashboard() {
             </View>
           </SafeAreaView>
         </View>
+        {/* STATS */}
+            <View style={styles.bannerStats}>
+              <View style={styles.statCard}>
+                <ThemedText>{getStatValue('Total Students', '42')}</ThemedText>
+                <ThemedText>Students</ThemedText>
+              </View>
+
+              <View style={styles.statCard}>
+                <ThemedText>{getStatValue("Today's Classes", '5')}</ThemedText>
+                <ThemedText>Classes</ThemedText>
+              </View>
+            </View>
 
         <View style={styles.mainContent}>
           <ThemedText style={styles.sectionTitle}>Quick Actions</ThemedText>
@@ -69,13 +92,33 @@ export function TeacherDashboard() {
           <QuickActionGrid
             actions={quickActions}
             onActionPress={handleQuickActionPress}
-          />
+           ></QuickActionGrid>
+            
+            {/* UPCOMING CLASSES */}
+          
+          <ThemedText style={styles.sectionTitle}>Upcoming Classes</ThemedText>
+
+          <ThemedCard>
+            {upcomingClasses.map((item) => (
+              <View key={item.id} style={styles.updateItem}>
+                <View style={[styles.classColorBar, { backgroundColor: item.color }]} />
+
+                <View style={styles.updateContent}>
+                  <ThemedText>{item.subject}</ThemedText>
+                  <ThemedText>{item.class}</ThemedText>
+                </View>
+
+                <ThemedText>{item.time}</ThemedText>
+              </View>
+            ))}
+          </ThemedCard>
+
         </View>
       </ScrollView>
-    </ThemedView>
+     </ThemedView>
+    
   );
 }
-export default TeacherDashboard;
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
