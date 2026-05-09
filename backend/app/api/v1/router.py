@@ -24,6 +24,7 @@ from app.api.v1.endpoints import (
     transport_enrollments_router,
 )
 from app.api.v1.endpoints import documents
+from app.api.v1.endpoints.learning_resources import router as learning_resources_router
 from app.api.v1.endpoints.staff import router as staff_router
 
 # Create v1 router
@@ -47,3 +48,4 @@ router.include_router(class_subjects_router)
 router.include_router(transport_enrollments_router)
 router.include_router(documents.router)
 router.include_router(staff_router)
+router.include_router(learning_resources_router)
