@@ -7,16 +7,8 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard'; 
 import { Ionicons } from '@expo/vector-icons';
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
->>>>>>> acaf04ace2780dc457436e43fa47d2621fa3b972
-=======
-import React from 'react';
-import { useRouter } from 'expo-router';
->>>>>>> a2b387f714578a9b14cae9caaa50a709a1d379d4
 import {
   RefreshControl,
   ScrollView,
@@ -26,8 +18,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
 
 type DashboardData = {
   totalStudents: number;
@@ -40,20 +30,9 @@ export default function TeacherDashboard() {
   const { logout, user } = useAuth();
   const { data: dashboardData, refreshing, onRefresh } = useDashboard();
   const { theme } = useTheme();
-<<<<<<< HEAD
-<<<<<<< HEAD
   const [data, setData] = useState<DashboardData | null>(null);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState<string | null>(null);
-=======
-  const router = useRouter();
->>>>>>> acaf04ace2780dc457436e43fa47d2621fa3b972
-=======
-  const [data, setData] = useState<DashboardData | null>(null);
- const [loading, setLoading] = useState(true);
- const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
->>>>>>> a2b387f714578a9b14cae9caaa50a709a1d379d4
 
   const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
 const handleQuickActionPress = (action: any) => {
@@ -165,7 +144,6 @@ if (error) {
               </ThemedText>
             </View>
 
-<<<<<<< HEAD
             <ThemedCard style={styles.updatesCard} padding={0}>
   {upcomingClasses.map((item, index) => (
     <View
@@ -200,43 +178,7 @@ if (error) {
         
         </SafeAreaView>
         </View>
-<<<<<<< HEAD
         </ScrollView>
-=======
-
-=======
->>>>>>> a2b387f714578a9b14cae9caaa50a709a1d379d4
-        {/* MAIN CONTENT */}
-        <View style={styles.mainContent}>
-          
-          {/* QUICK ACTIONS */}
-          <ThemedText style={styles.sectionTitle}>Teacher Tools</ThemedText>
-          <QuickActionGrid
-            actions={quickActions}
-             onActionPress={handleQuickActionPress}
-          />
-
-          {/* UPCOMING CLASSES */}
-          <ThemedText style={styles.sectionTitle}>Upcoming Classes</ThemedText>
-
-          <ThemedCard>
-            {upcomingClasses.map((item) => (
-              <View key={item.id} style={styles.updateItem}>
-                <View style={[styles.classColorBar, { backgroundColor: item.color }]} />
-
-                <View style={styles.updateContent}>
-                  <ThemedText>{item.subject}</ThemedText>
-                  <ThemedText>{item.class}</ThemedText>
-                </View>
-
-                <ThemedText>{item.time}</ThemedText>
-              </View>
-            ))}
-          </ThemedCard>
-
-        </View>
-      </ScrollView>
->>>>>>> acaf04ace2780dc457436e43fa47d2621fa3b972
     </ThemedView>
   );
 }
