@@ -4,10 +4,10 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
-from datetime import datetime
-from typing import List, Literal, Optional
+from datetime import date, datetime, time
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import AliasChoices, BaseModel, EmailStr, Field
+from typing import List, Literal, Optional
 
 
 class LoginRequest(BaseModel):
@@ -80,6 +80,48 @@ class LoginResponse(BaseModel):
                     },
                     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                     "token_type": "bearer",
+                }
+            ]
+        }
+    }
+
+
+class TokenRefreshRequest(BaseModel):
+    """Request schema for token refresh endpoint."""
+
+    access_token: str = Field(
+        ...,
+        description=(
+            "An access token that is expiring soon or recently expired "
+            "within the configured refresh window"
+        ),
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {"access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}
+            ]
+        }
+    }
+
+
+class TokenRefreshResponse(BaseModel):
+    """Response schema for token refresh endpoint."""
+
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int = Field(
+        ..., description="Token expiration time in seconds"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "token_type": "bearer",
+                    "expires_in": 1800,
                 }
             ]
         }
@@ -294,6 +336,24 @@ class DocumentExpiryListResponse(BaseModel):
     total: int
 
 
+class DocumentResponse(BaseModel):
+    """Response schema for compliance document upload/list endpoints."""
+
+    id: int
+    title: str
+    branch: Optional[str] = None
+    scope: Optional[str] = None
+    expiry_date: datetime
+    original_filename: str
+    content_type: str
+    upload_date: datetime
+    uploaded_by_id: Optional[int] = None
+    days_left: int
+    status: Literal["Valid", "Expiring-Soon", "Expired"]
+
+    model_config = {"from_attributes": True}
+
+
 class TransportStatsResponse(BaseModel):
     """Response schema for comprehensive transport statistics."""
 
@@ -328,134 +388,113 @@ class SubjectInput(BaseModel):
     id: Optional[int] = None
     name: Optional[str] = None
 
+    model_config = {
+        "json_schema_extra": {
+            "example": {"name": "Mathematics"}
+        }
+    }
+
 
 class UpdateClassSubjectsRequest(BaseModel):
     """Request schema for updating class subjects."""
 
-    class_id: int
+    class_id: int = Field(
+        ...,
+        gt=0,
+        description="Class section ID.",
+        examples=[1],
+    )
     subjects: List[SubjectInput]
-
-
-# Student & Parent Enrollment Schemas
-
-
-class ParentInput(BaseModel):
-    """Input schema for parent information."""
-
-    name: str = Field(..., min_length=1, max_length=255, description="Parent full name")
-    phone: str = Field(
-        ..., min_length=10, max_length=20, description="Contact phone number"
-    )
-    email: EmailStr = Field(..., description="Parent email address")
-    relationship_type: str = Field(
-        default="Parent",
-        max_length=50,
-        description="Relationship to student (Parent, Guardian, etc.)",
-    )
 
     model_config = {
         "json_schema_extra": {
-            "examples": [
-                {
-                    "name": "John Doe",
-                    "phone": "+1-555-123-4567",
-                    "email": "john.doe@example.com",
-                    "relationship_type": "Father",
-                }
-            ]
+            "example": {
+                "class_id": 1,
+                "subjects": [{"name": "Math"}, {"name": "Science"}],
+            }
         }
     }
+
+
+class UpdateClassSubjectsResponse(BaseModel):
+    """Response schema for updating class subjects."""
+
+    message: str
+    class_id: int
+    subjects_count: int
 
 
 class StudentInput(BaseModel):
-    """Input schema for student information."""
+    """Student payload for create-student enrollment APIs."""
 
-    name: str = Field(..., min_length=1, max_length=255, description="Student full name")
-    roll_number: str = Field(
-        ..., min_length=1, max_length=50, description="Unique student roll number"
+    name: str = Field(..., min_length=1)
+    class_id: int = Field(
+        ...,
+        gt=0,
+        validation_alias=AliasChoices("class_id", "classSectionId"),
+        serialization_alias="classSectionId",
     )
-    class_id: int = Field(..., description="ID of the class section")
     class_name: str = Field(
-        ..., min_length=1, max_length=100, description="Class name/grade"
+        ...,
+        min_length=1,
+        validation_alias=AliasChoices("class_name", "className"),
+        serialization_alias="className",
     )
+    roll_number: str = Field(..., alias="rollNumber", min_length=1)
+    date_of_birth: Optional[date] = Field(default=None, alias="dateOfBirth")
+    blood_group: Optional[str] = Field(default=None, alias="bloodGroup")
 
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "name": "Jane Doe",
-                    "roll_number": "A-001",
-                    "class_id": 1,
-                    "class_name": "Grade 6-A",
-                }
-            ]
-        }
-    }
+    model_config = {"populate_by_name": True}
+
+
+class ParentInput(BaseModel):
+    """Parent payload for create-student enrollment APIs.
+
+    Current API contract requires all of these fields in requests:
+    name, phone, email, and relationship_type.
+    This applies whether link_existing_parent is False or True.
+    """
+
+    name: str = Field(..., min_length=1)
+    phone: str = Field(..., min_length=7)
+    email: EmailStr = Field(
+        ..., description="Parent's email address (required, must be unique)"
+    )
+    relationship_type: str = Field(
+        ...,
+        min_length=1,
+        description="Relationship to student (e.g., Mother, Father, Guardian)",
+        validation_alias=AliasChoices("relationship_type", "relationshipType"),
+        serialization_alias="relationshipType",
+    )
+    address: Optional[str] = None
 
 
 class CreateStudentWithParentRequest(BaseModel):
-    """Request schema for creating a student with parent link."""
+    """Create student request with parent details.
 
-    student: StudentInput = Field(..., description="Student information")
-    parent: ParentInput = Field(..., description="Parent information")
+    The parent payload is used to either:
+    1. Create a new parent (when link_existing_parent=False)
+    2. Link to an existing parent by email (when link_existing_parent=True)
+
+    Note: parent.name, parent.phone, parent.email, and parent.relationship_type
+    are currently all required by schema and validation even when linking an
+    existing parent.
+    """
+
+    student: StudentInput
+    parent: ParentInput
     link_existing_parent: bool = Field(
         default=False,
-        description="If True, link to existing parent by email instead of creating new",
+        alias="linkExistingParent",
+        description=(
+            "Set to true to link by parent.email; however, the current request "
+            "schema still requires parent.name, parent.phone, and "
+            "parent.relationship_type as mandatory fields."
+        ),
     )
 
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "student": {
-                        "name": "Jane Doe",
-                        "roll_number": "A-001",
-                        "class_id": 1,
-                        "class_name": "Grade 6-A",
-                    },
-                    "parent": {
-                        "name": "John Doe",
-                        "phone": "+1-555-123-4567",
-                        "email": "john.doe@example.com",
-                        "relationship": "Father",
-
-                    },
-                    "link_existing_parent": False,
-                }
-            ]
-        }
-    }
-
-
-class ParentResponse(BaseModel):
-    """Response schema for parent data."""
-
-    id: int
-    name: str
-    phone: str
-    email: str
-    relationship_type: str
-
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "id": 1,
-                    "name": "John Doe",
-                    "phone": "+1-555-123-4567",
-                    "email": "john.doe@example.com",
-                    "relationship_type": "Father",
-                    "is_active": True,
-                    "created_at": "2024-02-16T10:30:00",
-                    "updated_at": "2024-02-16T10:30:00",
-                }
-            ]
-        }
-    }
+    model_config = {"populate_by_name": True}
 
 
 class StaffCreate(BaseModel):
@@ -492,7 +531,7 @@ class StaffResponse(BaseModel):
 
 
 class StudentResponse(BaseModel):
-    """Response schema for student data."""
+    """Student response payload for enrollment APIs."""
 
     id: int
     name: str
@@ -500,177 +539,51 @@ class StudentResponse(BaseModel):
     class_id: Optional[int] = None
     class_name: str
     next_due_date: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "id": 1,
-                    "name": "Jane Doe",
-                    "roll_number": "A-001",
-                    "class_id": 1,
-                    "class_name": "Grade 6-A",
-                    "next_due_date": None,
-                    "created_at": "2024-02-16T10:30:00",
-                    "updated_at": "2024-02-16T10:30:00",
-                }
-            ]
-        }
-    }
-
-
-class CreateStudentWithParentResponse(BaseModel):
-    """Response schema for student and parent creation."""
-
-    student: StudentResponse
-    parent: ParentResponse
-    message: str = "Student and parent created successfully with link established"
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "student": {
-                        "id": 1,
-                        "name": "Jane Doe",
-                        "roll_number": "A-001",
-                        "class_id": 1,
-                        "class_name": "Grade 6-A",
-                        "next_due_date": None,
-                        "created_at": "2024-02-16T10:30:00",
-                        "updated_at": "2024-02-16T10:30:00",
-                    },
-                    "parent": {
-                        "id": 1,
-                        "name": "John Doe",
-                        "phone": "+1-555-123-4567",
-                        "email": "john.doe@example.com",
-                        "relationship": "Father",
-
-                        "is_active": True,
-                        "created_at": "2024-02-16T10:30:00",
-                        "updated_at": "2024-02-16T10:30:00",
-                    },
-                    "message": "Student and parent created successfully with link established",
-                }
-            ]
-        }
-    }
-
-
-
-class DocumentBase(BaseModel):
-    """Base schema for Document."""
-    title: str
-    branch: Optional[str] = None
-    scope: Optional[str] = None
-    expiry_date: datetime
-
-
-class DocumentCreate(DocumentBase):
-    """Schema for creating a document."""
-    pass
-
-
-class DocumentUpdate(BaseModel):
-    """Schema for updating a document."""
-    title: Optional[str] = None
-    branch: Optional[str] = None
-    scope: Optional[str] = None
-    expiry_date: Optional[datetime] = None
-
-
-class DocumentResponse(DocumentBase):
-    """Schema for document response, including computed fields."""
-    id: int
-    original_filename: str
-    content_type: str
-    upload_date: datetime
-    uploaded_by_id: Optional[int] = None
-
-    days_left: int
-    status: Literal["Valid", "Expiring-Soon", "Expired"]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 
 
-# ------------------------------------------------------------------ #
-# Payment schemas
-# ------------------------------------------------------------------ #
+class ParentResponse(BaseModel):
+    """Parent response payload for enrollment APIs."""
 
-PaymentMode = Literal["Cash", "UPI", "Card"]
-PaymentStatus = Literal["Paid", "Partial", "Pending", "Failed", "Overdue"]
-
-
-class PaymentCreate(BaseModel):
-    """
-    Request schema for recording a new payment transaction.
-
-    Validation rules:
-    - ``amount`` must be a positive number.
-    - ``reference_number`` is **required** when ``payment_mode`` is
-      ``"UPI"`` or ``"Card"``; it remains optional for ``"Cash"``.
-    """
-
-    student_id: int = Field(
-        ..., description="ID of the student making the payment"
+    id: int
+    name: str
+    phone: str
+    email: EmailStr = Field(..., description="Parent's email address")
+    relationship_type: str = Field(
+        ..., description="Relationship to student"
     )
-    fee_structure_id: int = Field(
-        ..., description="ID of the fee structure being paid against"
-    )
-    amount: float = Field(
-        ..., gt=0, description="Payment amount (must be > 0)"
-    )
-    payment_mode: PaymentMode = Field(
-        ..., description="Mode of payment: Cash, UPI, or Card"
-    )
-    reference_number: Optional[str] = Field(
-        None,
-        description=(
-            "Transaction reference number. "
-            "Required for UPI and Card payments, optional for Cash."
-        ),
-    )
-    remarks: Optional[str] = Field(
-        None, max_length=500, description="Optional remarks or notes"
-    )
+    is_active: bool = True
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "student_id": 1,
-                    "fee_structure_id": 1,
-                    "amount": 5000.00,
-                    "payment_mode": "UPI",
-                    "reference_number": "UPI123456789",
-                    "remarks": "Monthly fee \u2013 April",
-                }
-            ]
-        }
-    }
 
-    @model_validator(mode="after")
-    def validate_reference_number_for_digital_payments(
-        self,
-    ) -> "PaymentCreate":
-        """
-        Ensure a reference number is supplied for UPI or Card payments.
+class CreateStudentWithParentResponse(BaseModel):
+    """Response for creating student with parent link."""
 
-        Raises:
-            ValueError: If payment_mode is UPI or Card but
-                        reference_number is absent or blank.
-        """
-        if self.payment_mode in ("UPI", "Card") and not (
-            self.reference_number and self.reference_number.strip()
-        ):
-            raise ValueError(
-                f"reference_number is required for "
-                f"{self.payment_mode} payments."
-            )
-        return self
+    student: StudentResponse
+    parent: ParentResponse
+    message: str
+
+
+class StudentTransportEnrollmentCreate(BaseModel):
+    """Single student transport enrollment payload."""
+
+    student_id: int = Field(..., alias="studentId", gt=0)
+    route_id: str = Field(..., alias="routeId", min_length=1)
+    stop_id: int = Field(..., alias="stopId", gt=0)
+    pickup_time: Optional[time] = Field(default=None, alias="pickupTime")
+    dropoff_time: Optional[time] = Field(default=None, alias="dropoffTime")
+
+    model_config = {"populate_by_name": True}
+
+
+class CreateStudentTransportEnrollmentsRequest(BaseModel):
+    """Request schema for bulk student transport enrollment creation."""
+
+    enrollments: List[StudentTransportEnrollmentCreate]
 
 class AverageMarksResponse(BaseModel):
     class_name: str
@@ -823,155 +736,149 @@ class FeeStructureResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class PaymentResponse(BaseModel):
-    """Response schema for a single payment transaction."""
+class StudentTransportEnrollmentItem(BaseModel):
+    """Created enrollment response item."""
 
     id: int
     student_id: int
-    fee_structure_id: int
-    receipt_number: str
-    amount: float
-    payment_mode: PaymentMode
-    reference_number: Optional[str] = None
-    status: PaymentStatus
-    remarks: Optional[str] = None
-    payment_date: datetime
-
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "id": 1,
-                    "student_id": 1,
-                    "fee_structure_id": 1,
-                    "receipt_number": "REC-2024-A3F7",
-                    "amount": 5000.00,
-                    "payment_mode": "UPI",
-                    "reference_number": "UPI123456789",
-                    "status": "Paid",
-                    "remarks": "Monthly fee - April",
-                    "payment_date": "2024-04-01T10:00:00",
-                }
-            ]
-        },
-    }
+    route_id: str
+    stop_id: int
+    pickup_time: Optional[str] = None
+    dropoff_time: Optional[str] = None
 
 
-class PaymentSummaryResponse(BaseModel):
-    """Response schema for aggregated payment statistics."""
+class CreateStudentTransportEnrollmentsResponse(BaseModel):
+    """Response schema for enrollment creation endpoint."""
 
-    total_collectible: float
-    total_collected: float
-    total_pending: float
-    total_overdue: float
+    message: str
+    count: int
+    enrollments: List[StudentTransportEnrollmentItem]
 
-    model_config = {"from_attributes": True}
 
-    
-# ============ TRIP SCHEMAS ============
+class RouteManifestStudentItem(BaseModel):
+    """Student manifest item for a specific route."""
+
+    student_id: int
+    student_name: str
+    stop_id: int
+    pickup_time: Optional[str] = None
+    dropoff_time: Optional[str] = None
+
+
+class RouteManifestResponse(BaseModel):
+    """Route manifest response schema."""
+
+    route_id: str
+    total_students: int
+    students: List[RouteManifestStudentItem]
 
 
 class TripCreateRequest(BaseModel):
-    """Request body for creating a trip."""
+    """Request schema for creating a trip."""
 
-    driver_id: int
-    route_id: str
-    vehicle_id: str
-    trip_type: str  # "pickup" or "drop_off"
-    scheduled_start: datetime
-    total_students: int
+    driver_id: int = Field(..., alias="driverId", gt=0)
+    route_id: str = Field(..., alias="routeId", min_length=1)
+    vehicle_id: str = Field(..., alias="vehicleId", min_length=1)
+    trip_type: Literal["pickup", "drop_off"] = Field(..., alias="tripType")
+    scheduled_start: datetime = Field(..., alias="scheduledStart")
+    total_students: int = Field(..., alias="totalStudents", ge=0)
+
+    model_config = {"populate_by_name": True}
 
 
 class TripUpdateStatusRequest(BaseModel):
-    """Request body for updating trip status."""
+    """Request schema for updating trip status."""
 
-    status: str  # "scheduled", "in_progress", "completed"
+    status: Literal["scheduled", "in_progress", "completed", "cancelled"]
+    notes: Optional[str] = None
 
 
 class TripResponse(BaseModel):
-    """Response model for a trip."""
+    """Response schema for trip details."""
 
     id: int
-    driver_id: int
-    route_id: str
-    vehicle_id: str
-    trip_type: str
+    driver_id: int = Field(..., alias="driverId")
+    route_id: str = Field(..., alias="routeId")
+    vehicle_id: str = Field(..., alias="vehicleId")
+    trip_type: str = Field(..., alias="tripType")
     status: str
-    scheduled_start: datetime
-    actual_start: datetime | None = None
-    actual_end: datetime | None = None
-    total_students: int
-    boarded_count: int
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
+    scheduled_start: datetime = Field(..., alias="scheduledStart")
+    actual_start: Optional[datetime] = Field(default=None, alias="actualStart")
+    actual_end: Optional[datetime] = Field(default=None, alias="actualEnd")
+    total_students: int = Field(..., alias="totalStudents")
+    boarded_count: int = Field(..., alias="boardedCount")
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    updated_at: Optional[datetime] = Field(default=None, alias="updatedAt")
 
-    class Config:
-        from_attributes = True
+    model_config = {"populate_by_name": True}
 
 
 class TripStopCreateRequest(BaseModel):
-    """Request body for creating a trip stop."""
+    """Request schema for creating a trip stop."""
 
-    stop_sequence: int
-    location_name: str
-    latitude: float
-    longitude: float
-    scheduled_time: datetime
-    expected_students: int
+    stop_sequence: int = Field(..., alias="stopSequence", ge=1)
+    location_name: str = Field(..., alias="locationName", min_length=1)
+    scheduled_time: datetime = Field(..., alias="scheduledTime")
+    expected_students: int = Field(..., alias="expectedStudents", ge=0)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+    model_config = {"populate_by_name": True}
 
 
 class TripStopUpdateRequest(BaseModel):
-    """Request body for updating trip stop status."""
+    """Request schema for updating stop status."""
 
-    status: str
-    boarded_students: int | None = None
+    status: Literal["pending", "in_progress", "completed"]
+    boarded_students: Optional[int] = Field(default=None, alias="boardedStudents", ge=0)
+
+    model_config = {"populate_by_name": True}
 
 
 class TripStopResponse(BaseModel):
-    """Response model for a trip stop."""
+    """Response schema for trip stop details."""
 
     id: int
-    trip_id: int
-    stop_sequence: int
-    location_name: str
-    latitude: float
-    longitude: float
-    scheduled_time: datetime
-    actual_arrival: datetime | None = None
-    actual_departure: datetime | None = None
-    expected_students: int
-    boarded_students: int
+    trip_id: int = Field(..., alias="tripId")
+    stop_sequence: int = Field(..., alias="stopSequence")
+    location_name: str = Field(..., alias="locationName")
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    scheduled_time: datetime = Field(..., alias="scheduledTime")
+    actual_arrival: Optional[datetime] = Field(default=None, alias="actualArrival")
+    actual_departure: Optional[datetime] = Field(default=None, alias="actualDeparture")
+    expected_students: int = Field(..., alias="expectedStudents")
+    boarded_students: int = Field(..., alias="boardedStudents")
     status: str
-    created_at: datetime | None = None
-    updated_at: datetime | None = None
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    updated_at: Optional[datetime] = Field(default=None, alias="updatedAt")
 
-    class Config:
-        from_attributes = True
+    model_config = {"populate_by_name": True}
 
 
 class StudentBoardingCreateRequest(BaseModel):
-    """Request body for logging student boarding."""
+    """Request schema for logging student boarding."""
 
-    student_id: int
-    student_name: str
-    status: str
+    student_id: int = Field(..., alias="studentId", gt=0)
+    student_name: str = Field(..., alias="studentName", min_length=1)
+    status: Literal["boarded", "no_show", "marked_absent"]
+
+    model_config = {"populate_by_name": True}
 
 
 class StudentBoardingResponse(BaseModel):
-    """Response model for a boarding record."""
+    """Response schema for boarding records."""
 
     id: int
-    trip_id: int
-    stop_id: int
-    student_id: int
-    student_name: str
+    trip_id: int = Field(..., alias="tripId")
+    stop_id: int = Field(..., alias="stopId")
+    student_id: int = Field(..., alias="studentId")
+    student_name: str = Field(..., alias="studentName")
     status: str
-    boarding_time: datetime | None = None
-    created_at: datetime | None = None
+    boarding_time: Optional[datetime] = Field(default=None, alias="boardingTime")
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
 
-    class Config:
-        from_attributes = True
+    model_config = {"populate_by_name": True}
 
 # =========================
 # 📅 ATTENDANCE SCHEMAS
@@ -990,7 +897,142 @@ class AttendanceUpdate(BaseModel):
     status: Literal["present", "absent", "leave"]
     teacher_id: int
 
+
 class StudentCreate(BaseModel):
     name: str
     roll_number: str
     class_name: str
+
+
+class TimetableResponse(BaseModel):
+    """Response schema for timetable entry."""
+
+    id: Optional[int] = None
+    day: str = Field(..., description="Day of the week (Monday-Sunday)")
+    time_slot: str = Field(..., description="Time slot (e.g., '09:00-10:00')")
+    subject: str = Field(..., description="Subject name")
+    teacher_name: Optional[str] = Field(None, description="Name of the teacher")
+    classroom: Optional[str] = Field(None, description="Classroom number/name")
+    class_id: int = Field(..., description="Class ID")
+    created_at: Optional[datetime] = None
+
+    model_config = {
+        "from_attributes": True,
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "day": "Monday",
+                    "time_slot": "09:00-10:00",
+                    "subject": "Mathematics",
+                    "teacher_name": "Mr. Smith",
+                    "classroom": "A1",
+                    "class_id": 1,
+                    "created_at": "2024-02-16T09:00:00",
+                }
+            ]
+        }
+    }
+
+
+class MaterialResponse(BaseModel):
+    """Response schema for learning materials."""
+
+    id: Optional[int] = None
+    title: str = Field(..., description="Material title")
+    description: Optional[str] = Field(None, description="Material description")
+    subject: str = Field(..., description="Subject name")
+    material_type: str = Field(..., description="Type: PDF, Video, Document, etc.")
+    file_url: Optional[str] = Field(None, description="URL to download/access material")
+    upload_date: Optional[datetime] = None
+    created_by: Optional[str] = Field(None, description="Name of teacher who uploaded")
+
+    model_config = {
+        "from_attributes": True,
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "title": "Chapter 5: Algebra Fundamentals",
+                    "description": "Introduction to basic algebra concepts",
+                    "subject": "Mathematics",
+                    "material_type": "PDF",
+                    "file_url": "https://storage.example.com/materials/algebra.pdf",
+                    "upload_date": "2024-02-15T14:30:00",
+                    "created_by": "Mr. Smith",
+                }
+            ]
+        }
+    }
+
+
+class StudentTimetableResponse(BaseModel):
+    """Response schema for student timetable request."""
+
+    timetable: List[TimetableResponse] = Field(..., description="List of timetable entries")
+    class_id: int = Field(..., description="Student's class ID")
+    class_name: str = Field(..., description="Student's class name")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "timetable": [
+                        {
+                            "id": 1,
+                            "day": "Monday",
+                            "time_slot": "09:00-10:00",
+                            "subject": "Mathematics",
+                            "teacher_name": "Mr. Smith",
+                            "classroom": "A1",
+                            "class_id": 1,
+                            "created_at": "2024-02-16T09:00:00",
+                        }
+                    ],
+                    "class_id": 1,
+                    "class_name": "Grade 6-A",
+                }
+            ]
+        }
+    }
+
+
+class StudentHomeworkMaterialsResponse(BaseModel):
+    """Response schema for student homework and materials."""
+
+    homework: List[dict] = Field(..., description="List of homework assigned to student's class")
+    materials: List[MaterialResponse] = Field(..., description="List of materials for student's subjects")
+    class_id: int = Field(..., description="Student's class ID")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "homework": [
+                        {
+                            "id": "hw-123",
+                            "title": "Algebra Practice",
+                            "description": "Solve exercises 1-20 from chapter 5",
+                            "subject": "Mathematics",
+                            "className": "Grade 6-A",
+                            "dueDate": "2024-02-18",
+                            "assignType": "ALL",
+                        }
+                    ],
+                    "materials": [
+                        {
+                            "id": 1,
+                            "title": "Chapter 5: Algebra Fundamentals",
+                            "description": "Introduction to basic algebra concepts",
+                            "subject": "Mathematics",
+                            "material_type": "PDF",
+                            "file_url": "https://storage.example.com/materials/algebra.pdf",
+                            "upload_date": "2024-02-15T14:30:00",
+                            "created_by": "Mr. Smith",
+                        }
+                    ],
+                    "class_id": 1,
+                }
+            ]
+        }
+    }

@@ -26,12 +26,12 @@ router = APIRouter()
 async def get_classes(db: AsyncSession = Depends(get_db)):
     """
     Get all available classes.
-    
+
     Returns a list of all classes with their IDs and names.
     """
     result = await db.execute(select(ClassSectionModel))
     classes = result.scalars().all()
-    
+
     return [{"id": c.id, "name": c.name} for c in classes]
 
 

@@ -11,6 +11,7 @@ Following best practices:
 """
 
 import asyncio
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +19,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logger import Logger
 from app.core.password import hash_password
 from app.infrastructure.database.database import AsyncSessionLocal, init_db
-from app.infrastructure.database.models import RoleModel, UserModel
+from app.infrastructure.database.models import (
+    ClassSectionModel,
+    HomeworkModel,
+    RoleModel,
+    StudentModel,
+    UserModel,
+)
 
 # Demo users configuration
 DEMO_USERS = [
@@ -138,6 +145,61 @@ ROLES = [
     },
 ]
 
+CLASS_SECTIONS = [
+    {"name": "Grade 1"},
+    {"name": "Grade 2"},
+    {"name": "Grade 3"},
+]
+
+DEMO_STUDENTS = [
+    {
+        "name": "John Doe",
+        "roll_number": "G1-001",
+        "class_name": "Grade 1",
+    },
+    {
+        "name": "Aarav Kumar",
+        "roll_number": "G2-001",
+        "class_name": "Grade 2",
+    },
+    {
+        "name": "Bhavya Singh",
+        "roll_number": "G3-001",
+        "class_name": "Grade 3",
+    },
+]
+
+
+def _student_seed_defaults() -> dict[str, Any]:
+    """Return fallback values for required StudentModel fields in seed data."""
+    defaults: dict[str, Any] = {}
+
+    # If more non-nullable fields are added without defaults,
+    # infer safe numeric/boolean seed values.
+    for column in StudentModel.__table__.columns:
+        if column.nullable or column.primary_key:
+            continue
+        if column.default is not None or column.server_default is not None:
+            continue
+
+        if column.name == "marks":
+            defaults[column.name] = 0.0
+            continue
+
+        try:
+            python_type = column.type.python_type
+        except (AttributeError, NotImplementedError):
+            continue
+
+        if python_type is float:
+            defaults[column.name] = 0.0
+        elif python_type is int:
+            defaults[column.name] = 0
+        elif python_type is bool:
+            defaults[column.name] = False
+
+    return defaults
+
 
 async def create_roles(db: AsyncSession) -> dict[str, RoleModel]:
     """
@@ -214,6 +276,83 @@ async def create_users(db: AsyncSession, roles_map: dict[str, RoleModel]) -> Non
     await db.commit()
 
 
+async def create_class_sections(db: AsyncSession) -> None:
+    """
+    Create demo class sections if they don't exist.
+
+    Args:
+        db: Database session
+    """
+    Logger.info("Creating class sections...")
+
+    for class_data in CLASS_SECTIONS:
+        result = await db.execute(
+            select(ClassSectionModel).where(
+                ClassSectionModel.name == class_data["name"]
+            )
+        )
+        class_section = result.scalar_one_or_none()
+
+        if not class_section:
+            class_section = ClassSectionModel(**class_data)
+            db.add(class_section)
+            Logger.info(f"Created class section: {class_data['name']}")
+        else:
+            Logger.info(f"Class section already exists: {class_data['name']}")
+
+    await db.commit()
+
+
+async def create_demo_students(db: AsyncSession) -> None:
+    """Create demo student records in the students table if missing."""
+    Logger.info("Creating demo students...")
+    student_defaults = _student_seed_defaults()
+
+    class_sections_result = await db.execute(select(ClassSectionModel))
+    class_sections = {
+        class_section.name: class_section
+        for class_section in class_sections_result.scalars().all()
+    }
+
+    for student_data in DEMO_STUDENTS:
+        result = await db.execute(
+            select(StudentModel).where(
+                StudentModel.roll_number == student_data["roll_number"]
+            )
+        )
+        student = result.scalar_one_or_none()
+
+        if student:
+            Logger.info(
+                f"Student already exists: {student_data['roll_number']}"
+            )
+            continue
+
+        class_section = class_sections.get(student_data["class_name"])
+        student_payload: dict[str, Any] = {
+            "name": student_data["name"],
+            "roll_number": student_data["roll_number"],
+            "class_id": class_section.id if class_section else None,
+            "class_name": student_data["class_name"],
+            "next_due_date": None,
+        }
+
+        for field_name, default_value in student_defaults.items():
+            student_payload.setdefault(
+                field_name,
+                student_data.get(field_name, default_value),
+            )
+
+        student = StudentModel(**student_payload)
+        db.add(student)
+        Logger.info(
+            "Created student: "
+            f"{student_data['name']} ({student_data['roll_number']})"
+        )
+
+    await db.commit()
+
+
 async def create_homework(db: AsyncSession) -> None:
     """
     Create demo homework assignments for the student demo user.
@@ -273,7 +412,9 @@ async def seed_database() -> None:
     1. Initializes database (creates tables)
     2. Creates roles
     3. Creates demo users
-    4. Creates demo homework assignments
+    4. Creates demo class sections
+    5. Creates demo students
+    6. Creates demo homework assignments
     """
     try:
         Logger.info("Starting database seeding...")
@@ -289,6 +430,12 @@ async def seed_database() -> None:
 
             # Create users
             await create_users(db, roles_map)
+
+            # Create class sections
+            await create_class_sections(db)
+
+            # Create demo students in students table
+            await create_demo_students(db)
 
             # Create homework assignments
             await create_homework(db)
