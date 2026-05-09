@@ -137,17 +137,30 @@ class HomeworkModel(Base):
         nullable=False,
         index=True,
     )
+    teacher_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     subject: Mapped[str] = mapped_column(String(100), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
     status: Mapped[str] = mapped_column(
         String(20),
         nullable=False,
         default="pending",
         index=True,
-    )  # 'pending', 'submitted', 'overdue'
+    )  # 'pending', 'submitted', 'overdue', 'completed'
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
     )
 
     def __repr__(self) -> str:

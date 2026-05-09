@@ -232,6 +232,44 @@ class DashboardResponse(BaseModel):
     stats: list[StatItem]
 
 
+class RecentUpdate(BaseModel):
+    """Schema for a recent update/activity item."""
+
+    id: str | None = None
+    icon: str
+    title: str
+    subtitle: str
+    timestamp: str
+    type: Literal["homework", "exam", "announcement", "fee", "meeting"] | None = None
+
+
+class ChildInfo(BaseModel):
+    """Schema for child information (for parent dashboard)."""
+
+    id: str
+    name: str
+    class_name: str
+    roll_number: str
+    avatar_initials: str
+
+
+class ParentDashboardResponse(BaseModel):
+    """Response schema for parent dashboard endpoint."""
+
+    role: str
+    child: ChildInfo | None = None
+    stats: list[StatItem]
+    recent_updates: list[RecentUpdate] = []
+
+
+class StudentDashboardResponse(BaseModel):
+    """Response schema for student dashboard endpoint."""
+
+    role: str
+    stats: list[StatItem]
+    recent_updates: list[RecentUpdate] = []
+
+
 class AcademicSummaryResponse(BaseModel):
     """Response schema for the academic summary endpoint."""
 
@@ -769,10 +807,127 @@ class PaymentStudentResponse(BaseModel):
     id: int
     name: str
     roll_number: str
-    class_name: str
-    marks: Optional[float] = None
-    attendance: Optional[float] = None
-    next_due_date: Optional[datetime] = None
+
+
+# =========================
+# 📚 HOMEWORK & LEARNING RESOURCES
+# =========================
+
+class HomeworkResponse(BaseModel):
+    """Response schema for homework data."""
+
+    id: int
+    child_id: int
+    teacher_id: int | None = None
+    subject: str
+    title: str
+    description: str | None = None
+    due_date: datetime | None = None
+    status: Literal["pending", "submitted", "overdue", "completed"]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "child_id": 5,
+                    "teacher_id": 3,
+                    "subject": "Mathematics",
+                    "title": "Algebra Assignment",
+                    "description": "Solve problems 1-20 on page 45",
+                    "due_date": "2026-05-10T23:59:59",
+                    "status": "pending",
+                    "created_at": "2026-05-05T10:00:00",
+                    "updated_at": "2026-05-05T10:00:00",
+                }
+            ]
+        }
+    }
+
+
+class HomeworkCreate(BaseModel):
+    """Request schema for creating homework."""
+
+    child_id: int
+    teacher_id: int | None = None
+    subject: str
+    title: str
+    description: str | None = None
+    due_date: datetime | None = None
+    status: Literal["pending", "submitted", "overdue", "completed"] = "pending"
+
+
+class HomeworkUpdate(BaseModel):
+    """Request schema for updating homework."""
+
+    subject: str | None = None
+    title: str | None = None
+    description: str | None = None
+    due_date: datetime | None = None
+    status: Literal["pending", "submitted", "overdue", "completed"] | None = None
+
+
+class LearningResourceResponse(BaseModel):
+    """Response schema for learning resource data."""
+
+    id: int
+    title: str
+    description: str | None = None
+    resource_type: Literal["pdf", "ppt", "video", "link", "document"]
+    category: Literal[
+        "textbook", "reference", "solved_problems", "notes", "practice"
+    ]
+    subject_id: int
+    class_id: int
+    file_path: str | None = None
+    external_link: str | None = None
+    file_size: int | None = None
+    content_type: str | None = None
+    uploaded_by_id: int | None = None
+    is_published: bool = True
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "title": "Mathematics Textbook Chapter 5",
+                    "description": "Complete textbook for Algebra concepts",
+                    "resource_type": "pdf",
+                    "category": "textbook",
+                    "subject_id": 1,
+                    "class_id": 2,
+                    "file_path": "uploads/resources/math_chapter5.pdf",
+                    "external_link": None,
+                    "file_size": 2048576,
+                    "content_type": "application/pdf",
+                    "uploaded_by_id": 3,
+                    "is_published": True,
+                    "created_at": "2026-05-01T09:00:00",
+                    "updated_at": "2026-05-01T09:00:00",
+                }
+            ]
+        }
+    }
+
+
+class LearningResourceCreate(BaseModel):
+    """Request schema for creating learning resource."""
+
+    title: str
+    description: str | None = None
+    resource_type: Literal["pdf", "ppt", "video", "link", "document"]
+    category: Literal[
+        "textbook", "reference", "solved_problems", "notes", "practice"
+    ]
+    subject_id: int
+    class_id: int
+    external_link: str | None = None
+    is_published: bool = True
 
     model_config = {"from_attributes": True}
 
