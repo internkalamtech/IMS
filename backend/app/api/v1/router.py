@@ -6,12 +6,9 @@ This module aggregates all v1 API endpoints.
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, health, dashboard, classes, timetables, class_subjects_router
-from app.api.v1.endpoints import class_subjects_router
-from app.api.v1.endpoints.payments import router as payments_router
-
 from app.api.v1.endpoints import (
     auth,
+    classes,
     class_subjects_router,
     dashboard,
     enrollment,
@@ -19,12 +16,13 @@ from app.api.v1.endpoints import (
     payments,
     students,
     subjects,
-    student_academic,
-    trips,  
+    timetables,
+    trips, 
     documents, 
-    )
+)
 from app.api.v1.endpoints.payments import router as payments_router
-
+from app.api.v1.endpoints.homework import router as homework_router
+from app.api.v1.endpoints.learning_resources import router as learning_resources_router
 from app.api.v1.endpoints.staff import router as staff_router
 
 # Create v1 router
@@ -40,7 +38,8 @@ router.include_router(payments.router)
 router.include_router(students.router)
 router.include_router(subjects.router)
 router.include_router(enrollment.router)
-router.include_router(student_academic.router)
 router.include_router(trips.router)
 router.include_router(documents.router)
 router.include_router(staff_router)
+router.include_router(homework_router)
+router.include_router(learning_resources_router)

@@ -10,7 +10,7 @@ from . import (
     auth,
     health,
     enrollment,
-    student_academic,
+    #student_academic,
     trips,
 )
 
@@ -19,7 +19,7 @@ __all__ = [
     "auth",
     "health",
 	"enrollment",
-    "student_academic",
+    #"student_academic",
     "dashboard", "class_subjects_router", "documents",
     "staff_router",
     "trips",
