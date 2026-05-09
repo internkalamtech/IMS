@@ -23,10 +23,6 @@ from app.api.v1.endpoints import (
     trips,
 )
 from app.api.v1.endpoints.class_subjects import router as class_subjects_router
-    timetables,
-    trips, 
-    documents, 
-)
 from app.api.v1.endpoints.payments import router as payments_router
 from app.api.v1.endpoints.homework import router as homework_router
 from app.api.v1.endpoints.learning_resources import router as learning_resources_router
