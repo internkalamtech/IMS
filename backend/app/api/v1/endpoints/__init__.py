@@ -1,26 +1,31 @@
 """API v1 endpoints."""
 
-from app.api.v1.endpoints import auth, health, classes
-
-__all__ = ["auth", "health", "classes""enrollment",
-    "class_subjects_router",
-    "staff_router",
-    "trips",]
-from . import (
+from app.api.v1.endpoints import (
     auth,
-    health,
+    classes,
     enrollment,
-    #student_academic,
-    trips,
+    health,
+    payments,
+    student_academic,
+    subjects,
 )
-
+from app.api.v1.endpoints import trips
 from .class_subjects import router as class_subjects_router
+from .homework import router as homework_router
+from .enrollment import router as enrollment_router
+from .transport_enrollments import router as transport_enrollments_router
+
 __all__ = [
     "auth",
+    "classes",
+    "enrollment",
     "health",
-	"enrollment",
-    #"student_academic",
-    "dashboard", "class_subjects_router", "documents",
-    "staff_router",
+    "subjects",
+    "payments",
+    "student_academic",
     "trips",
+    "homework_router",
+    "enrollment_router",
+    "class_subjects_router",
+    "transport_enrollments_router",
 ]

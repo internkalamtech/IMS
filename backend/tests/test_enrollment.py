@@ -5,7 +5,7 @@ Tests for API endpoints, use cases, and repositories.
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock, AsyncMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -77,8 +77,8 @@ def sample_parent_entity():
         email="jane.doe@example.com",
         relationship_type="Mother",
         is_active=True,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
     )
 
 
