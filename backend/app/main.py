@@ -52,7 +52,13 @@ app = FastAPI(
     redoc_url=None,
     lifespan=lifespan,
 )
-
+@app.get("/teacher/dashboard")
+def get_teacher_dashboard():
+    return {
+        "totalStudents": 120,
+        "totalClasses": 5,
+        "notifications": 3
+    }
 
 # Global exception handler
 @app.exception_handler(IMSException)

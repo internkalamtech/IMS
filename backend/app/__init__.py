@@ -1,4 +1,4 @@
-"""IMS Backend Application."""
+""" IMS Backend Application. """
 
 from app.main import app
 
