@@ -459,4 +459,3 @@ class DeleteClassFeeStructureUseCase:
 
     async def execute(self, structure_id: int) -> None:
         await self.repository.delete_class_fee_structure(structure_id)
-    
