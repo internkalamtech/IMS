@@ -1,44 +1,21 @@
-# IMS Application Test Report
-**Date:** April 18, 2026  
-**Status:** ✅ ALL TESTS PASSED
+# IMS Application Test Reports
+
+This repository does not keep generated, point-in-time test reports in source control at the repository root.
 
 ---
 
-## 📊 Test Summary
+## How to view the latest test results
 
-| Component | Tests | Status | Notes |
-|-----------|-------|--------|-------|
-| **Backend (Python/FastAPI)** | 12 | ✅ PASSED | All tests passed, including new fee structure tests |
-| **Database Models** | ✅ | ✅ PASSED | ClassFeeStructure, FeeBreakdown, InstallmentSchedule models verified |
-| **API Endpoints** | ✅ | ✅ PASSED | New fee structure endpoints registered and validated |
-| **Frontend (React Native/Expo)** | ✅ | ✅ PASSED | No TypeScript errors, all screens compile |
-| **Dependencies** | ✅ | ✅ INSTALLED | All required packages installed |
+- Use the project's CI pipeline logs for the most recent test execution output.
+- Download CI artifacts if a full test report is published by the workflow.
+- If a long-lived human-maintained summary is needed, store it under `docs/` with a clear update process rather than committing generated output here.
 
 ---
 
-## 🧪 Backend Test Results
+## Notes
 
-### Test Execution Summary
-```
-============================= test session starts =============================
-platform win32 -- Python 3.14.0, pytest-9.0.3, pluggy-1.6.0
-collected 12 items
-
-tests/test_enrollment.py::test_create_student_with_parent_success PASSED [ 8%]
-tests/test_enrollment.py::test_create_student_with_existing_parent PASSED [ 16%]
-tests/test_enrollment.py::test_create_student_invalid_name PASSED [ 25%]
-tests/test_enrollment.py::test_create_student_invalid_class_id PASSED [ 33%]
-tests/test_enrollment.py::test_create_student_duplicate_roll_number PASSED [ 41%]
-tests/test_enrollment.py::test_create_student_invalid_email PASSED [ 50%]
-tests/test_enrollment.py::test_link_to_nonexistent_parent PASSED [ 58%]
-tests/test_fee_structure.py::test_create_fee_structure PASSED [ 66%]
-tests/test_fee_structure.py::test_health_check_extended PASSED [ 75%]
-tests/test_fee_structure.py::test_api_routes_exist PASSED [ 83%]
-tests/test_health.py::test_health_check PASSED [ 91%]
-tests/test_health.py::test_root_endpoint PASSED [ 100%]
-
-========================== 12 passed, 4 warnings in 2.14s ======================
-```
+- Test status in this project should be determined from the latest CI run, not from a committed snapshot.
+- This avoids stale results and noisy diffs from repeatedly updating generated reports.
 
 ### Test Categories
 
