@@ -11,6 +11,11 @@ from app.domain.usecases.payment_usecases import (
     GetPaymentSummaryUseCase,
     ListStudentsUseCase,
     GetStudentUseCase,
+    CreateClassFeeStructureUseCase,
+    GetClassFeeStructureUseCase,
+    ListClassFeeStructuresUseCase,
+    UpdateClassFeeStructureUseCase,
+    DeleteClassFeeStructureUseCase,
 )
 from app.domain.usecases.homework_usecases import (
     GetPendingHomeworkCountUseCase,
@@ -25,6 +30,10 @@ __all__ = [
     "GetPaymentSummaryUseCase",
     "ListStudentsUseCase",
     "GetStudentUseCase",
+    "CreateClassFeeStructureUseCase",
+    "GetClassFeeStructureUseCase",
+    "ListClassFeeStructuresUseCase",
+    "UpdateClassFeeStructureUseCase",
+    "DeleteClassFeeStructureUseCase",
     "GetPendingHomeworkCountUseCase",
 ]
-

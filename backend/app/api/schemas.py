@@ -691,6 +691,145 @@ class PaymentStudentResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# ------------------------------------------------------------------ #
+# Class fee structure schemas
+# ------------------------------------------------------------------ #
+
+
+class FeeBreakdownCreate(BaseModel):
+    """Schema for creating fee breakdown items."""
+
+    fee_head: str = Field(..., description="Name of the fee head")
+    amount: float = Field(..., gt=0, description="Amount for this fee head")
+    description: Optional[str] = Field(None, description="Optional description")
+
+
+class InstallmentScheduleCreate(BaseModel):
+    """Schema for creating installment schedules."""
+
+    installment_number: int = Field(
+        ..., ge=1, description="Order of installment"
+    )
+    due_date: datetime = Field(..., description="Due date for installment")
+    amount: float = Field(..., gt=0, description="Amount for installment")
+    description: Optional[str] = Field(None, description="Optional description")
+
+
+class ClassFeeStructureCreate(BaseModel):
+    """Schema for creating a class fee structure."""
+
+    class_name: str = Field(..., description="Name of the class")
+    academic_year: str = Field(
+        ..., description="Academic year (e.g., 2024-25)"
+    )
+    total_amount: float = Field(..., gt=0, description="Total fee amount")
+    breakdowns: List[FeeBreakdownCreate] = Field(
+        ..., description="Fee breakdown items"
+    )
+    installments: List[InstallmentScheduleCreate] = Field(
+        ..., description="Installment schedules"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "class_name": "Grade 10",
+                    "academic_year": "2024-25",
+                    "total_amount": 50000.0,
+                    "breakdowns": [
+                        {
+                            "fee_head": "Tuition",
+                            "amount": 30000.0,
+                            "description": "Monthly tuition fee",
+                        },
+                        {
+                            "fee_head": "Transport",
+                            "amount": 15000.0,
+                            "description": "Annual transport fee",
+                        },
+                        {
+                            "fee_head": "Lab",
+                            "amount": 5000.0,
+                            "description": "Lab access fee",
+                        },
+                    ],
+                    "installments": [
+                        {
+                            "installment_number": 1,
+                            "due_date": "2024-06-01T00:00:00",
+                            "amount": 25000.0,
+                            "description": "First installment",
+                        },
+                        {
+                            "installment_number": 2,
+                            "due_date": "2024-09-01T00:00:00",
+                            "amount": 25000.0,
+                            "description": "Second installment",
+                        },
+                    ],
+                }
+            ]
+        }
+    }
+
+
+class ClassFeeStructureUpdate(BaseModel):
+    """Schema for updating a class fee structure."""
+
+    class_name: Optional[str] = Field(None, description="New class name")
+    academic_year: Optional[str] = Field(None, description="New academic year")
+    total_amount: Optional[float] = Field(
+        None, gt=0, description="New total amount"
+    )
+    breakdowns: Optional[List[FeeBreakdownCreate]] = Field(
+        None, description="Updated breakdowns"
+    )
+    installments: Optional[List[InstallmentScheduleCreate]] = Field(
+        None, description="Updated installments"
+    )
+
+
+class FeeBreakdownResponse(BaseModel):
+    """Response schema for fee breakdown."""
+
+    id: int
+    class_fee_structure_id: int
+    fee_head: str
+    amount: float
+    description: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class InstallmentScheduleResponse(BaseModel):
+    """Response schema for installment schedule."""
+
+    id: int
+    class_fee_structure_id: int
+    installment_number: int
+    due_date: datetime
+    amount: float
+    description: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class ClassFeeStructureResponse(BaseModel):
+    """Response schema for class fee structure."""
+
+    id: int
+    class_name: str
+    academic_year: str
+    total_amount: float
+    created_at: datetime
+    updated_at: datetime
+    breakdowns: List[FeeBreakdownResponse]
+    installments: List[InstallmentScheduleResponse]
+
+    model_config = {"from_attributes": True}
+
+
 # =========================
 # 📚 HOMEWORK & LEARNING RESOURCES
 # =========================

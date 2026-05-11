@@ -1,6 +1,6 @@
 """API v1 endpoints."""
 
-from app.api.v1.endpoints import (
+from . import (
     attendance,
     auth,
     classes,
@@ -16,9 +16,12 @@ from app.api.v1.endpoints import (
     timetables,
     transport,
     trips,
+    user,
 )
 from .class_subjects import router as class_subjects_router
 from .staff import router as staff_router
+
+users = user
 
 __all__ = [
     "attendance",
@@ -38,4 +41,6 @@ __all__ = [
     "timetables",
     "transport",
     "trips",
+    "user",
+    "users",
 ]

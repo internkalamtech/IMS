@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  TextInput,
   FlatList,
   Alert,
   ActivityIndicator,
@@ -241,27 +242,29 @@ export default function FeeStructureListScreen() {
           Filter by:
         </Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
-          <TouchableOpacity
+          <TextInput
+            placeholder="Class name"
+            value={filter.className}
+            onChangeText={(text) =>
+              setFilter((prev) => ({ ...prev, className: text }))
+            }
             style={{
               flex: 1,
               backgroundColor: "#F0F4F8",
               padding: 10,
               borderRadius: 8,
               borderWidth: 1,
-              borderColor:
-                filter.className !== "" ? "#1E63D5" : "#E0E0E0",
+              borderColor: filter.className !== "" ? "#1E63D5" : "#E0E0E0",
+              fontSize: 12,
+              color: "#333",
             }}
-          >
-            <Text
-              style={{
-                fontSize: 12,
-                color: filter.className !== "" ? "#1E63D5" : "#999",
-              }}
-            >
-              {filter.className || "All Classes"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          />
+          <TextInput
+            placeholder="Academic year"
+            value={filter.academicYear}
+            onChangeText={(text) =>
+              setFilter((prev) => ({ ...prev, academicYear: text }))
+            }
             style={{
               flex: 1,
               backgroundColor: "#F0F4F8",
@@ -270,17 +273,10 @@ export default function FeeStructureListScreen() {
               borderWidth: 1,
               borderColor:
                 filter.academicYear !== "" ? "#1E63D5" : "#E0E0E0",
+              fontSize: 12,
+              color: "#333",
             }}
-          >
-            <Text
-              style={{
-                fontSize: 12,
-                color: filter.academicYear !== "" ? "#1E63D5" : "#999",
-              }}
-            >
-              {filter.academicYear || "All Years"}
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </View>
 
