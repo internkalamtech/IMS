@@ -5,11 +5,12 @@ import { ThemedCard } from '@/presentation/components/ThemedCard';
 import { ThemedText } from '@/presentation/components/ThemedText';
 import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
-import { useDashboard } from '@/presentation/hooks/useDashboard'; 
+import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import {
+  Dimensions,
   RefreshControl,
   ScrollView,
   StatusBar,
@@ -18,6 +19,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+const { width } = Dimensions.get('window');
 
 export default function TeacherDashboard() {
   const { logout, user } = useAuth();
@@ -26,7 +28,8 @@ export default function TeacherDashboard() {
   const router = useRouter();
 
   const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
-const handleQuickActionPress = (action: any) => {
+
+ const handleQuickActionPress = (action: any) => {
   console.log('Clicked action:', action.title, action.route);
 
   if (action.route) {
@@ -52,17 +55,15 @@ const handleQuickActionPress = (action: any) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-
-        {/* HEADER */}
         <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
-          <SafeAreaView>
+          <SafeAreaView edges={['top']}>
             <View style={styles.headerContent}>
               <View>
                 <ThemedText style={styles.userName}>
-                  Hello, {user?.name || 'Teacher'}
+                   Hello, {user?.name || 'Teacher'}
                 </ThemedText>
                 <ThemedText style={styles.subtitle}>
-                  Dashboard Overview
+                   Dashboard Overview
                 </ThemedText>
               </View>
 
@@ -70,8 +71,9 @@ const handleQuickActionPress = (action: any) => {
                 <Ionicons name="log-out-outline" size={24} color="#fff" />
               </TouchableOpacity>
             </View>
-
-            {/* STATS */}
+          </SafeAreaView>
+        </View>
+        {/* STATS */}
             <View style={styles.bannerStats}>
               <View style={styles.statCard}>
                 <ThemedText>{getStatValue('Total Students', '42')}</ThemedText>
@@ -83,20 +85,17 @@ const handleQuickActionPress = (action: any) => {
                 <ThemedText>Classes</ThemedText>
               </View>
             </View>
-          </SafeAreaView>
-        </View>
 
-        {/* MAIN CONTENT */}
         <View style={styles.mainContent}>
-          
-          {/* QUICK ACTIONS */}
-          <ThemedText style={styles.sectionTitle}>Teacher Tools</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Quick Actions</ThemedText>
+
           <QuickActionGrid
             actions={quickActions}
-             onActionPress={handleQuickActionPress}
-          />
-
-          {/* UPCOMING CLASSES */}
+            onActionPress={handleQuickActionPress}
+           ></QuickActionGrid>
+            
+            {/* UPCOMING CLASSES */}
+          
           <ThemedText style={styles.sectionTitle}>Upcoming Classes</ThemedText>
 
           <ThemedCard>
@@ -116,15 +115,16 @@ const handleQuickActionPress = (action: any) => {
 
         </View>
       </ScrollView>
-    </ThemedView>
+     </ThemedView>
+    
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
   banner: {
-    padding: 16,
+    padding: 20,
+    
   },
 
   headerContent: {

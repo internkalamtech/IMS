@@ -1,21 +1,43 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTheme } from "@/core/theme/ThemeContext";
 import { ScrollView } from "react-native";
-export default function StudentProfile() {
-  const { theme } = useTheme();
-  const router = useRouter();
+import { useState } from "react";
+type StudentProfileProps = {
+  student?: {
+    name: string;
+    roll: string;
+    class: string;
+    attendance: string;
+    marks: string;
+    rank: string;
+  };
+  onBack?: () => void;
+};
 
-  const { name, roll, class: studentClass, attendance, marks, rank } =
-    useLocalSearchParams();
+export default function StudentProfile({ student, onBack }: StudentProfileProps) {  const { theme } = useTheme();
+const name = student?.name;
+const roll = student?.roll;
+const studentClass = student?.class;
+const attendance = student?.attendance;
+const marks = student?.marks;
+const rank = student?.rank;
+const [activeTab, setActiveTab] = useState("Overview");
+
+const attendanceNumber = Number(String(attendance).replace("%", ""));
+
+const getAttendanceColor = () => {
+  if (attendanceNumber > 90) return "#86efac";
+  if (attendanceNumber >= 75) return "#facc15";
+  return "#f87171";
+};
 
   return (
   <ScrollView style={{ flex: 1, backgroundColor: "#f5f7fb" }}>
     
     {/* BLUE HEADER */}
     <View style={styles.header}>
-      <TouchableOpacity onPress={() => router.back()}>
-        <Text style={styles.back}>←</Text>
+<TouchableOpacity onPress={onBack}>
+            <Text style={styles.back}>←</Text>
       </TouchableOpacity>
 
       <Text style={styles.title}>Student Profile</Text>
@@ -27,12 +49,15 @@ export default function StudentProfile() {
         <Text style={styles.subText}>
           Class {studentClass} • Roll No: {roll}
         </Text>
+        
       </View>
 
       {/* STATS */}
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
-          <Text style={styles.green}>{attendance}</Text>
+          <Text style={[styles.green, { color: getAttendanceColor() }]}>
+           {attendance}
+          </Text>
           <Text style={styles.statLabel}>Attendance</Text>
         </View>
 
@@ -46,19 +71,20 @@ export default function StudentProfile() {
           <Text style={styles.statLabel}>Class Rank</Text>
         </View>
       </View>
-      <View style={styles.tabsContainer}>
-  {["Overview", "Exams", "Attendance", "Conduct", "Fees"].map((tab, index) => (
+     <View style={styles.tabsContainer}>
+  {["Overview", "Exams", "Attendance", "Conduct", "Fees"].map((tab) => (
     <TouchableOpacity
-      key={index}
+      key={tab}
       style={[
         styles.tab,
-        index === 0 && styles.activeTab // default active = Overview
+        activeTab === tab && styles.activeTab
       ]}
+      onPress={() => setActiveTab(tab)}
     >
       <Text
         style={[
           styles.tabText,
-          index === 0 && styles.activeTabText
+          activeTab === tab && styles.activeTabText
         ]}
       >
         {tab}
@@ -67,6 +93,53 @@ export default function StudentProfile() {
   ))}
 </View>
     </View>
+    {activeTab === "Attendance" ? (
+  <View style={styles.section}>
+    <View style={styles.attendanceCard}>
+      <View style={styles.attendanceRow}>
+        <View style={styles.presentBox}>
+          <Text style={styles.presentNumber}>168</Text>
+          <Text>Present Days</Text>
+        </View>
+
+        <View style={styles.absentBox}>
+          <Text style={styles.absentNumber}>8</Text>
+          <Text>Absent Days</Text>
+        </View>
+      </View>
+
+      <View style={styles.lateBox}>
+        <Text style={styles.lateNumber}>4</Text>
+        <Text>Late Arrivals</Text>
+      </View>
+    </View>
+
+    <Text style={styles.sectionTitle}>Recent Attendance</Text>
+
+    {[
+      ["Jan 19", "Present"],
+      ["Jan 18", "Present"],
+      ["Jan 17", "Present"],
+      ["Jan 16", "Late"],
+      ["Jan 15", "Present"],
+    ].map(([date, status]) => (
+      <View style={styles.attendanceListCard} key={date}>
+        <Text style={styles.attendanceDate}>{date}</Text>
+
+        <Text
+          style={[
+            styles.attendanceStatus,
+            status === "Late" && styles.lateStatus,
+          ]}
+        >
+          {status}
+        </Text>
+      </View>
+    ))}
+  </View>
+) : null}
+{activeTab === "Overview" && (
+  <>
 <View style={styles.section}>
   <Text style={styles.sectionTitle}>Parent/Guardian Contact</Text>
 
@@ -122,6 +195,10 @@ export default function StudentProfile() {
 
   </View>
 </View>
+</>
+)}
+{activeTab === "Overview" && (
+
 <View style={styles.section}>
   <Text style={styles.sectionTitle}>Personal Information</Text>
 
@@ -142,8 +219,9 @@ export default function StudentProfile() {
     </View>
   </View>
 </View>
+)}
 
-
+{activeTab === "Exams" && (
 <View style={styles.section}>
   <Text style={styles.sectionTitle}>Recent Exam Results</Text>
 
@@ -186,6 +264,7 @@ export default function StudentProfile() {
     </View>
   </View>
 </View>
+)}
   </ScrollView>
 );
 }
@@ -404,5 +483,88 @@ examMarks: {
 examTitle: {
   fontWeight: "600",
   fontSize: 14,
+},
+attendanceCard: {
+  backgroundColor: "#fff",
+  borderRadius: 18,
+  padding: 18,
+  marginBottom: 20,
+  elevation: 3,
+},
+
+attendanceRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+},
+
+presentBox: {
+  backgroundColor: "#eafaf0",
+  borderRadius: 16,
+  padding: 22,
+  width: "48%",
+  alignItems: "center",
+},
+
+absentBox: {
+  backgroundColor: "#fdecec",
+  borderRadius: 16,
+  padding: 22,
+  width: "48%",
+  alignItems: "center",
+},
+
+lateBox: {
+  backgroundColor: "#fff4e5",
+  borderRadius: 16,
+  padding: 22,
+  marginTop: 18,
+  alignItems: "center",
+},
+
+presentNumber: {
+  color: "#00a63e",
+  fontSize: 26,
+  fontWeight: "700",
+},
+
+absentNumber: {
+  color: "#e60000",
+  fontSize: 26,
+  fontWeight: "700",
+},
+
+lateNumber: {
+  color: "#f97316",
+  fontSize: 26,
+  fontWeight: "700",
+},
+
+attendanceListCard: {
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 16,
+  marginBottom: 12,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  elevation: 2,
+},
+
+attendanceDate: {
+  fontSize: 16,
+  fontWeight: "700",
+},
+
+attendanceStatus: {
+  backgroundColor: "#dcfce7",
+  color: "#16a34a",
+  paddingHorizontal: 16,
+  paddingVertical: 6,
+  borderRadius: 20,
+},
+
+lateStatus: {
+  backgroundColor: "#ffedd5",
+  color: "#f97316",
 },
 });

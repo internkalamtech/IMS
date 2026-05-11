@@ -4,13 +4,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { QuickActionGrid } from "@/presentation/components/dashboard/QuickActionGrid";
 import { RecentUpdates } from "@/presentation/components/dashboard/RecentUpdates";
 import { DASHBOARD_CONFIG } from "@/core/config/dashboard";
-
-//import { API_BASE_URL } from "@/core/config/api";
 import { useRouter } from 'expo-router';
+//import { API_BASE_URL } from "@/core/config/api";
 const quickActions =
     DASHBOARD_CONFIG?.teacher?.quickActions || [];
-
-
 const Teacher2Dashboard = () => {
     const [updates, setUpdates] = useState<any[]>([]);
     const [loaded, setLoaded] = useState(false); // ✅ prevent premature render
@@ -24,14 +21,10 @@ const handleQuickActionPress = (action: any) => {
     useEffect(() => {
         const fetchUpdates = async () => {
             try {
-                //const res = await fetch(`${API_BASE_URL}/teacher2/updates/1`);
-                //const json = await res.json();
-
-                //setUpdates(Array.isArray(json?.data) ? json.data : []);
             } catch (e) {
                 console.log("API error:", e);
             } finally {
-                setLoaded(true); // ✅ mark ready
+                setLoaded(true);
             }
         };
 
@@ -83,16 +76,16 @@ const handleQuickActionPress = (action: any) => {
 
                 <View style={styles.gridWrapper}>
                     <QuickActionGrid
-                      actions={quickActions}
-                      onActionPress={handleQuickActionPress}
+                        actions={quickActions}
+                        onActionPress={(action: any) => {
+                            console.log("Clicked action:", action.title);
+
+                            if (action.title?.toLowerCase().trim() === "attendance") {
+                                router.push("/attendance" as any);
+                            }
+                        }}
                     />
                 </View>
-
-                {/* RECENT UPDATES */}
-                <View style={styles.updateWrapper}>
-                    <RecentUpdates updates={updates} />
-                </View>
-
             </ScrollView>
         </View>
     );

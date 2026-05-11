@@ -7,26 +7,68 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
+
+import {
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  TextInput,
+  Button,
+  View,
+  Text,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Dimensions } from 'react-native';
-
 const { width } = Dimensions.get('window');
-
-import { RefreshControl,
-        ScrollView,
-        StatusBar,
-        TouchableOpacity,
-        View,
-        StyleSheet
-       } from "react-native";
 export default function AdminDashboard() {
     const { logout, user } = useAuth();
     const router = useRouter();
     const { data: dashboardData, refreshing, onRefresh } = useDashboard();
-    const { theme } = useTheme();
+    const { theme, isDark } = useTheme();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [open, setOpen] = useState(false)
+const addUser = async () => {
 
+console.log("Submit button clicked")
+
+try {
+
+const response = await fetch("http://localhost:8000/api/v1/users", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+name: name,
+email: email
+})
+})
+
+const data = await response.json()
+
+console.log("Server response:", data)
+
+alert("User added successfully")
+
+setName("")
+setEmail("")
+setOpen(false)
+
+} catch (error) {
+
+console.log("Error:", error)
+alert("API Error")
+
+}
+
+}
     const quickActions = DASHBOARD_CONFIG.admin.quickActions;
 
     const handleActionPress = (action: any) => {
@@ -39,107 +81,261 @@ export default function AdminDashboard() {
 
     const getStatValue = (label: string, defaultValue: string = '0') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
-    };
+        };
+      const handleSubmit = async () => {
+     try {
+    const response = await fetch("http://127.0.0.1:8000/api/v1/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+      }),
+    });
 
+    const data = await response.json();
+    console.log("Server response:", data);
+
+    setModalVisible(false);
+    setName("");
+    setEmail("");
+
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
     const stats = [
         { title: 'Total Students', value: getStatValue('Total Students'), icon: 'people', color: '#fff' },
         { title: 'Total Teachers', value: getStatValue('Total Teachers'), icon: 'school', color: '#fff' },
     ];
 return (
-    <ThemedView style={styles.container}>
-            <StatusBar barStyle={ theme.dark ? "light-content" : "dark-content" } backgroundColor={theme.colors.background} />
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
+  <ThemedView style={styles.container}>
+    <StatusBar
+      barStyle={theme.dark ? "light-content" : "dark-content"}
+      backgroundColor={theme.colors.background}
+    />
+
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={theme.colors.primary}
+        />
+      }
+    >
+      {/* Blue Banner Header */}
+      <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
+        <SafeAreaView edges={['top']}>
+          <View style={styles.headerContent}>
+            <View>
+              <ThemedText
+                style={styles.userName}
+                type="title"
+                lightColor={theme.colors.primaryForeground}
+                darkColor={theme.colors.primaryForeground}
+              >
+                {user?.name || 'Admin'}
+              </ThemedText>
+
+              <ThemedText
+                style={styles.subtitle}
+                lightColor={theme.colors.primaryForeground}
+                darkColor={theme.colors.primaryForeground}
+              >
+                Institute Management Overview
+              </ThemedText>
+            </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.logoutIcon}>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={24}
+                  color={theme.colors.primaryForeground}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
+                <Ionicons
+                  name="log-out-outline"
+                  size={24}
+                  color={theme.colors.primaryForeground}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Banner Stats */}
+          <View style={styles.bannerStats}>
+            {stats.map((stat, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.bannerStatCard,
+                  { backgroundColor: 'rgba(255,255,255,0.15)' }
+                ]}
+              >
+                <View style={styles.statIconContainer}>
+                  <Ionicons
+                    name={stat.icon as any}
+                    size={24}
+                    color={theme.colors.primaryForeground}
+                  />
+                </View>
+
+                <View>
+                  <ThemedText
+                    style={styles.bannerStatValue}
+                    type="title"
+                    lightColor={theme.colors.primaryForeground}
+                    darkColor={theme.colors.primaryForeground}
+                  >
+                    {stat.value}
+                  </ThemedText>
+
+                  <ThemedText
+                    style={styles.bannerStatTitle}
+                    lightColor={theme.colors.primaryForeground}
+                    darkColor={theme.colors.primaryForeground}
+                  >
+                    {stat.title}
+                  </ThemedText>
+                </View>
+              </View>
+            ))}
+          </View>
+        </SafeAreaView>
+      </View>
+
+      {/* Main Content */}
+      <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
+        <View style={styles.sectionHeader}>
+          <ThemedText style={styles.sectionTitle} type="subtitle">
+            Quick Actions
+          </ThemedText>
+      </View>
+
+<QuickActionGrid
+  actions={quickActions}
+  onActionPress={(action) => {
+    if (action.title === 'Manage Classes') {
+      router.push('/(tabs)/classes');
+    }
+
+    if (action.title === 'Timetable') {
+      router.push('/timetable-classes');
+    }
+  }}
+/>
+        <View style={styles.sectionHeader}>
+          <ThemedText style={styles.sectionTitle} type="subtitle">
+            Recent Updates
+          </ThemedText>
+
+          <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
+            <ThemedText
+              style={styles.badgeText}
+              lightColor={theme.colors.primaryForeground}
+              darkColor={theme.colors.primaryForeground}
             >
-            {/* Blue Banner Header */}
-            <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
-                <SafeAreaView edges={['top']}>
-                    <View style={styles.headerContent}>
-                        <View>
-                            <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
-                                    {user?.name || 'Admin'}
-                            </ThemedText>
-                            <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground}
-                             darkColor={theme.colors.primaryForeground}>
-                                Institute Management Overview
-                            </ThemedText>
-                        </View>
-                        <TouchableOpacity onPress={logout} style={styles.logoutIcon}>
-                            <Ionicons name="log-out-outline" size={24} color={theme.colors.primaryForeground} />
-                        </TouchableOpacity>
-                    </View>
+              3 new
+            </ThemedText>
+          </View>
+        </View>
 
-                    {/* Banner Stats */}
-                        <View style={styles.bannerStats}>
-                            {stats.map((stat, index) => (
-                                <View key={index} style={[styles.bannerStatCard, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                                    <View style={styles.statIconContainer}>
-                                        <Ionicons name={stat.icon as any} size={24} color={theme.colors.primaryForeground} />
-                                    </View>
-                                    <View>
-                                        <ThemedText style={styles.bannerStatValue} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>{stat.value}</ThemedText>
-                                        <ThemedText style={styles.bannerStatTitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
-                                            {stat.title}
-                                        </ThemedText>
-                                    </View>
-                                </View>
-                            ))}
-                        </View>
-                    </SafeAreaView>
-                </View>
+        <ThemedCard style={styles.updatesCard} padding={0}>
+          {[1, 2, 3].map((item, index) => (
+            <View
+              key={item}
+              style={[
+                styles.updateItem,
+                index !== 2 && {
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.colors.border,
+                },
+              ]}
+            >
+              <View style={[styles.updateIcon, { backgroundColor: theme.colors.primary + '10' }]}>
+                <Ionicons name="people-outline" size={20} color={theme.colors.primary} />
+              </View>
 
-                {/* Main Content */}
-                <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
-                    {/* Quick Actions */}
-                    <View style={styles.sectionHeader}>
-                        <ThemedText style={styles.sectionTitle} type="subtitle">Quick Actions</ThemedText>
-                    </View>
+              <View style={styles.updateContent}>
+                <ThemedText style={styles.updateTitle} type="defaultSemiBold">
+                  New Student Enrolled
+                </ThemedText>
+                <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">
+                  Class 7-B • Roll 24
+                </ThemedText>
+                <ThemedText style={styles.updateTime} lightColor="#999" darkColor="#aaa">
+                  2 hours ago
+                </ThemedText>
+              </View>
 
-                    <QuickActionGrid
-                        actions={quickActions}
-                        onActionPress={(action) => {
-                            if (action.title === 'Manage Classes') {
-                                router.push('/classes' as any);
-                            }
-                            if (action.title === 'Timetable') {
-                                router.push('/timetable-classes' as any);
-                            }
-                        }}
-                    />
+<TouchableOpacity>
+  <ThemedText style={styles.viewLink} type="link">
+    View →
+  </ThemedText>
+</TouchableOpacity>
+</View>
+))}
+</ThemedCard>
+</View>
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0,0,0,0.4)",
+          }}
+        >
+          <View
+            style={{
+              width: 300,
+              padding: 20,
+              backgroundColor: "white",
+              borderRadius: 10,
+            }}
+          >
+            <Text style={{ fontSize: 18, marginBottom: 10 }}>Add User</Text>
 
-                    {/* Recent Updates */}
-                    <View style={styles.sectionHeader}>
-                        <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
-                        <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-                            <ThemedText style={styles.badgeText} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground} >3 new</ThemedText>
-                        </View>
-                    </View>
-                    <ThemedCard style={styles.updatesCard} padding={0}>
-                        {[1, 2, 3].map((item, index) => (
-                            <View key={item} style={[
-                                styles.updateItem,
-                                index !== 2 && { borderBottomWidth: 1, borderBottomColor: theme.colors.border }
-                            ]}>
-                                <View style={[styles.updateIcon, { backgroundColor: theme.colors.primary + '10' }]}>
-                                    <Ionicons name="people-outline" size={20} color={theme.colors.primary} />
-                                </View>
-                                <View style={styles.updateContent}>
-                                    <ThemedText style={styles.updateTitle} type="defaultSemiBold">New Student Enrolled</ThemedText>
-                                    <ThemedText style={styles.updateSubtitle} lightColor="#666" darkColor="#999">Class 7-B • Roll 24</ThemedText>
-                                    <ThemedText style={styles.updateTime} lightColor="#999" darkColor="#aaa">2 hours ago</ThemedText>
-                                </View>
-                                <TouchableOpacity>
-                                    <ThemedText style={styles.viewLink} type="link">View →</ThemedText>
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-                    </ThemedCard>
-                </View>
-            </ScrollView>
-        </ThemedView>
-    );
+            <TextInput
+              placeholder="Enter Name"
+              value={name}
+              onChangeText={setName}
+              style={{
+                borderWidth: 1,
+                borderColor: "#ccc",
+                padding: 10,
+                marginBottom: 10,
+              }}
+            />
+
+            <TextInput
+              placeholder="Enter Email"
+              value={email}
+              onChangeText={setEmail}
+              style={{
+                borderWidth: 1,
+                borderColor: "#ccc",
+                padding: 10,
+                marginBottom: 10,
+              }}
+            />
+
+            <Button title="Submit" onPress={handleSubmit} />
+            <Button title="Close" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
+    </ScrollView>
+  </ThemedView>
+);
 }
 const styles = StyleSheet.create({
     container: {

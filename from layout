@@ -1,0 +1,41 @@
+[33m7f82091[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/student-attendance-metrics[m[33m, [m[1;31morigin/feature/student-attendance-metrics[m[33m)[m Merge conflicts resolved
+[33m2a8abd6[m Issue fixed
+[33mc05063a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat(staff): add staff provisioning API (POST /api/v1/staff) — closes #266 (#498)
+[33mfeffe72[m feat(#430): Implement Transport Manager Dashboard with Clean Architec… (#449)
+[33m76d638c[m homework lifecycle management frontend and backend (#479)
+[33m3073387[m feat(backend): implement compliance document persistence and processing — closes #413 (#480)
+[33m108e7a5[m Feature/275 live trip management (#482)
+[33m9811ab2[m Frontend implementation (#474)
+[33m57e3621[m feat: student directory and profile UI (#458)
+[33m7f060eb[m feat: Improve add-user UI and implement student registration form (#495)
+[33mc1f5fe3[m Student Attendance Marking UI (Frontend) (#496)
+[33m43e922b[m init.py issue resolved
+[33mb15de68[m Resolved issues
+[33m56bff4d[m Resolved the issue
+[33mc3231d9[m Resolved merged conflicts
+[33m0f9b0dd[m Resolved merged conflicts
+[33me4dc5ab[m Merge branch 'main' into feature/student-attendance-metrics
+[33ma50b746[m Implemented attendence summary
+[33m934555b[m[33m ([m[1;32mmain[m[33m, [m[1;32mfeature/attendance-api[m[33m)[m Add student listing and class-level average APIs (#489)
+[33mdc60206[m feat: implement student-parent enrollment API (Issue #269) (#490)
+[33m0072834[m SetuponMac (#451)
+[33md0abb1a[m feat: Dynamic Subject Selector UI (#244) (#467)
+[33m6542ad1[m[33m ([m[1;31morigin/feature/academic-performance-conduct-api[m[33m, [m[1;31morigin/copilot/add-file-attachments[m[33m)[m fix: address all 11 Payment Module PR review comments and remove redundant schemas folder (#457)
+[33m12409b9[m feat: Implement Driver Incident Submission Interface. (#452)
+[33m6cec1fd[m feat: implement Persist Class Subjects API (cleaned PR) (#447)
+[33mcda8030[m feat: add teacher attendance calendar with summary and class selector
+[33m6edbffd[m[33m ([m[1;31morigin/sub_branch[m[33m, [m[1;31morigin/367-study-material-management-ui[m[33m)[m fixed scripts (#423)
+[33ma1164b4[m feat: update requirements structure and GitHub issues script (#422)
+[33m3beafcd[m Add PR build pipeline (#235)
+[33m1b747de[m Test PR 2 (#234)
+[33mf684046[m My First PR
+[33mdb49363[m Merge pull request #233 from internkalamtech/adding_code_owners
+[33m406debe[m Add CODEOWNERS file with specified owners
+[33mc2d42f3[m updated UI/UX and also added diagrams
+[33m8b254d0[m Update README.md with detailed installation instructions and database setup for PostgreSQL; add demo credentials section. Update backend requirements.txt to include email-validator and greenlet. Create Monorepo Structure Guide for project organization.
+[33m43d8aa5[m added mobile and backend
+[33m4614ebe[m Added 3 more requirments files
+[33mdd42830[m added transport requirements in JSON format
+[33m3c8ca6b[m added finance and assessment requirements in JSON format. Also added the powershell script that can be used to add requirements to github
+[33mdb77f3a[m added finance and assessment requirements in JSON format. Also added the powershell script that can be used to add requirements to github
+[33mca8b95c[m Create README.md

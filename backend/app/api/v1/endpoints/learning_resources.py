@@ -6,7 +6,6 @@ that students can access organized by subject and class.
 """
 
 import os
-import shutil
 from datetime import datetime
 
 from fastapi import (
@@ -25,10 +24,9 @@ from sqlalchemy import select
 
 from app.infrastructure.database.database import get_db
 from app.infrastructure.database.models import LearningResourceModel
-from app.api.schemas import LearningResourceResponse, LearningResourceCreate
+from app.api.schemas import LearningResourceResponse
 
 router = APIRouter(prefix="/resources", tags=["Learning Resources"])
-
 UPLOAD_DIRECTORY = "uploads/resources"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 

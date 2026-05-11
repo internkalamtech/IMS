@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity, Alert } from "react-native";
 import { ColorPalettes } from '@/core/theme/tokens';
+import StudentProfile from "./StudentProfileScreen"
 import {
   View,
   Text,
@@ -31,14 +32,30 @@ const MOCK_STUDENTS: Student[] = [
 export default function AttendanceScreen() {
   const [students, setStudents] = useState(MOCK_STUDENTS);
   const [search, setSearch] = useState("");
-
+   const [showConfirm, setShowConfirm] = useState(false);
+   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const { theme } = useTheme();
+if (selectedStudent) {
+  return (
+    <StudentProfile
+      student={{
+        name: selectedStudent.name,
+        roll: selectedStudent.roll,
+        class: "7B",
+        attendance: "93.3%",
+        marks: "87.2%",
+        rank: "#5",
+      }}
+      onBack={() => setSelectedStudent(null)}
+    />
+  );
+}
   const filteredStudents = students.filter(
     (s) =>
       s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.roll.includes(search)
   );
 
-  const { theme } = useTheme();
   
   const summary = {
     total: students.length,
@@ -77,7 +94,6 @@ const handleSubmit = async () => {
     Alert.alert("Error", "Failed to submit attendance");
   }
 };
-const [showConfirm, setShowConfirm] = useState(false);
 const today = new Date().toLocaleDateString("en-GB");
 const CLASS_INFO = "Class 7B - Mathematics";
   return (
@@ -136,10 +152,10 @@ const CLASS_INFO = "Class 7B - Mathematics";
     contentContainerStyle={{ padding: 15 }}
     renderItem={({ item }) => (
       <View style={styles.studentCard}>
-        <View>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.roll}>{item.roll}</Text>
-        </View>
+       <TouchableOpacity onPress={() => setSelectedStudent(item)}>
+  <Text style={styles.name}>{item.name}</Text>
+  <Text style={styles.roll}>Roll No: {item.roll}</Text>
+</TouchableOpacity>
         <View style={styles.actions}>
   
   {/* Present */}
