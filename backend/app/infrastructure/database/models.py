@@ -137,17 +137,30 @@ class HomeworkModel(Base):
         nullable=False,
         index=True,
     )
+    teacher_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     subject: Mapped[str] = mapped_column(String(100), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
     status: Mapped[str] = mapped_column(
         String(20),
         nullable=False,
         default="pending",
         index=True,
-    )  # 'pending', 'submitted', 'overdue'
+    )  # 'pending', 'submitted', 'overdue', 'completed'
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
     )
 
     def __repr__(self) -> str:
@@ -806,6 +819,87 @@ class DocumentModel(Base):
 
     def __repr__(self) -> str:
         return f"<Document(id={self.id}, title='{self.title}')>"
+
+
+class LearningResourceModel(Base):
+    """
+    Learning Resource database model.
+
+    Represents educational materials (PDFs, PPTs, Links, Videos, etc.)
+    organized by subject and class. Available to students studying those subjects.
+    """
+
+    __tablename__ = "learning_resources"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    # Basic info
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    resource_type: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        index=True,
+    )  # 'pdf', 'ppt', 'video', 'link', 'document'
+    category: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        index=True,
+    )  # 'textbook', 'reference', 'solved_problems', 'notes', 'practice'
+
+    # Subject and class mapping
+    subject_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("subjects.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    class_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("class_sections.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # File or link storage
+    file_path: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    external_link: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)  # in bytes
+    content_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+
+    # Metadata
+    uploaded_by_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    # Relationships
+    subject: Mapped["SubjectModel"] = relationship("SubjectModel")
+    class_section: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
+    uploaded_by: Mapped["UserModel"] = relationship(
+        "UserModel", foreign_keys=[uploaded_by_id]
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<LearningResource(id={self.id}, "
+            f"title='{self.title}', "
+            f"type='{self.resource_type}')>"
+        )
 
 # =========================
 # 📅 ATTENDANCE MODEL

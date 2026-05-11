@@ -24,6 +24,7 @@ from app.api.v1.endpoints import (
     transport,
     trips,
 )
+from app.api.v1.endpoints.learning_resources import router as learning_resources_router
 from app.api.v1.endpoints.staff import router as staff_router
 
 # Create v1 router
@@ -47,3 +48,4 @@ router.include_router(fee_structures.router)
 router.include_router(trips.router)
 router.include_router(documents.router)
 router.include_router(staff_router)
+router.include_router(learning_resources_router)

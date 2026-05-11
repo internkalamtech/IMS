@@ -8,6 +8,7 @@ import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard'; 
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { useRouter } from 'expo-router';
 import {
   RefreshControl,
   ScrollView,
@@ -22,9 +23,16 @@ export default function TeacherDashboard() {
   const { logout, user } = useAuth();
   const { data: dashboardData, refreshing, onRefresh } = useDashboard();
   const { theme } = useTheme();
+  const router = useRouter();
 
   const quickActions = DASHBOARD_CONFIG.teacher.quickActions;
+const handleQuickActionPress = (action: any) => {
+  console.log('Clicked action:', action.title, action.route);
 
+  if (action.route) {
+    router.push(action.route as any);
+  }
+};
   const upcomingClasses = [
     { id: 1, subject: 'Mathematics', class: 'Class 10-A', time: '09:00 AM', color: '#3b82f6' },
     { id: 2, subject: 'Science', class: 'Class 9-B', time: '10:30 AM', color: '#10b981' },
@@ -83,7 +91,10 @@ export default function TeacherDashboard() {
           
           {/* QUICK ACTIONS */}
           <ThemedText style={styles.sectionTitle}>Teacher Tools</ThemedText>
-          <QuickActionGrid actions={quickActions} />
+          <QuickActionGrid
+            actions={quickActions}
+             onActionPress={handleQuickActionPress}
+          />
 
           {/* UPCOMING CLASSES */}
           <ThemedText style={styles.sectionTitle}>Upcoming Classes</ThemedText>
