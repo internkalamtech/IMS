@@ -9,8 +9,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-from app.api.v1.endpoints import users
 from app.domain.entities import user
 from app.api.v1.router import router as api_v1_router
 from app.core.config import settings
@@ -124,7 +122,7 @@ class User(BaseModel):
 
 @api_v1_router.post("/users")
 async def add_user(user: User, db: AsyncSession = Depends(get_db)):
-
+  
     print("User received:", user.name, user.email)
 
     query = text("""
