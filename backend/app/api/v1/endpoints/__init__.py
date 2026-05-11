@@ -2,10 +2,11 @@
 
 from app.api.v1.endpoints import auth, health, classes
 
-__all__ = ["auth", "health", "classes""enrollment",
-    "class_subjects_router",
-    "staff_router",
+__all__ = ["auth", "health", "classes","enrollment",
+    "class_subjects_router","student_academic","dashboard",
+    "staff_router","documents",
     "trips",]
+from app.api.v1.endpoints import auth, health, enrollment
 from . import (
     auth,
     health,
@@ -15,12 +16,6 @@ from . import (
 )
 
 from .class_subjects import router as class_subjects_router
-__all__ = [
-    "auth",
-    "health",
-	"enrollment",
-    #"student_academic",
-    "dashboard", "class_subjects_router", "documents",
-    "staff_router",
-    "trips",
-]
+from .staff import router as staff_router
+
+

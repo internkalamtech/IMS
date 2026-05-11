@@ -5,7 +5,7 @@ import { ThemedCard } from '@/presentation/components/ThemedCard';
 import { ThemedText } from '@/presentation/components/ThemedText';
 import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
-import { useDashboard } from '@/presentation/hooks/useDashboard'; 
+import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { useRouter } from 'expo-router';
@@ -48,21 +48,26 @@ const handleQuickActionPress = (action: any) => {
       <StatusBar barStyle="light-content" />
 
       <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primaryForeground}
+          />
         }
       >
-
-        {/* HEADER */}
+        {/* 🔹 Banner */}
         <View style={[styles.banner, { backgroundColor: theme.colors.primary }]}>
-          <SafeAreaView>
+          <SafeAreaView edges={['top']}>
             <View style={styles.headerContent}>
               <View>
                 <ThemedText style={styles.userName}>
-                  Hello, {user?.name || 'Teacher'}
+                  Hello, {user?.name?.split(' ')[0] || 'Teacher'} 👋
                 </ThemedText>
                 <ThemedText style={styles.subtitle}>
-                  Dashboard Overview
+                  Your academic day at a glance
                 </ThemedText>
               </View>
 
@@ -71,22 +76,22 @@ const handleQuickActionPress = (action: any) => {
               </TouchableOpacity>
             </View>
 
-            {/* STATS */}
+            {/* 🔹 Stats */}
             <View style={styles.bannerStats}>
               <View style={styles.statCard}>
                 <ThemedText>{getStatValue('Total Students', '42')}</ThemedText>
-                <ThemedText>Students</ThemedText>
+                <ThemedText>My Students</ThemedText>
               </View>
 
               <View style={styles.statCard}>
-                <ThemedText>{getStatValue("Today's Classes", '5')}</ThemedText>
-                <ThemedText>Classes</ThemedText>
+                <ThemedText>{getStatValue("Today's Classes", "5")}</ThemedText>
+                <ThemedText>Classes Today</ThemedText>
               </View>
             </View>
           </SafeAreaView>
         </View>
 
-        {/* MAIN CONTENT */}
+        {/* 🔹 Main Content */}
         <View style={styles.mainContent}>
           
           {/* QUICK ACTIONS */}
@@ -96,24 +101,39 @@ const handleQuickActionPress = (action: any) => {
              onActionPress={handleQuickActionPress}
           />
 
-          {/* UPCOMING CLASSES */}
-          <ThemedText style={styles.sectionTitle}>Upcoming Classes</ThemedText>
+          {/* Upcoming Classes */}
+          <View style={styles.sectionHeader}>
+            <ThemedText style={styles.sectionTitle}>
+              Upcoming Classes
+            </ThemedText>
+          </View>
 
-          <ThemedCard>
+          <ThemedCard style={styles.updatesCard}>
             {upcomingClasses.map((item) => (
               <View key={item.id} style={styles.updateItem}>
-                <View style={[styles.classColorBar, { backgroundColor: item.color }]} />
+                <View
+                  style={[
+                    styles.classColorBar,
+                    { backgroundColor: item.color },
+                  ]}
+                />
 
                 <View style={styles.updateContent}>
-                  <ThemedText>{item.subject}</ThemedText>
-                  <ThemedText>{item.class}</ThemedText>
+                  <ThemedText style={styles.updateTitle}>
+                    {item.subject}
+                  </ThemedText>
+
+                  <ThemedText style={styles.updateSubtitle}>
+                    {item.class}
+                  </ThemedText>
                 </View>
 
-                <ThemedText>{item.time}</ThemedText>
+                <View style={styles.timeTag}>
+                  <ThemedText>{item.time}</ThemedText>
+                </View>
               </View>
             ))}
           </ThemedCard>
-
         </View>
       </ScrollView>
     </ThemedView>
@@ -123,8 +143,13 @@ const handleQuickActionPress = (action: any) => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
+  scrollView: { flex: 1 },
+  scrollContent: { flexGrow: 1 },
+
   banner: {
     padding: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
 
   headerContent: {
@@ -151,16 +176,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff30',
     padding: 10,
     borderRadius: 8,
+    flex: 1,
   },
 
   mainContent: {
     padding: 16,
   },
 
+  sectionHeader: {
+    marginTop: 20,
+    marginBottom: 10,
+  },
+
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginVertical: 10,
+  },
+
+  updatesCard: {
+    marginTop: 8,
   },
 
   updateItem: {
@@ -173,9 +207,26 @@ const styles = StyleSheet.create({
     width: 5,
     height: 40,
     marginRight: 10,
+    borderRadius: 4,
   },
 
   updateContent: {
     flex: 1,
+  },
+
+  updateTitle: {
+    fontSize: 15,
+  },
+
+  updateSubtitle: {
+    fontSize: 13,
+    marginTop: 4,
+  },
+
+  timeTag: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#eee',
   },
 });
