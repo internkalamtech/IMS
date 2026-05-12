@@ -7,6 +7,7 @@ Provides concrete implementations of enrollment repositories using SQLAlchemy.
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert
+from sqlalchemy.orm import selectinload
 
 from app.core.errors import ValidationError, DatabaseError
 from app.core.logger import Logger
@@ -102,8 +103,10 @@ class DatabaseParentRepository(ParentRepository):
             Created Parent entity
 
         Raises:
-            ValidationError: If required fields are invalid
-            DatabaseError: If parent with same email already exists
+            ValidationError: If required fields are invalid or a parent with
+                the same email already exists
+            DatabaseError: If an unexpected database error occurs while
+                creating the parent
         """
         try:
             # Check if parent with same email already exists
@@ -137,13 +140,16 @@ class DatabaseParentRepository(ParentRepository):
         """
         Create a relationship between a student and parent.
 
+        If the student/parent link already exists, this method is idempotent:
+        it logs a warning and returns successfully without creating a duplicate.
+
         Args:
             student_id: ID of the student
             parent_id: ID of the parent
 
         Raises:
             ValidationError: If student or parent doesn't exist
-            DatabaseError: If link already exists or database error
+            DatabaseError: If a database error occurs while creating the link
         """
         try:
             # Verify student exists
@@ -206,7 +212,9 @@ class DatabaseParentRepository(ParentRepository):
         """
         try:
             result = await self.db.execute(
-                select(ParentModel).where(ParentModel.id == parent_id)
+                select(ParentModel)
+                .options(selectinload(ParentModel.students))
+                .where(ParentModel.id == parent_id)
             )
             parent_model = result.scalars().first()
             if not parent_model:
@@ -244,6 +252,8 @@ class DatabaseParentRepository(ParentRepository):
             roll_number=student_model.roll_number,
             class_name=student_model.class_name,
             next_due_date=student_model.next_due_date,
+            created_at=student_model.created_at,
+            updated_at=student_model.updated_at,
         )
 
 

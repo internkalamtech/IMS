@@ -83,3 +83,10 @@ export class ApiClient {
 }
 
 export const api = ApiClient.getInstance().getAxios();
+
+/**
+ * Hook to get the API client instance
+ */
+export const useApiClient = () => {
+    return api;
+};
