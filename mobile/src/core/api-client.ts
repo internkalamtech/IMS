@@ -3,7 +3,6 @@ import axios, { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestCo
 import { getApiBaseUrl } from './api-config';
 import { AuthError, NetworkError } from './error';
 import { Logger } from './logger';
-import { useCallback } from 'react';
 
 
 // Default configuration
@@ -89,5 +88,5 @@ export const api = ApiClient.getInstance().getAxios();
  * Hook to get the API client instance
  */
 export const useApiClient = () => {
-    return useCallback(() => api, []);
+    return api;
 };

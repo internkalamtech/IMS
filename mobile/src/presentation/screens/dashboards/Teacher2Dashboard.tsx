@@ -4,8 +4,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { QuickActionGrid } from "@/presentation/components/dashboard/QuickActionGrid";
 import { RecentUpdates } from "@/presentation/components/dashboard/RecentUpdates";
 import { DASHBOARD_CONFIG } from "@/core/config/dashboard";
-//import { API_BASE_URL } from "@/core/config/api";
 
+//import { API_BASE_URL } from "@/core/config/api";
+import { useRouter } from 'expo-router';
 const quickActions =
     DASHBOARD_CONFIG?.teacher?.quickActions || [];
 
@@ -13,7 +14,13 @@ const quickActions =
 const Teacher2Dashboard = () => {
     const [updates, setUpdates] = useState<any[]>([]);
     const [loaded, setLoaded] = useState(false); // ✅ prevent premature render
+const router = useRouter();
 
+const handleQuickActionPress = (action: any) => {
+  if (action.route) {
+    router.push(action.route as any);
+  }
+};
     useEffect(() => {
         const fetchUpdates = async () => {
             try {
@@ -75,7 +82,10 @@ const Teacher2Dashboard = () => {
                 </View>
 
                 <View style={styles.gridWrapper}>
-                    <QuickActionGrid actions={quickActions} />
+                    <QuickActionGrid
+                      actions={quickActions}
+                      onActionPress={handleQuickActionPress}
+                    />
                 </View>
 
                 {/* RECENT UPDATES */}

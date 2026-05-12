@@ -13,7 +13,12 @@ export default function TestScreen() {
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    runTests();
+    if (__DEV__) {
+      runTests();
+    } else {
+      setResults([]);
+      setLoading(false);
+    }
   }, []);
 
   const runTests = async () => {
@@ -204,6 +209,18 @@ export default function TestScreen() {
     );
   }
 
+  if (!__DEV__) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Ionicons name="lock-closed" size={40} color="#1E63D5" />
+        <Text style={styles.title}>Diagnostics are unavailable</Text>
+        <Text style={styles.subtitle}>
+          Test results are only available in development builds.
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
@@ -263,6 +280,11 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
+  centered: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
@@ -277,6 +299,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1E63D5",
     marginBottom: 16,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
   },
   summary: {
     flexDirection: "row",

@@ -4,54 +4,8 @@ Integration tests for payment and fee structure endpoints.
 
 import pytest
 from httpx import AsyncClient, ASGITransport
-from datetime import datetime, timedelta
+
 from app.main import app
-
-
-@pytest.mark.asyncio
-async def test_create_fee_structure():
-    """Test creating a fee structure with breakdowns and installments."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        payload = {
-            "class_name": "Grade 10",
-            "academic_year": "2024-25",
-            "total_amount": 50000.0,
-            "breakdowns": [
-                {
-                    "fee_head": "Tuition",
-                    "amount": 30000.0,
-                    "description": "Monthly tuition"
-                },
-                {
-                    "fee_head": "Transport",
-                    "amount": 15000.0,
-                    "description": "Annual transport"
-                },
-                {
-                    "fee_head": "Lab",
-                    "amount": 5000.0,
-                    "description": "Lab access"
-                }
-            ],
-            "installments": [
-                {
-                    "installment_number": 1,
-                    "due_date": (datetime.now() + timedelta(days=30)).isoformat(),
-                    "amount": 25000.0,
-                    "description": "First half"
-                },
-                {
-                    "installment_number": 2,
-                    "due_date": (datetime.now() + timedelta(days=90)).isoformat(),
-                    "amount": 25000.0,
-                    "description": "Second half"
-                }
-            ]
-        }
-        
-        # This would require authentication in a real scenario
-        # For now, we're just validating the schema
 
 
 @pytest.mark.asyncio

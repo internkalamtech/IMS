@@ -12,18 +12,26 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { api } from "@/core/api-client";
 
-interface FeeBreakdown {
+type FeeBreakdownForm = {
   fee_head: string;
-  amount: number;
-  description?: string;
-}
+  amount: string;
+  description: string;
+};
 
-interface InstallmentSchedule {
+type InstallmentForm = {
   installment_number: number;
   due_date: string;
-  amount: number;
+  amount: string;
   description?: string;
-}
+};
+
+type FeeStructureFormState = {
+  className: string;
+  academicYear: string;
+  totalAmount: string;
+  breakdowns: FeeBreakdownForm[];
+  installments: InstallmentForm[];
+};
 
 export default function ManageFeeStructureScreen() {
   const params = useLocalSearchParams();
@@ -35,7 +43,7 @@ export default function ManageFeeStructureScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedInstallmentIndex, setSelectedInstallmentIndex] = useState(0);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FeeStructureFormState>({
     className: "",
     academicYear: "",
     totalAmount: "",
@@ -139,15 +147,33 @@ export default function ManageFeeStructureScreen() {
     setFormData({ ...formData, installments: updated });
   };
 
-  const handleDateChange = (date: Date) => {
-    setShowDatePicker(false);
-    if (date) {
-      handleUpdateInstallment(
-        selectedInstallmentIndex,
-        "due_date",
-        date.toISOString()
-      );
+  const parsePositiveAmount = (value: string) => {
+    const amount = parseFloat(value);
+    return Number.isFinite(amount) && amount > 0 ? amount : null;
+  };
+
+  const normalizeDueDate = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const parsed = new Date(trimmed);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
     }
+    return parsed.toISOString();
+  };
+
+  const closeDatePicker = () => {
+    const currentValue =
+      formData.installments[selectedInstallmentIndex]?.due_date || "";
+    const normalized = normalizeDueDate(currentValue);
+    if (!normalized) {
+      Alert.alert("Error", "Please enter a valid due date (YYYY-MM-DD)");
+      return;
+    }
+    const updated = [...formData.installments];
+    updated[selectedInstallmentIndex].due_date = normalized;
+    setFormData({ ...formData, installments: updated });
+    setShowDatePicker(false);
   };
 
   const validateForm = () => {
@@ -159,17 +185,39 @@ export default function ManageFeeStructureScreen() {
       Alert.alert("Error", "Please enter academic year");
       return false;
     }
-    if (!formData.totalAmount || parseFloat(formData.totalAmount) <= 0) {
+    const totalAmount = parsePositiveAmount(formData.totalAmount);
+    if (totalAmount === null) {
       Alert.alert("Error", "Please enter valid total amount");
       return false;
     }
-    if (formData.breakdowns.some((bd) => !bd.fee_head || !bd.amount)) {
-      Alert.alert("Error", "Please fill all breakdown fields");
-      return false;
+    for (const bd of formData.breakdowns) {
+      if (!bd.fee_head.trim()) {
+        Alert.alert("Error", "Please fill all breakdown fields");
+        return false;
+      }
+      if (parsePositiveAmount(bd.amount) === null) {
+        Alert.alert(
+          "Error",
+          `Please enter a valid amount greater than 0 for ${bd.fee_head || "each breakdown"}`
+        );
+        return false;
+      }
     }
-    if (formData.installments.some((i) => !i.amount)) {
-      Alert.alert("Error", "Please fill all installment amounts");
-      return false;
+    for (const installment of formData.installments) {
+      if (parsePositiveAmount(installment.amount) === null) {
+        Alert.alert(
+          "Error",
+          `Please enter a valid installment amount greater than 0 for installment ${installment.installment_number}`
+        );
+        return false;
+      }
+      if (!normalizeDueDate(installment.due_date)) {
+        Alert.alert(
+          "Error",
+          `Please enter a valid due date for installment ${installment.installment_number}`
+        );
+        return false;
+      }
     }
     return true;
   };
@@ -179,20 +227,43 @@ export default function ManageFeeStructureScreen() {
 
     try {
       setSubmitting(true);
+      const totalAmount = parsePositiveAmount(formData.totalAmount);
+      if (totalAmount === null) {
+        Alert.alert("Error", "Please enter valid total amount");
+        return;
+      }
+
+      const breakdowns = formData.breakdowns.map((bd) => {
+        const amount = parsePositiveAmount(bd.amount);
+        if (amount === null) {
+          throw new Error(`Invalid amount for ${bd.fee_head}`);
+        }
+        return {
+          fee_head: bd.fee_head,
+          amount,
+          description: bd.description || null,
+        };
+      });
+
+      const installments = formData.installments.map((i) => {
+        const amount = parsePositiveAmount(i.amount);
+        const dueDate = normalizeDueDate(i.due_date);
+        if (amount === null || !dueDate) {
+          throw new Error(`Invalid installment for ${i.installment_number}`);
+        }
+        return {
+          installment_number: i.installment_number,
+          due_date: dueDate,
+          amount,
+        };
+      });
+
       const payload = {
         class_name: formData.className,
         academic_year: formData.academicYear,
-        total_amount: parseFloat(formData.totalAmount),
-        breakdowns: formData.breakdowns.map((bd) => ({
-          fee_head: bd.fee_head,
-          amount: parseFloat(bd.amount),
-          description: bd.description || null,
-        })),
-        installments: formData.installments.map((i) => ({
-          installment_number: i.installment_number,
-          due_date: i.due_date,
-          amount: parseFloat(i.amount),
-        })),
+        total_amount: totalAmount,
+        breakdowns,
+        installments,
       };
 
       if (isEdit && structureId) {
@@ -228,6 +299,12 @@ export default function ManageFeeStructureScreen() {
       </View>
     );
   }
+
+  const selectedDueDate =
+    formData.installments[selectedInstallmentIndex]?.due_date || "";
+  const displayDueDate = selectedDueDate
+    ? selectedDueDate.split("T")[0]
+    : "";
 
   return (
     <ScrollView
@@ -579,13 +656,19 @@ export default function ManageFeeStructureScreen() {
 
       {/* DATE PICKER */}
       {showDatePicker && (
-        <View style={{ paddingHorizontal: 15, paddingVertical: 10, backgroundColor: "#f0f0f0" }}>
+        <View
+          style={{
+            paddingHorizontal: 15,
+            paddingVertical: 10,
+            backgroundColor: "#f0f0f0",
+          }}
+        >
           <Text style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
             Select due date (YYYY-MM-DD format)
           </Text>
           <TextInput
             placeholder="YYYY-MM-DD"
-            value={formData.installments[selectedInstallmentIndex]?.due_date || ""}
+            value={displayDueDate}
             onChangeText={(text) => {
               const installments = [...formData.installments];
               if (selectedInstallmentIndex !== null) {
@@ -601,6 +684,21 @@ export default function ManageFeeStructureScreen() {
               paddingVertical: 10,
             }}
           />
+          <TouchableOpacity
+            onPress={closeDatePicker}
+            style={{
+              marginTop: 10,
+              alignSelf: "flex-end",
+              backgroundColor: "#1E63D5",
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              borderRadius: 6,
+            }}
+          >
+            <Text style={{ color: "white", fontSize: 12, fontWeight: "600" }}>
+              Done
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
 

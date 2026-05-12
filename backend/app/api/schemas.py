@@ -62,11 +62,18 @@ class UserResponse(BaseModel):
 
 
 class UserCreate(BaseModel):
-    """Request schema for creating a new user."""
+    """Request schema for creating a user."""
 
-    name: str
+    name: str = Field(..., min_length=1, description="Full name")
     email: EmailStr
 
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {"name": "Jane Doe", "email": "jane.doe@example.com"}
+            ]
+        }
+    }
 
 class LoginResponse(BaseModel):
     """Response schema for login endpoint."""
@@ -696,6 +703,266 @@ class PaymentStudentResponse(BaseModel):
     attendance: Optional[float] = None
 
     model_config = {"from_attributes": True}
+
+
+# ------------------------------------------------------------------ #
+# Class fee structure schemas
+# ------------------------------------------------------------------ #
+
+
+class FeeBreakdownCreate(BaseModel):
+    """Schema for creating fee breakdown items."""
+
+    fee_head: str = Field(..., description="Name of the fee head")
+    amount: float = Field(..., gt=0, description="Amount for this fee head")
+    description: Optional[str] = Field(None, description="Optional description")
+
+
+class InstallmentScheduleCreate(BaseModel):
+    """Schema for creating installment schedules."""
+
+    installment_number: int = Field(
+        ..., ge=1, description="Order of installment"
+    )
+    due_date: datetime = Field(..., description="Due date for installment")
+    amount: float = Field(..., gt=0, description="Amount for installment")
+    description: Optional[str] = Field(None, description="Optional description")
+
+
+class ClassFeeStructureCreate(BaseModel):
+    """Schema for creating a class fee structure."""
+
+    class_name: str = Field(..., description="Name of the class")
+    academic_year: str = Field(
+        ..., description="Academic year (e.g., 2024-25)"
+    )
+    total_amount: float = Field(..., gt=0, description="Total fee amount")
+    breakdowns: List[FeeBreakdownCreate] = Field(
+        ..., description="Fee breakdown items"
+    )
+    installments: List[InstallmentScheduleCreate] = Field(
+        ..., description="Installment schedules"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "class_name": "Grade 10",
+                    "academic_year": "2024-25",
+                    "total_amount": 50000.0,
+                    "breakdowns": [
+                        {
+                            "fee_head": "Tuition",
+                            "amount": 30000.0,
+                            "description": "Monthly tuition fee",
+                        },
+                        {
+                            "fee_head": "Transport",
+                            "amount": 15000.0,
+                            "description": "Annual transport fee",
+                        },
+                        {
+                            "fee_head": "Lab",
+                            "amount": 5000.0,
+                            "description": "Lab access fee",
+                        },
+                    ],
+                    "installments": [
+                        {
+                            "installment_number": 1,
+                            "due_date": "2024-06-01T00:00:00",
+                            "amount": 25000.0,
+                            "description": "First installment",
+                        },
+                        {
+                            "installment_number": 2,
+                            "due_date": "2024-09-01T00:00:00",
+                            "amount": 25000.0,
+                            "description": "Second installment",
+                        },
+                    ],
+                }
+            ]
+        }
+    }
+
+
+class ClassFeeStructureUpdate(BaseModel):
+    """Schema for updating a class fee structure."""
+
+    class_name: Optional[str] = Field(None, description="New class name")
+    academic_year: Optional[str] = Field(None, description="New academic year")
+    total_amount: Optional[float] = Field(
+        None, gt=0, description="New total amount"
+    )
+    breakdowns: Optional[List[FeeBreakdownCreate]] = Field(
+        None, description="Updated breakdowns"
+    )
+    installments: Optional[List[InstallmentScheduleCreate]] = Field(
+        None, description="Updated installments"
+    )
+
+
+class FeeBreakdownResponse(BaseModel):
+    """Response schema for fee breakdown."""
+
+    id: int
+    class_fee_structure_id: int
+    fee_head: str
+    amount: float
+    description: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class InstallmentScheduleResponse(BaseModel):
+    """Response schema for installment schedule."""
+
+    id: int
+    class_fee_structure_id: int
+    installment_number: int
+    due_date: datetime
+    amount: float
+    description: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class ClassFeeStructureResponse(BaseModel):
+    """Response schema for class fee structure."""
+
+    id: int
+    class_name: str
+    academic_year: str
+    total_amount: float
+    created_at: datetime
+    updated_at: datetime
+    breakdowns: List[FeeBreakdownResponse]
+    installments: List[InstallmentScheduleResponse]
+
+    model_config = {"from_attributes": True}
+
+
+# =========================
+# 📚 HOMEWORK & LEARNING RESOURCES
+# =========================
+
+class HomeworkResponse(BaseModel):
+    """Response schema for homework data."""
+
+    id: int
+    child_id: int
+    teacher_id: int | None = None
+    subject: str
+    title: str
+    description: str | None = None
+    due_date: datetime | None = None
+    status: Literal["pending", "submitted", "overdue", "completed"]
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "child_id": 5,
+                    "teacher_id": 3,
+                    "subject": "Mathematics",
+                    "title": "Algebra Assignment",
+                    "description": "Solve problems 1-20 on page 45",
+                    "due_date": "2026-05-10T23:59:59",
+                    "status": "pending",
+                    "created_at": "2026-05-05T10:00:00",
+                    "updated_at": "2026-05-05T10:00:00",
+                }
+            ]
+        }
+    }
+
+
+class HomeworkCreate(BaseModel):
+    """Request schema for creating homework."""
+
+    child_id: int
+    teacher_id: int | None = None
+    subject: str
+    title: str
+    description: str | None = None
+    due_date: datetime | None = None
+    status: Literal["pending", "submitted", "overdue", "completed"] = "pending"
+
+
+class HomeworkUpdate(BaseModel):
+    """Request schema for updating homework."""
+
+    subject: str | None = None
+    title: str | None = None
+    description: str | None = None
+    due_date: datetime | None = None
+    status: Literal["pending", "submitted", "overdue", "completed"] | None = None
+
+
+class LearningResourceResponse(BaseModel):
+    """Response schema for learning resource data."""
+
+    id: int
+    title: str
+    description: str | None = None
+    resource_type: Literal["pdf", "ppt", "video", "link", "document"]
+    category: Literal[
+        "textbook", "reference", "solved_problems", "notes", "practice"
+    ]
+    subject_id: int
+    class_id: int
+    file_path: str | None = None
+    external_link: str | None = None
+    file_size: int | None = None
+    content_type: str | None = None
+    uploaded_by_id: int | None = None
+    is_published: bool = True
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "title": "Mathematics Textbook Chapter 5",
+                    "description": "Complete textbook for Algebra concepts",
+                    "resource_type": "pdf",
+                    "category": "textbook",
+                    "subject_id": 1,
+                    "class_id": 2,
+                    "file_path": "uploads/resources/math_chapter5.pdf",
+                    "external_link": None,
+                    "file_size": 2048576,
+                    "content_type": "application/pdf",
+                    "uploaded_by_id": 3,
+                    "is_published": True,
+                    "created_at": "2026-05-01T09:00:00",
+                    "updated_at": "2026-05-01T09:00:00",
+                }
+            ]
+        }
+    }
+
+
+class LearningResourceCreate(BaseModel):
+    """Request schema for creating learning resource."""
+
+    title: str
+    description: str | None = None
+    resource_type: Literal["pdf", "ppt", "video", "link", "document"]
+    category: Literal[
+        "textbook", "reference", "solved_problems", "notes", "practice"
+    ]
+    subject_id: int
+    class_id: int
+    external_link: str | None = None
+    is_published: bool = True
 
 
 class FeeStructureResponse(BaseModel):

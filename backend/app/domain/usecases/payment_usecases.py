@@ -11,6 +11,7 @@ from typing import List, Optional
 
 from app.core.errors import NotFoundError, ValidationError
 from app.domain.entities.payment import (
+    ClassFeeStructure,
     Payment,
     PaymentStatus,
     PaymentSummary,
@@ -350,4 +351,111 @@ class GetStudentUseCase:
         if student is None:
             raise NotFoundError(f"Student with id {student_id} not found.")
         return student
-    
+
+
+# ------------------------------------------------------------------ #
+# Class fee structure use cases
+# ------------------------------------------------------------------ #
+
+
+class CreateClassFeeStructureUseCase:
+    """Use case for creating a class fee structure."""
+
+    def __init__(self, repository: PaymentRepository) -> None:
+        self.repository = repository
+
+    async def execute(
+        self,
+        class_name: str,
+        academic_year: str,
+        total_amount: float,
+        breakdowns: List[dict],
+        installments: List[dict],
+    ) -> ClassFeeStructure:
+        if not class_name.strip():
+            raise ValidationError("Class name is required.")
+        if not academic_year.strip():
+            raise ValidationError("Academic year is required.")
+        if total_amount <= 0:
+            raise ValidationError("Total amount must be greater than zero.")
+        if not breakdowns:
+            raise ValidationError("At least one fee breakdown is required.")
+        if not installments:
+            raise ValidationError("At least one installment is required.")
+        return await self.repository.create_class_fee_structure(
+            class_name=class_name,
+            academic_year=academic_year,
+            total_amount=total_amount,
+            breakdowns=breakdowns,
+            installments=installments,
+        )
+
+
+class GetClassFeeStructureUseCase:
+    """Use case for retrieving a class fee structure by ID."""
+
+    def __init__(self, repository: PaymentRepository) -> None:
+        self.repository = repository
+
+    async def execute(self, structure_id: int) -> ClassFeeStructure:
+        structure = await self.repository.get_class_fee_structure_by_id(
+            structure_id
+        )
+        if structure is None:
+            raise NotFoundError(
+                f"Class fee structure {structure_id} not found."
+            )
+        return structure
+
+
+class ListClassFeeStructuresUseCase:
+    """Use case for listing class fee structures with filters."""
+
+    def __init__(self, repository: PaymentRepository) -> None:
+        self.repository = repository
+
+    async def execute(
+        self,
+        class_name: Optional[str] = None,
+        academic_year: Optional[str] = None,
+    ) -> List[ClassFeeStructure]:
+        return await self.repository.list_class_fee_structures(
+            class_name=class_name, academic_year=academic_year
+        )
+
+
+class UpdateClassFeeStructureUseCase:
+    """Use case for updating a class fee structure."""
+
+    def __init__(self, repository: PaymentRepository) -> None:
+        self.repository = repository
+
+    async def execute(
+        self,
+        structure_id: int,
+        class_name: Optional[str] = None,
+        academic_year: Optional[str] = None,
+        total_amount: Optional[float] = None,
+        breakdowns: Optional[List[dict]] = None,
+        installments: Optional[List[dict]] = None,
+    ) -> ClassFeeStructure:
+        if total_amount is not None and total_amount <= 0:
+            raise ValidationError("Total amount must be greater than zero.")
+        return await self.repository.update_class_fee_structure(
+            structure_id=structure_id,
+            class_name=class_name,
+            academic_year=academic_year,
+            total_amount=total_amount,
+            breakdowns=breakdowns,
+            installments=installments,
+        )
+
+
+class DeleteClassFeeStructureUseCase:
+    """Use case for deleting a class fee structure."""
+
+    def __init__(self, repository: PaymentRepository) -> None:
+        self.repository = repository
+
+    async def execute(self, structure_id: int) -> None:
+        await self.repository.delete_class_fee_structure(structure_id)
