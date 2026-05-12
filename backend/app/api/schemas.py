@@ -61,6 +61,13 @@ class UserResponse(BaseModel):
     }
 
 
+class UserCreate(BaseModel):
+    """Request schema for creating a new user."""
+
+    name: str
+    email: EmailStr
+
+
 class LoginResponse(BaseModel):
     """Response schema for login endpoint."""
     user: UserResponse
