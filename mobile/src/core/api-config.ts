@@ -16,59 +16,57 @@ const API_VERSION = 'api/v1';
  *      connection to a local backend from physical devices and emulators.
  */
 export const getApiBaseUrl = (): string => {
-  const env = process.env.EXPO_PUBLIC_ENV || 'development';
-  const configuredUrl = process.env.EXPO_PUBLIC_API_URL;
+    const env = process.env.EXPO_PUBLIC_ENV || 'development';
+    const configuredUrl = process.env.EXPO_PUBLIC_API_URL;
 
-  // Always allow explicit environment override.
-  if (configuredUrl) {
-    Logger.debug(`[Config] Using configured API URL: ${configuredUrl}`);
-    return configuredUrl;
-  }
+    // 1. Production/Staging/Test priority
+    if (['production', 'staging', 'test'].includes(env)) {
+        if (configuredUrl) {
+            return configuredUrl;
+        }
+        Logger.warn(`[Config] EXPO_PUBLIC_ENV is ${env} but EXPO_PUBLIC_API_URL is missing.`);
+    }
 
-  // Production-like envs should not silently guess hosts.
-  if (['production', 'staging', 'test'].includes(env)) {
-    Logger.warn(`[Config] EXPO_PUBLIC_ENV is ${env} but EXPO_PUBLIC_API_URL is missing.`);
-  }
-
-  // Web fallback for local development.
-  if (Platform.OS === 'web') {
-    return 'http://127.0.0.1:8000/api/v1';
-  }
-
-  // Native fallback for local development.
-  try {
-    const hostUri = Constants.expoConfig?.hostUri;
-
-    if (!hostUri) {
-      const fallbackHost = Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1';
-      const url = `http://${fallbackHost}:8000/api/v1`;
-      Logger.debug(`[Config] No hostUri found, using fallback: ${url}`);
-      return url;
+    // 2. Web Development
+    if (Platform.OS === 'web') {
+        // On web, if configuredUrl is set (e.g. to a local IP), use it, otherwise localhost
+        return configuredUrl || `http://localhost:${DEFAULT_PORT}/${API_VERSION}`;
     }
 
-    const isTunnel = hostUri.includes('ngrok.io') || hostUri.includes('expo.direct');
-    if (isTunnel) {
-      const fallbackHost = Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1';
-      const url = `http://${fallbackHost}:8000/api/v1`;
-      Logger.warn(
-        `[Config] Tunnel detected (${hostUri}). Set EXPO_PUBLIC_API_URL to a reachable backend URL if requests fail.`
-      );
-      return url;
-    }
+    // 3. Native Development (iOS/Android)
+    try {
+        if (configuredUrl) {
+            Logger.debug(`[Config] Using configured API URL: ${configuredUrl}`);
+            return configuredUrl;
+        }
 
-    let hostIp = hostUri.split(':')[0];
-    if ((hostIp === 'localhost' || hostIp === '127.0.0.1') && Platform.OS === 'android') {
-      hostIp = '10.0.2.2';
-      Logger.debug(`[Config] Localhost detected on Android emulator, using ${hostIp}`);
-    }
+        const hostUri = Constants.expoConfig?.hostUri;
 
-    const dynamicUrl = `http://${hostIp}:8000/api/v1`;
-    Logger.debug(`[Config] Dynamic API URL detected: ${dynamicUrl}`);
-    return dynamicUrl;
-  } catch (error) {
-    Logger.error('[Config] Error detecting dynamic API URL', error);
-    return Platform.OS === 'android'
-      ? 'http://10.0.2.2:8000/api/v1'
-      : 'http://127.0.0.1:8000/api/v1';
-  }
+        if (!hostUri) {
+            const fallbackHost = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+            const url = `http://${fallbackHost}:${DEFAULT_PORT}/${API_VERSION}`;
+            Logger.debug(`[Config] No hostUri found, using fallback: ${url}`);
+            return url;
+        }
+
+        const isTunnel = hostUri.includes('ngrok.io') || hostUri.includes('expo.direct');
+
+        if (isTunnel) {
+            const fallbackHost = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+            const url = `http://${fallbackHost}:${DEFAULT_PORT}/${API_VERSION}`;
+            Logger.warn(
+                `[Config] Tunnel detected. hostUri is ${hostUri}. Using fallback: ${url}. For physical devices, please set EXPO_PUBLIC_API_URL in .env.`
+            );
+            return url;
+        }
+
+        const hostIp = hostUri.split(':')[0];
+        const dynamicUrl = `http://${hostIp}:${DEFAULT_PORT}/${API_VERSION}`;
+
+        Logger.debug(`[Config] Dynamic API URL detected: ${dynamicUrl}`);
+        return dynamicUrl;
+    } catch (error) {
+        Logger.error('[Config] Error detecting dynamic API URL', error);
+        return configuredUrl || `http://10.0.2.2:${DEFAULT_PORT}/${API_VERSION}`;
+    }
 };

@@ -3,8 +3,6 @@
  * This should connect to your backend API
  */
 
-import { getApiBaseUrl } from '@/core/api-config';
-
 export interface CreateUserRequest {
   name: string;
   email: string;
@@ -32,7 +30,8 @@ export async function createUser(
   role: string = 'student'
 ): Promise<CreateUserResponse> {
   try {
-    const apiEndpoint = getApiBaseUrl().replace(/\/api\/v1\/?$/, '');
+    // Replace with your actual API endpoint
+    const apiEndpoint = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
     
     const response = await fetch(`${apiEndpoint}/api/users`, {
       method: 'POST',
