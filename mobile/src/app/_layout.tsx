@@ -15,6 +15,7 @@ export default function RootLayout() {
            <Stack screenOptions={{ headerShown: false }}>
   <Stack.Screen name="(tabs)" />
   <Stack.Screen name="attendance" />
+  <Stack.Screen name="student-timetable" />
 </Stack>
         </SafeAreaProvider>
       </ThemeProvider>

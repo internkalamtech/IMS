@@ -29,12 +29,31 @@ export default function ParentDashboard() {
     const pendingHomework = Number(getStatValue('Pending Homework', '5'));
 
     const handleHomeworkCounterPress = () => {
-        router.push('/academics?initialTab=homework');
+        router.push('/academics?initialTab=homework' as any);
     };
 
     const handleQuickActionPress = (action: any) => {
-        if (action.route) {
-            router.push(action.route);
+        if (action.title === 'Timetable') {
+            router.push('/student-timetable' as any);
+        } else if (action.title === 'Attendance') {
+            router.push('/attendance' as any);
+        } else if (action.title === 'Academics') {
+            router.push('/academics' as any);
+        } else if (action.title === 'Fees') {
+            // TODO: Add Fees screen route
+            console.log('Fees action clicked');
+        } else if (action.title === 'Transport') {
+            // TODO: Add Transport screen route
+            console.log('Transport action clicked');
+        } else if (action.title === 'Exams') {
+            // TODO: Add Exams screen route
+            console.log('Exams action clicked');
+        } else if (action.title === 'Conduct') {
+            // TODO: Add Conduct screen route
+            console.log('Conduct action clicked');
+        } else if (action.route) {
+            // Fallback for any custom routes
+            router.push(action.route as any);
         }
     };
 

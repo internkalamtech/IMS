@@ -7,6 +7,7 @@ import { ThemedView } from '@/presentation/components/ThemedView';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { useDashboard } from '@/presentation/hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,6 +22,24 @@ export default function StudentDashboard() {
 
     const getStatValue = (label: string, defaultValue: string = '0') => {
         return dashboardData?.stats?.find(s => s.label === label)?.value || defaultValue;
+    };
+
+    const handleQuickActionPress = (action: any) => {
+        if (action.title === 'Timetable') {
+            router.push('/student-timetable' as any);
+        } else if (action.title === 'Results') {
+            // TODO: Add Results screen route
+            console.log('Results action clicked');
+        } else if (action.title === 'Homework') {
+            router.push('/homework' as any);
+        } else if (action.title === 'Library') {
+            // TODO: Add Library screen route
+            console.log('Library action clicked');
+        } else if (action.title === 'Attendance') {
+            router.push('/attendance' as any);
+        } else if (action.title === 'Profile') {
+            router.push('/student-profile' as any);
+        }
     };
 
     return (
@@ -87,7 +106,7 @@ export default function StudentDashboard() {
                         <ThemedText style={styles.sectionTitle} type="subtitle">Academic Zone</ThemedText>
                     </View>
 
-                     <QuickActionGrid actions={quickActions} />
+                     <QuickActionGrid actions={quickActions} onActionPress={handleQuickActionPress} />
                     {/* Recent Updates */}
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
