@@ -808,6 +808,89 @@ class LearningResourceCreate(BaseModel):
     model_config = {"from_attributes": True}
 
 
+# ================================================================== #
+# STUDENT TIMETABLE SCHEMAS - Issue #348: Personal Timetable Interface
+# ================================================================== #
+
+
+class TimetableEntry(BaseModel):
+    """Schema for a single timetable entry (period)."""
+
+    id: int = Field(..., description="Unique timetable entry ID")
+    class_id: int = Field(..., description="Class ID")
+    day: str = Field(..., description="Day of week (Monday, Tuesday, etc.)")
+    period_number: int = Field(..., description="Period number in the day")
+    subject: str = Field(..., description="Subject name")
+    teacher: str = Field(..., description="Teacher name or ID")
+    room: str = Field(..., description="Room/Lab number")
+    start_time: str = Field(..., description="Period start time (HH:MM format)")
+    end_time: str = Field(..., description="Period end time (HH:MM format)")
+    type: str = Field(default="PERIOD", description="Period type (PERIOD, BREAK, FREE_PERIOD)")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{
+                "id": 1,
+                "class_id": 5,
+                "day": "Monday",
+                "period_number": 1,
+                "subject": "Mathematics",
+                "teacher": "Mr. Smith",
+                "room": "A-101",
+                "start_time": "09:00",
+                "end_time": "10:00",
+                "type": "PERIOD"
+            }]
+        }
+    }
+
+
+class StudentTimetableResponse(BaseModel):
+    """Response schema for student's personal timetable view."""
+
+    timetable: list[TimetableEntry] = Field(
+        default=[],
+        description="List of timetable entries for the student's class"
+    )
+    class_id: int = Field(..., description="Student's class ID")
+    class_name: str = Field(..., description="Student's class name/grade")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{
+                "timetable": [
+                    {
+                        "id": 1,
+                        "class_id": 5,
+                        "day": "Monday",
+                        "period_number": 1,
+                        "subject": "Mathematics",
+                        "teacher": "Mr. Smith",
+                        "room": "A-101",
+                        "start_time": "09:00",
+                        "end_time": "10:00",
+                        "type": "PERIOD"
+                    },
+                    {
+                        "id": 2,
+                        "class_id": 5,
+                        "day": "Monday",
+                        "period_number": 2,
+                        "subject": "English",
+                        "teacher": "Ms. Johnson",
+                        "room": "A-102",
+                        "start_time": "10:00",
+                        "end_time": "11:00",
+                        "type": "PERIOD"
+                    }
+                ],
+                "class_id": 5,
+                "class_name": "Grade 6-A"
+            }]
+        }
+    }
+
+
 class FeeStructureResponse(BaseModel):
     """Response schema for fee structure data."""
 
