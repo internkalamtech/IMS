@@ -110,6 +110,8 @@ export default function AttendanceCalendarScreen() {
     };
 
     const [leaveError, setLeaveError] = useState<string | null>(null);
+    const [detailModal, setDetailModal] = useState(false);
+    const [selectedLeave, setSelectedLeave] = useState<AttendanceCalendarData['leaveHistory'][number] | null>(null);
 
     const handleApplyLeave = async () => {
         if (!leaveFrom || !leaveTo || !leaveReason.trim()) {
@@ -302,7 +304,15 @@ export default function AttendanceCalendarScreen() {
                                         lr.status === 'Rejected' ? '#FEF2F2' : '#FFFBEB';
 
                                     return (
-                                        <View key={lr.id} style={styles.leaveCard}>
+                                        <TouchableOpacity
+                                            key={lr.id}
+                                            style={styles.leaveCard}
+                                            activeOpacity={0.8}
+                                            onPress={() => {
+                                                setSelectedLeave(lr);
+                                                setDetailModal(true);
+                                            }}
+                                        >
                                             <View style={styles.leaveCardHeader}>
                                                 <Text style={styles.leaveDateRange}>{lr.dateRange}</Text>
                                                 <View style={[styles.leaveBadge, { backgroundColor: statusBg }]}>
@@ -323,7 +333,7 @@ export default function AttendanceCalendarScreen() {
                                             {lr.teacherNote && (
                                                 <Text style={styles.teacherNote}>💬 {lr.teacherNote}</Text>
                                             )}
-                                        </View>
+                                        </TouchableOpacity>
                                     );
                                 })}
                             </View>
@@ -391,6 +401,52 @@ export default function AttendanceCalendarScreen() {
                                     </Text>
                                 )}
                             </>
+                        )}
+                    </View>
+                </View>
+            </Modal>
+
+            {/* ── Leave Detail Modal ── */}
+            <Modal
+                visible={detailModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setDetailModal(false)}
+            >
+                <View style={styles.detailOverlay}>
+                    <View style={styles.detailBox}>
+                        <View style={styles.detailHeader}>
+                            <Text style={styles.detailTitle}>Leave Details</Text>
+                            <TouchableOpacity onPress={() => setDetailModal(false)}>
+                                <Ionicons name="close" size={22} color="#374151" />
+                            </TouchableOpacity>
+                        </View>
+                        {selectedLeave ? (
+                            <View style={styles.detailContent}>
+                                <Text style={styles.detailLabel}>Date Range</Text>
+                                <Text style={styles.detailValue}>{selectedLeave.dateRange}</Text>
+
+                                <Text style={styles.detailLabel}>Applied On</Text>
+                                <Text style={styles.detailValue}>{selectedLeave.appliedDate}</Text>
+
+                                <Text style={styles.detailLabel}>Status</Text>
+                                <Text style={styles.detailValue}>{selectedLeave.status}</Text>
+
+                                <Text style={styles.detailLabel}>Reason</Text>
+                                <Text style={styles.detailValue}>{selectedLeave.reason}</Text>
+
+                                <Text style={styles.detailLabel}>Reviewed By</Text>
+                                <Text style={styles.detailValue}>
+                                    {selectedLeave.reviewedBy ?? 'Not reviewed yet'}
+                                </Text>
+
+                                <Text style={styles.detailLabel}>Review Comment</Text>
+                                <Text style={styles.detailValue}>
+                                    {selectedLeave.teacherNote ?? 'No comment'}
+                                </Text>
+                            </View>
+                        ) : (
+                            <Text style={styles.detailValue}>No leave selected.</Text>
                         )}
                     </View>
                 </View>
@@ -506,4 +562,13 @@ const styles = StyleSheet.create({
     submitBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
     successBox: { alignItems: 'center', padding: 24 },
     successText: { fontSize: 18, fontWeight: '700', color: '#16A34A', marginTop: 12 },
+
+    // Detail modal
+    detailOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 20 },
+    detailBox: { backgroundColor: '#fff', borderRadius: 20, padding: 20 },
+    detailHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+    detailTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
+    detailContent: { gap: 10 },
+    detailLabel: { fontSize: 12, fontWeight: '600', color: '#6B7280' },
+    detailValue: { fontSize: 14, color: '#111827' },
 });

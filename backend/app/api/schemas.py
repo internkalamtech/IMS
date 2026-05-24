@@ -4,8 +4,10 @@ Pydantic schemas for API request/response models.
 These schemas define the shape of data for API endpoints.
 """
 
-from pydantic import BaseModel, EmailStr, Field
+from datetime import datetime
 from typing import List, Literal, Optional
+
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 
 class LoginRequest(BaseModel):
@@ -13,13 +15,20 @@ class LoginRequest(BaseModel):
 
     email: EmailStr
     password: str = Field(
-        ..., min_length=6, description="User password (minimum 6 characters)"
-        )
+        ...,
+        min_length=6,
+        description="User password (minimum 6 characters)",
+    )
 
     model_config = {
         "json_schema_extra": {
-            "examples": [{"email": "admin@myuser.com", "password": "admin123"}]
-            }
+            "examples": [
+                {
+                    "email": "admin@myuser.com",
+                    "password": "admin123",
+                }
+            ]
+        }
     }
 
 
@@ -28,8 +37,13 @@ class RoleResponse(BaseModel):
 
     id: str
     name: Literal[
-        "admin", "teacher", "student", "parent", "transport", "driver"
-        ]
+        "admin",
+        "teacher",
+        "student",
+        "parent",
+        "transport",
+        "driver",
+    ]
     description: str | None = None
 
 
@@ -39,9 +53,7 @@ class UserResponse(BaseModel):
     id: str
     name: str
     email: str
-    role: Literal[
-        "admin", "teacher", "student", "parent", "transport", "driver"
-        ]
+    role: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
     roles: list[RoleResponse]
     avatarUrl: str | None = None
 
@@ -69,7 +81,6 @@ class UserResponse(BaseModel):
 
 class LoginResponse(BaseModel):
     """Response schema for login endpoint."""
-
     user: UserResponse
     access_token: str
     token_type: str = "bearer"
@@ -99,8 +110,12 @@ class ErrorResponse(BaseModel):
     detail: str
 
     model_config = {
-        "json_schema_extra": {"examples": [{"detail": "Error message"}]}
+        "json_schema_extra": {
+            "examples": [
+                {"detail": "Error message"}
+            ]
         }
+    }
 
 
 class DemoCredential(BaseModel):
@@ -203,6 +218,91 @@ class LeaveRequestResponse(BaseModel):
     appliedDate: str
     teacherNote: str | None = None
 
+
+class RecentUpdate(BaseModel):
+    """Schema for a recent update/activity item."""
+
+    id: str | None = None
+    icon: str
+    title: str
+    subtitle: str
+    timestamp: str
+    type: Literal["homework", "exam", "announcement", "fee", "meeting"] | None = None
+
+
+class ChildInfo(BaseModel):
+    """Schema for child information (for parent dashboard)."""
+
+    id: str
+    name: str
+    class_name: str
+    roll_number: str
+    avatar_initials: str
+
+
+class ParentDashboardResponse(BaseModel):
+    """Response schema for parent dashboard endpoint."""
+
+    role: str
+    child: ChildInfo | None = None
+    stats: list[StatItem]
+    recent_updates: list[RecentUpdate] = []
+
+
+class StudentDashboardResponse(BaseModel):
+    """Response schema for student dashboard endpoint."""
+
+    role: str
+    stats: list[StatItem]
+    recent_updates: list[RecentUpdate] = []
+
+
+class AcademicSummaryResponse(BaseModel):
+    """Response schema for the academic summary endpoint."""
+
+    child_id: str
+    pending_homework_count: int
+
+
+class TimetableEntry(BaseModel):
+    """Schema for a single timetable entry."""
+
+    id: int | None = None
+    classId: int | None = None
+    day: str | None = None
+    periodNumber: int | None = None
+    subject: str | None = None
+    teacher: str | None = None
+    room: str | None = None
+    startTime: str | None = None
+    endTime: str | None = None
+    type: str | None = None
+    isDeleted: bool | None = None
+
+
+class SubjectSummary(BaseModel):
+    """Schema for a subject summary item."""
+
+    id: int
+    name: str
+
+
+class StudentTimetableResponse(BaseModel):
+    """Response schema for student timetable endpoint."""
+
+    timetable: list[TimetableEntry]
+    class_id: int | None = None
+    class_name: str | None = None
+
+
+class StudentHomeworkMaterialsResponse(BaseModel):
+    """Response schema for student homework and materials endpoint."""
+
+    homework: list[dict]
+    materials: list["LearningResourceResponse"]
+    class_id: int | None = None
+    student_id: int | None = None
+    subjects: list[SubjectSummary] = []
 # Transport-related schemas
 class RouteResponse(BaseModel):
     """Response schema for route data."""
@@ -354,8 +454,6 @@ class TransportStatsResponse(BaseModel):
             }]
         }
     }
-
-
 class SubjectInput(BaseModel):
     """Schema for subject input when updating class subjects."""
 
@@ -368,6 +466,7 @@ class UpdateClassSubjectsRequest(BaseModel):
 
     class_id: int
     subjects: List[SubjectInput]
+
 
 # Student & Parent Enrollment Schemas
 
@@ -454,6 +553,7 @@ class CreateStudentWithParentRequest(BaseModel):
 
                     },
                     "link_existing_parent": False,
+                }
             ]
         }
     }
@@ -1004,4 +1104,25 @@ class StudentBoardingResponse(BaseModel):
 
     class Config:
         from_attributes = True
->>>>>>> c80a1a4 (feat(staff): add staff provisioning API (POST /api/v1/staff) — closes #266 (#498))
+
+# =========================
+# 📅 ATTENDANCE SCHEMAS
+# =========================
+
+class AttendanceCreate(BaseModel):
+    student_id: int
+    class_name: str
+    subject: str
+    date: datetime
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
+
+
+class AttendanceUpdate(BaseModel):
+    status: Literal["present", "absent", "leave"]
+    teacher_id: int
+
+class StudentCreate(BaseModel):
+    name: str
+    roll_number: str
+    class_name: str
