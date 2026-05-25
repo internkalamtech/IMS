@@ -45,4 +45,73 @@ export class ComplianceDocumentRepositoryImpl implements ComplianceDocumentRepos
             throw error;
         }
     }
+
+    async uploadComplianceDocument(
+        document: Partial<ComplianceDocument>,
+        file: any
+    ): Promise<ComplianceDocument> {
+        try {
+            const formData = new FormData();
+            if (document.type) formData.append('title', document.type);
+            if (document.expiryDate) formData.append('expiry_date', document.expiryDate);
+            if (document.vehicleName) formData.append('branch', document.vehicleName);
+            if (document.documentNumber) formData.append('scope', document.documentNumber);
+            if (file) formData.append('file', file);
+
+            const response = await api.post('/documents', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            const doc = response.data;
+            return {
+                id: doc.id,
+                type: doc.title,
+                vehicleName: doc.branch || 'N/A',
+                documentNumber: doc.scope || 'N/A',
+                issuedDate: doc.upload_date,
+                expiryDate: doc.expiry_date,
+                status: doc.status,
+                daysLeft: doc.days_left,
+                fileUrl: `/v1/documents/${doc.id}/download`,
+            };
+        } catch (error) {
+            Logger.error('Failed to upload compliance document', error);
+            throw error;
+        }
+    }
+
+    async updateComplianceDocument(
+        id: number,
+        document: Partial<ComplianceDocument>,
+        file?: any
+    ): Promise<ComplianceDocument> {
+        try {
+            const formData = new FormData();
+            if (document.type) formData.append('title', document.type);
+            if (document.expiryDate) formData.append('expiry_date', document.expiryDate);
+            if (document.vehicleName) formData.append('branch', document.vehicleName);
+            if (document.documentNumber) formData.append('scope', document.documentNumber);
+            if (file) formData.append('file', file);
+
+            const response = await api.put(`/documents/${id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            const doc = response.data;
+            return {
+                id: doc.id,
+                type: doc.title,
+                vehicleName: doc.branch || 'N/A',
+                documentNumber: doc.scope || 'N/A',
+                issuedDate: doc.upload_date,
+                expiryDate: doc.expiry_date,
+                status: doc.status,
+                daysLeft: doc.days_left,
+                fileUrl: `/v1/documents/${doc.id}/download`,
+            };
+        } catch (error) {
+            Logger.error('Failed to update compliance document', error);
+            throw error;
+        }
+    }
 }
