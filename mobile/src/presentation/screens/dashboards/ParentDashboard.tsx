@@ -29,12 +29,12 @@ export default function ParentDashboard() {
     const pendingHomework = Number(getStatValue('Pending Homework', '5'));
 
     const handleHomeworkCounterPress = () => {
-        router.push('/academics?initialTab=homework');
+        router.push('/(tabs)/academics?initialTab=homework');
     };
 
-    const handleQuickActionPress = (action: any) => {
+    const handleQuickActionPress = (action: typeof quickActions[0]) => {
         if (action.route) {
-            router.push(action.route);
+            router.push(action.route as Parameters<typeof router.push>[0]);
         }
     };
 
@@ -51,10 +51,19 @@ export default function ParentDashboard() {
                     <SafeAreaView edges={['top']}>
                         <View style={styles.headerContent}>
                             <View>
-                                <ThemedText style={styles.userName} type="title" lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                <ThemedText
+                                    style={styles.userName}
+                                    type="title"
+                                    lightColor={theme.colors.primaryForeground}
+                                    darkColor={theme.colors.primaryForeground}
+                                >
                                     Welcome, {user?.name?.split(' ')[0] || 'Priya'} 👋
                                 </ThemedText>
-                                <ThemedText style={styles.subtitle} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>
+                                <ThemedText
+                                    style={styles.subtitle}
+                                    lightColor={theme.colors.primaryForeground}
+                                    darkColor={theme.colors.primaryForeground}
+                                >
                                     Track your child&apos;s progress
                                 </ThemedText>
                             </View>
@@ -134,7 +143,13 @@ export default function ParentDashboard() {
                     <View style={styles.sectionHeader}>
                         <ThemedText style={styles.sectionTitle} type="subtitle">Recent Updates</ThemedText>
                         <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-                            <ThemedText style={styles.badgeText} lightColor={theme.colors.primaryForeground} darkColor={theme.colors.primaryForeground}>3 new</ThemedText>
+                            <ThemedText
+                                style={styles.badgeText}
+                                lightColor={theme.colors.primaryForeground}
+                                darkColor={theme.colors.primaryForeground}
+                            >
+                                3 new
+                            </ThemedText>
                         </View>
                     </View>
                     <ThemedCard style={styles.updatesCard} padding={0}>

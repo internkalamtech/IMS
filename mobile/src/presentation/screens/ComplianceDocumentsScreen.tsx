@@ -1,7 +1,7 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { ThemedText } from '@/presentation/components/ThemedText';
@@ -15,16 +15,9 @@ type FilterTab = 'All' | 'Expiring' | 'Expired';
 export default function ComplianceDocumentsScreen() {
     const router = useRouter();
     const { theme, isDark } = useTheme();
-    const { documents, loading, refreshing, onRefresh, error } = useComplianceDocuments();
+    const { documents, loading, refreshing, onRefresh } = useComplianceDocuments();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<FilterTab>('All');
-
-    // Refresh list when screen comes into focus
-    useFocusEffect(
-        useCallback(() => {
-            onRefresh();
-        }, [])
-    );
 
     // Calculate metrics
     const { validCount, expiringCount, expiredCount } = useMemo(() => {
@@ -66,7 +59,8 @@ export default function ComplianceDocumentsScreen() {
     };
 
     const handleEdit = (docId: number) => {
-        router.push({ pathname: '/add-edit-compliance-document' as any, params: { id: docId } });
+        // Integrate with existing edit navigation
+        console.log('Edit', docId);
     };
 
     const renderDocumentCard = ({ item }: { item: any }) => {
@@ -155,7 +149,7 @@ export default function ComplianceDocumentsScreen() {
                             <ThemedText style={styles.headerTitle} lightColor="#fff" darkColor="#fff" type="title">Compliance Documents</ThemedText>
                             <ThemedText style={styles.headerSubtitle} lightColor="#fff" darkColor="#fff">{totalCount} documents tracked</ThemedText>
                         </View>
-                        <TouchableOpacity style={styles.uploadButton} onPress={() => router.push({ pathname: '/add-edit-compliance-document' as any })}>
+                        <TouchableOpacity style={styles.uploadButton}>
                             <Ionicons name="push-outline" size={16} color={theme.colors.primary} />
                             <ThemedText style={[styles.uploadButtonText, { color: theme.colors.primary }]}>Upload</ThemedText>
                         </TouchableOpacity>
@@ -226,7 +220,7 @@ export default function ComplianceDocumentsScreen() {
                     contentContainerStyle={styles.listContainer}
                     refreshControl={<RefreshControl refreshing={refreshing || loading} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
                     ListEmptyComponent={
-                        !loading ? <ThemedText style={styles.emptyText}>{error ? `Error: ${error}` : "No documents found."}</ThemedText> : null
+                        !loading ? <ThemedText style={styles.emptyText}>No documents found.</ThemedText> : null
                     }
                 />
             </View>

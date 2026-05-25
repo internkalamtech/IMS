@@ -86,10 +86,12 @@ async def log_requests(request: Request, call_next):
 
 
 # Configure CORS
+# In production, restrict to configured origins (CORS_ORIGINS env var).
+# Debug mode can optionally use wildcard, but requires explicit enablement.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
+    allow_origins=["*"] if settings.debug else settings.cors_origins,
+    allow_credentials=False if settings.debug else True,  # credentials incompatible with wildcard
     allow_methods=["*"],
     allow_headers=["*"],
 )

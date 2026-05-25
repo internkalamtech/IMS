@@ -52,6 +52,10 @@ async def get_dashboard_stats(
     role = current_user.role
     stats = []
     role_label = role.capitalize()
+    try:
+        user_id = int(current_user.id)
+    except (TypeError, ValueError):
+        user_id = None
 
     try:
         if role == "admin":
@@ -72,7 +76,7 @@ async def get_dashboard_stats(
             role_label = "Parent"
             # Get parent's first child data from database
             parent_query = select(ParentModel).where(
-                ParentModel.user_id == current_user.id
+                ParentModel.user_id == user_id
             )
             parent_result = await db.execute(parent_query)
             parent = parent_result.scalars().first()
@@ -92,7 +96,7 @@ async def get_dashboard_stats(
             role_label = "Student"
             # Get student's own data from database
             student_query = select(StudentModel).where(
-                StudentModel.id == current_user.id
+                StudentModel.id == user_id
             )
             student_result = await db.execute(student_query)
             student = student_result.scalars().first()
@@ -145,11 +149,16 @@ async def get_parent_dashboard(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only parents can access this endpoint",
         )
+
+    try:
+        user_id = int(current_user.id)
+    except (TypeError, ValueError):
+        user_id = None
     
     try:
         # Get parent's first child
         parent_query = select(ParentModel).where(
-            ParentModel.user_id == current_user.id
+            ParentModel.user_id == user_id
         )
         parent_result = await db.execute(parent_query)
         parent = parent_result.scalars().first()

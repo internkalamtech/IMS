@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { Appearance, ColorSchemeName } from 'react-native';
+import { ColorSchemeName } from 'react-native';
 import { DarkTheme, LightTheme, Theme } from './theme';
+import { Logger } from '@/core/logger';
 
 type ThemeType = 'light' | 'dark' | 'system';
 
@@ -18,61 +19,40 @@ const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 export const THEME_STORAGE_KEY = 'ims_theme_preference';
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-    const [themeType, setThemeTypeState] = useState<ThemeType>('system');
-    const [systemColorScheme, setSystemColorScheme] = useState<ColorSchemeName>(Appearance.getColorScheme());
+    // Force light mode only — no dark mode or system preference support.
+    // The app is designed as a light-theme-first product.
+    const [themeType] = useState<ThemeType>('light');
 
     useEffect(() => {
-        // Load persisted theme preference
+        // Load persisted theme preference (light mode only)
         const loadTheme = async () => {
             try {
-                const storedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-                if (storedTheme) {
-                    setThemeTypeState(storedTheme as ThemeType);
-                }
+                // Always use light; discard any stored preferences for dark mode
+                await AsyncStorage.removeItem(THEME_STORAGE_KEY);
             } catch (error) {
-                console.error('Failed to load theme preference:', error);
+                console.error('Failed to clear theme preference:', error);
             }
         };
         loadTheme();
-
-        // Listen for system theme changes
-        const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-            setSystemColorScheme(colorScheme);
-        });
-
-        return () => subscription.remove();
     }, []);
 
     const setThemeType = async (type: ThemeType) => {
-        setThemeTypeState(type);
-        try {
-            await AsyncStorage.setItem(THEME_STORAGE_KEY, type);
-        } catch (error) {
-            console.error('Failed to save theme preference:', error);
+        // Ignore attempts to change theme; always stay light
+        if (type !== 'light') {
+            Logger.debug('Theme change requested but light-only mode enforced');
         }
     };
 
     const toggleTheme = () => {
-        const nextTheme =
-            themeType === 'light'
-                ? 'dark'
-                : themeType === 'dark'
-                    ? 'light'
-                    : systemColorScheme === 'dark'
-                        ? 'light'
-                        : 'dark';
-
-        setThemeType(nextTheme);
+        // No-op: theme toggling is disabled in light-only mode
+        Logger.debug('Theme toggle requested but light-only mode enforced');
     };
 
-    const activeThemeType =
-        themeType === 'system' ? systemColorScheme ?? 'light' : themeType;
-
-    const theme = activeThemeType === 'dark' ? DarkTheme : LightTheme;
-    const isDark = activeThemeType === 'dark';
+    const theme = LightTheme;
+    const isDark = false;
 
     return (
-        <ThemeContext.Provider value={{ theme, themeType, setThemeType, toggleTheme, isDark }}>
+        <ThemeContext.Provider value={{ theme, themeType: 'light', setThemeType, toggleTheme, isDark }}>
             {children}
         </ThemeContext.Provider>
     );

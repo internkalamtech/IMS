@@ -14,18 +14,43 @@ class LoginRequest(BaseModel):
     """Request schema for login endpoint."""
 
     email: EmailStr
-    password: str = Field(..., min_length=6, description="User password (minimum 6 characters)")
+    password: str = Field(
+        ...,
+        min_length=6,
+        description="User password (minimum 6 characters)",
+    )
 
     model_config = {
-        "json_schema_extra": {"examples": [{"email": "admin@myuser.com", "password": "admin123"}]}
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "email": "admin@myuser.com",
+                    "password": "admin123",
+                }
+            ]
+        }
     }
+
+
+class UserCreate(BaseModel):
+    """Request schema for creating a user."""
+
+    name: str
+    email: EmailStr
 
 
 class RoleResponse(BaseModel):
     """Response schema for role data."""
 
     id: str
-    name: Literal["admin", "teacher", "student", "parent", "transport", "driver"]
+    name: Literal[
+        "admin",
+        "teacher",
+        "student",
+        "parent",
+        "transport",
+        "driver",
+    ]
     description: str | None = None
 
 
@@ -91,7 +116,13 @@ class ErrorResponse(BaseModel):
 
     detail: str
 
-    model_config = {"json_schema_extra": {"examples": [{"detail": "Error message"}]}}
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {"detail": "Error message"}
+            ]
+        }
+    }
 
 
 class DemoCredential(BaseModel):
@@ -122,6 +153,77 @@ class DashboardResponse(BaseModel):
 
     role: str
     stats: list[StatItem]
+
+
+# ─── Attendance schemas (Issues #298–#300) ────────────────────────────────────
+
+class ChildSummaryResponse(BaseModel):
+    """Summary card for a single child — shown on the Multi-Child screen (#298)."""
+    id: str
+    name: str
+    grade: str
+    rollNo: str
+    presentDays: int = 0
+    absentDays: int = 0
+    totalDays: int = 0
+    overallAttendance: float      # e.g. 93.3
+    monthlyAttendance: float
+    status: str                   # e.g. "Present Today"
+    statusColor: str              # hex colour for status badge
+    emoji: str = "👦"
+
+
+class MonthSummary(BaseModel):
+    """Aggregate counts shown at the top of the Calendar screen (#299)."""
+    present: int
+    absent: int
+    leave: int
+    holiday: int
+    notMarked: int
+
+
+class CalendarDay(BaseModel):
+    """Single day cell in the attendance calendar grid (#299)."""
+    day: int
+    status: str   # 'present' | 'absent' | 'leave' | 'holiday' | 'not-marked'
+
+
+class LeaveHistoryItem(BaseModel):
+    """One entry in the leave-history list (#299 / #303)."""
+    id: str
+    dateRange: str
+    days: int
+    reason: str
+    status: str
+    appliedDate: str
+    teacherNote: str | None = None
+    reviewedBy: str | None = None    # Teacher name, if reviewed
+    submittedBy: str | None = None   # Parent name for audit
+
+
+class AttendanceCalendarResponse(BaseModel):
+    """Full response for the calendar endpoint (#299 / #300)."""
+    monthSummary: MonthSummary
+    days: list[CalendarDay]
+    leaveHistory: list[LeaveHistoryItem]
+
+
+class LeaveRequestCreate(BaseModel):
+    """Request body for submitting a leave application."""
+    startDate: str   # YYYY-MM-DD
+    endDate: str     # YYYY-MM-DD
+    reason: str
+
+
+class LeaveRequestResponse(BaseModel):
+    """Response after successfully creating a leave request."""
+    id: str
+    dateRange: str
+    days: int
+    reason: str
+    status: str
+    appliedDate: str
+    teacherNote: str | None = None
 
 
 class RecentUpdate(BaseModel):
@@ -169,6 +271,45 @@ class AcademicSummaryResponse(BaseModel):
     pending_homework_count: int
 
 
+class TimetableEntry(BaseModel):
+    """Schema for a single timetable entry."""
+
+    id: int | None = None
+    classId: int | None = None
+    day: str | None = None
+    periodNumber: int | None = None
+    subject: str | None = None
+    teacher: str | None = None
+    room: str | None = None
+    startTime: str | None = None
+    endTime: str | None = None
+    type: str | None = None
+    isDeleted: bool | None = None
+
+
+class SubjectSummary(BaseModel):
+    """Schema for a subject summary item."""
+
+    id: int
+    name: str
+
+
+class StudentTimetableResponse(BaseModel):
+    """Response schema for student timetable endpoint."""
+
+    timetable: list[TimetableEntry]
+    class_id: int | None = None
+    class_name: str | None = None
+
+
+class StudentHomeworkMaterialsResponse(BaseModel):
+    """Response schema for student homework and materials endpoint."""
+
+    homework: list[dict]
+    materials: list["LearningResourceResponse"]
+    class_id: int | None = None
+    student_id: int | None = None
+    subjects: list[SubjectSummary] = []
 # Transport-related schemas
 class RouteResponse(BaseModel):
     """Response schema for route data."""
@@ -320,8 +461,6 @@ class TransportStatsResponse(BaseModel):
             }]
         }
     }
-
-
 class SubjectInput(BaseModel):
     """Schema for subject input when updating class subjects."""
 
