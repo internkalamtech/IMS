@@ -552,6 +552,175 @@ class StaffModel(Base):
         )
 
 
+class LearningResourceModel(Base):
+    """
+    Learning resource database model.
+
+    Represents uploaded or linked learning materials.
+    """
+
+    __tablename__ = "learning_resources"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resource_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    category: Mapped[str] = mapped_column(String(50), nullable=False)
+    subject_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False
+    )
+    class_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("class_sections.id", ondelete="CASCADE"), nullable=False
+    )
+    file_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    external_link: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    content_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    uploaded_by_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    subject: Mapped["SubjectModel"] = relationship("SubjectModel")
+    class_section: Mapped["ClassSectionModel"] = relationship("ClassSectionModel")
+    uploaded_by: Mapped["UserModel | None"] = relationship(
+        "UserModel", foreign_keys=[uploaded_by_id]
+    )
+
+    def __repr__(self) -> str:
+        return f"<LearningResource(id={self.id}, title='{self.title}')>"
+
+
+class TripModel(Base):
+    """
+    Trip database model.
+
+    Represents a transport trip for a driver and route.
+    """
+
+    __tablename__ = "trips"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    driver_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    route_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    vehicle_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    trip_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    scheduled_start: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    actual_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    total_students: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    boarded_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    driver: Mapped["UserModel | None"] = relationship(
+        "UserModel", foreign_keys=[driver_id]
+    )
+    stops: Mapped[List["TripStopModel"]] = relationship(
+        "TripStopModel", back_populates="trip", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:
+        return f"<Trip(id={self.id}, driver_id={self.driver_id}, status='{self.status}')>"
+
+
+class TripStopModel(Base):
+    """
+    Trip stop database model.
+
+    Represents a stop along a trip route.
+    """
+
+    __tablename__ = "trip_stops"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    trip_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("trips.id", ondelete="CASCADE"), nullable=False
+    )
+    stop_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    location_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    scheduled_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    actual_arrival: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_departure: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    expected_students: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    boarded_students: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    trip: Mapped["TripModel"] = relationship("TripModel", back_populates="stops")
+    boardings: Mapped[List["StudentBoardingModel"]] = relationship(
+        "StudentBoardingModel", back_populates="stop", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self) -> str:
+        return f"<TripStop(id={self.id}, trip_id={self.trip_id}, seq={self.stop_sequence})>"
+
+
+class StudentBoardingModel(Base):
+    """
+    Student boarding database model.
+
+    Represents a student's boarding event for a trip stop.
+    """
+
+    __tablename__ = "student_boardings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    trip_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("trips.id", ondelete="CASCADE"), nullable=False
+    )
+    stop_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("trip_stops.id", ondelete="CASCADE"), nullable=False
+    )
+    student_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False
+    )
+    student_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    boarding_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=True
+    )
+
+    trip: Mapped["TripModel"] = relationship("TripModel")
+    stop: Mapped["TripStopModel"] = relationship(
+        "TripStopModel", back_populates="boardings"
+    )
+    student: Mapped["StudentModel"] = relationship("StudentModel")
+
+    def __repr__(self) -> str:
+        return (
+            f"<StudentBoarding(id={self.id}, "
+            f"student_id={self.student_id}, status='{self.status}')>"
+        )
+
+
 class DocumentModel(Base):
     """
     Compliance Document database model.
@@ -601,4 +770,3 @@ class DocumentModel(Base):
 
     def __repr__(self) -> str:
         return f"<Document(id={self.id}, title='{self.title}')>"
->>>>>>> c80a1a4 (feat(staff): add staff provisioning API (POST /api/v1/staff) — closes #266 (#498))

@@ -32,6 +32,13 @@ class LoginRequest(BaseModel):
     }
 
 
+class UserCreate(BaseModel):
+    """Request schema for creating a user."""
+
+    name: str
+    email: EmailStr
+
+
 class RoleResponse(BaseModel):
     """Response schema for role data."""
 
