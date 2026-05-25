@@ -18,7 +18,8 @@ from app.api.v1.endpoints import (
     subjects,
     timetables,
     trips, 
-    documents, 
+    documents,
+    teacher_dashboard, 
 )
 from app.api.v1.endpoints.payments import router as payments_router
 from app.api.v1.endpoints.homework import router as homework_router
@@ -44,3 +45,5 @@ router.include_router(documents.router)
 router.include_router(staff_router)
 router.include_router(homework_router)
 router.include_router(learning_resources_router)
+router.include_router(teacher_dashboard.router)
+
