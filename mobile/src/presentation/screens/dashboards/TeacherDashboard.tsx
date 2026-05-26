@@ -1,4 +1,3 @@
-import { DASHBOARD_CONFIG } from '@/core/config/dashboard';
 import { useTheme } from '@/core/theme/ThemeContext';
 import { QuickActionGrid } from '@/presentation/components/dashboard/QuickActionGrid';
 import { ThemedCard } from '@/presentation/components/ThemedCard';
