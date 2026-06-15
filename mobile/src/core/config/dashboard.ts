@@ -25,7 +25,7 @@ export const DASHBOARD_CONFIG = {
             { id: 2, title: 'Homework', icon: 'book', color: ColorPalettes.blue[500], route: '/homework' },
             { id: 3, title: 'Students', icon: 'people', color: ColorPalettes.green[500], route: '/student-directory' },
             { id: 4, title: 'Results', icon: 'school', color: ColorPalettes.amber[500] },
-            { id: 5, title: 'Leaves', icon: 'document-text', color: ColorPalettes.purple[500] },
+            { id: 5, title: 'Leaves', icon: 'document-text', color: ColorPalettes.purple[500], route: '/teacher-leaves' },
             { id: 6, title: 'Schedule', icon: 'calendar', color: ColorPalettes.indigo[500] },
             { id: 7, title: 'Messages', icon: 'chatbubbles', color: ColorPalettes.pink[500] },
         ] as QuickAction[],
